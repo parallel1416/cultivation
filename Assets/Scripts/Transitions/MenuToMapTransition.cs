@@ -1,27 +1,42 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Handles the animated transition from Menu to Map scene
 /// Animates obstacles moving out of the way to reveal the map
+/// Triggered by clicking Start button in circular menu
 /// </summary>
 public class MenuToMapTransition : TransitionAnimator
 {
+    [Header("Button Reference")]
+    [SerializeField] private Button startButton;
+    
     [Header("Obstacle References")]
-    [SerializeField] private Transform[] obstacles;
+    [SerializeField] private Transform obstacleContainer; // Canvas/ObstacleContainer
+    private Transform[] obstacles;
     
     [Header("Movement Settings")]
     [SerializeField] private Vector2[] targetOffsets; // Where each obstacle moves to (off-screen)
     [SerializeField] private float staggerDelay = 0.1f; // Delay between obstacle animations
-    
-    [Header("UI Elements")]
-    [SerializeField] private CanvasGroup tapToStartText;
+    [SerializeField] private float transitionDuration = 2.0f;
 
     private Vector2[] originalPositions;
 
     protected override void Awake()
     {
         base.Awake();
+        
+        // Get obstacles from container
+        if (obstacleContainer != null)
+        {
+            obstacles = new Transform[obstacleContainer.childCount];
+            for (int i = 0; i < obstacleContainer.childCount; i++)
+            {
+                obstacles[i] = obstacleContainer.GetChild(i);
+            }
+        }
         
         // Store original positions
         if (obstacles != null && obstacles.Length > 0)
@@ -37,19 +52,37 @@ public class MenuToMapTransition : TransitionAnimator
         }
     }
 
-    /// <summary>
-    /// Plays the menu to map transition animation
-    /// </summary>
-    public IEnumerator PlayTransition(float duration = 2.0f)
+    private void Start()
     {
-        // Fade out tap to start text
-        if (tapToStartText != null)
+        // Hook up start button
+        if (startButton != null)
         {
-            StartCoroutine(FadeCanvasGroup(tapToStartText, 1f, 0f, 0.3f));
+            startButton.onClick.AddListener(OnStartButtonClicked);
         }
+    }
 
-        yield return new WaitForSeconds(0.2f);
+    private void OnDestroy()
+    {
+        // Clean up listener
+        if (startButton != null)
+        {
+            startButton.onClick.RemoveListener(OnStartButtonClicked);
+        }
+    }
 
+    /// <summary>
+    /// Called when start button is clicked
+    /// </summary>
+    private void OnStartButtonClicked()
+    {
+        StartCoroutine(TransitionToMapScene());
+    }
+
+    /// <summary>
+    /// Transition coroutine - animates obstacles and loads map scene
+    /// </summary>
+    private IEnumerator TransitionToMapScene()
+    {
         // Animate obstacles
         if (obstacles != null && obstacles.Length > 0)
         {
@@ -58,14 +91,17 @@ public class MenuToMapTransition : TransitionAnimator
             {
                 if (obstacles[i] != null)
                 {
-                    StartCoroutine(AnimateObstacle(i, duration - 0.5f));
+                    StartCoroutine(AnimateObstacle(i, transitionDuration - 0.5f));
                     yield return new WaitForSeconds(staggerDelay);
                 }
             }
 
             // Wait for animations to complete
-            yield return new WaitForSeconds(duration - 0.5f - (staggerDelay * obstacles.Length));
+            yield return new WaitForSeconds(transitionDuration - 0.5f - (staggerDelay * obstacles.Length));
         }
+
+        // Load map scene
+        SceneManager.LoadScene("MapScene");
     }
 
     /// <summary>
@@ -116,33 +152,21 @@ public class MenuToMapTransition : TransitionAnimator
                 }
             }
         }
-
-        if (tapToStartText != null)
-        {
-            tapToStartText.alpha = 1f;
-        }
     }
 
     // Editor helper
     private void OnValidate()
     {
-        // Auto-populate target offsets if not set
-        if (obstacles != null && (targetOffsets == null || targetOffsets.Length != obstacles.Length))
+        // Auto-populate target offsets for 4 obstacles (default)
+        if (targetOffsets == null || targetOffsets.Length == 0)
         {
-            targetOffsets = new Vector2[obstacles.Length];
-            
-            // Set default offsets based on index
-            for (int i = 0; i < obstacles.Length; i++)
+            targetOffsets = new Vector2[4]
             {
-                switch (i)
-                {
-                    case 0: targetOffsets[i] = new Vector2(-15f, 0f); break; // Left
-                    case 1: targetOffsets[i] = new Vector2(15f, 0f); break;  // Right
-                    case 2: targetOffsets[i] = new Vector2(0f, 15f); break;  // Up
-                    case 3: targetOffsets[i] = new Vector2(0f, -15f); break; // Down
-                    default: targetOffsets[i] = new Vector2(-15f, 0f); break;
-                }
-            }
+                new Vector2(-15f, 0f),  // Left
+                new Vector2(15f, 0f),   // Right
+                new Vector2(0f, 15f),   // Up
+                new Vector2(0f, -15f)   // Down
+            };
         }
     }
 }

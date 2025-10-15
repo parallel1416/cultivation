@@ -64,6 +64,8 @@ public class SceneTransitionManager : MonoBehaviour
 
     /// <summary>
     /// Transition from Menu to Map with obstacle animation
+    /// Note: This is now handled directly by MenuToMapTransition via Start button click
+    /// This method is kept for compatibility but does a simple scene load
     /// </summary>
     public void TransitionMenuToMap(float duration = 2.0f, Action onComplete = null)
     {
@@ -109,21 +111,11 @@ public class SceneTransitionManager : MonoBehaviour
         isTransitioning = true;
         OnSceneTransitionStarted?.Invoke(GameScene.Map);
 
-        // Find the menu transition controller in the scene
-        MenuToMapTransition menuTransition = FindObjectOfType<MenuToMapTransition>();
-        
-        if (menuTransition != null)
-        {
-            yield return menuTransition.PlayTransition(duration);
-        }
-        else
-        {
-            Debug.LogError("MenuToMapTransition component not found in scene!");
-            yield return new WaitForSeconds(duration);
-        }
+        // MenuToMapTransition now handles its own animation and scene loading via button click
+        // This fallback just waits and loads the scene
+        yield return new WaitForSeconds(duration);
 
-        // Load the Map scene (or activate it if using single scene approach)
-        // For now, we'll use scene loading
+        // Load the Map scene
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("MapScene");
         yield return asyncLoad;
 

@@ -5,6 +5,7 @@
 ### Documentation
 - **SCENE_ARCHITECTURE.md** - Complete architectural design document
 - **SETUP_GUIDE.md** - Step-by-step Unity setup instructions
+- **CIRCULAR_MENU_GUIDE.md** - Circular menu system implementation guide
 
 ### Core System Scripts
 - **SceneTransitionManager.cs** - Singleton manager for all scene transitions
@@ -22,6 +23,9 @@
 ### UI Management
 - **MenuController.cs** - Menu scene interaction handler
 - **UIManager.cs** - Manages UI across Map and Tower views
+- **CircularMenuController.cs** - Circular/semicircular menu with scroll rotation
+- **MenuIcon.cs** - Individual menu icon behavior and hover effects
+- **MenuUIFeedback.cs** - Menu instructions and selection display
 
 ### Updated Files
 - **Main.cs** - Added initialization logic
@@ -70,6 +74,14 @@
 - Each obstacle has independent target offset
 - Configurable animation curves
 - Reveals map scene underneath
+
+### 5. Circular Menu System
+- Icons positioned on semicircular arc
+- Mouse wheel scrolling rotates menu
+- Selected icon appears at bottom center
+- Smooth animation and scaling effects
+- Supports 4+ options with off-screen scrolling
+- Fading and scaling based on position
 
 ---
 
@@ -163,14 +175,26 @@ To implement this in Unity:
 
 ### Scene: MenuScene
 
+**CircularMenuController** (attach to CircularMenu GameObject)
+- Manages semicircular icon menu
+- Handles scroll input and rotation
+- Positions icons on arc with smooth animation
+- Detects selection and triggers actions
+
 **MenuToMapTransition** (attach to empty GameObject)
 - Animates obstacles off-screen
 - Manages timing and stagger
 - Triggers scene load
 
 **MenuController** (attach to empty GameObject)
-- Handles tap/button input
+- Handles initial tap/button input
 - Triggers transition
+- Works with CircularMenu for option selection
+
+**MenuUIFeedback** (attach to UI GameObject)
+- Displays scroll instructions
+- Shows current selection
+- Provides visual feedback
 
 ---
 
