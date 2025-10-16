@@ -350,6 +350,8 @@ GameObject:
   m_Component:
   - component: {fileID: 851792181}
   - component: {fileID: 851792180}
+  - component: {fileID: 851792182}
+  - component: {fileID: 851792183}
   m_Layer: 0
   m_Name: SceneTransitionManager
   m_TagString: Untagged
@@ -385,6 +387,43 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &851792182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 851792179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a119eb669a22eac49bc8b807f2f2aa32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  towerPreview: {fileID: 964626485}
+  background: {fileID: 1329492268}
+  placesContainer: {fileID: 1087130318}
+  towerScaleTarget: 2
+  backgroundScaleTarget: 3
+  scaleDuration: 0.7
+  placesMoveDistance: 8
+  placesMoveDuration: 0.5
+--- !u!114 &851792183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 851792179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e81d524fb4ed2714bb36e61313f5ee5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  towerPreview: {fileID: 964626485}
+  background: {fileID: 1329492268}
+  towerZoomedScale: 2
+  backgroundZoomedScale: 3
+  zoomDuration: 0.7
 --- !u!1 &964626484
 GameObject:
   m_ObjectHideFlags: 0
@@ -531,10 +570,10 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1329492268}
-  - {fileID: 964626485}
   - {fileID: 59447334}
   - {fileID: 1087130318}
-  m_Father: {fileID: 1822322225}
+  - {fileID: 964626485}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -846,38 +885,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1760359674}
   m_CullTransparentMesh: 1
---- !u!1 &1822322224
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1822322225}
-  m_Layer: 0
-  m_Name: Background
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1822322225
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1822322224}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1219999050}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1996383964
 GameObject:
   m_ObjectHideFlags: 0
@@ -1034,5 +1041,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 1284822750}
   - {fileID: 851792181}
-  - {fileID: 1822322225}
+  - {fileID: 1219999050}
   - {fileID: 546632521}

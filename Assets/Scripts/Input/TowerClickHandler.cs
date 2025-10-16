@@ -1,129 +1,156 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// <summary>
-/// Handles click detection on the tower sprite in the Map view
-/// Triggers transition to Tower scene when clicked
+/// When clicking TowerPreview, smoothly scale up the image, scale up background faster for dolly zoom,
+/// and move all children of Canvas/placesContainer outward.
 /// </summary>
-[RequireComponent(typeof(Collider2D))]
 public class TowerClickHandler : MonoBehaviour
 {
-    [Header("Transition Settings")]
-    [SerializeField] private float transitionDuration = 1.0f;
-    
-    [Header("Audio (Optional)")]
-    [SerializeField] private AudioClip clickSound;
-    
-    [Header("Visual Feedback (Optional)")]
-    [SerializeField] private ParticleSystem clickParticles;
-    [SerializeField] private float scaleAnimationDuration = 0.2f;
-    [SerializeField] private Vector3 scaleMultiplier = new Vector3(1.1f, 1.1f, 1f);
+    [Header("References")]
+    [SerializeField] private Transform towerPreview; // Assign the TowerPreview image transform
+    [SerializeField] private Transform background; // Assign the background image transform
+    [SerializeField] private Transform placesContainer; // Assign Canvas/placesContainer
+    [SerializeField] private float towerScaleTarget = 2.0f;
+    [SerializeField] private float backgroundScaleTarget = 3.0f;
+    [SerializeField] private float scaleDuration = 0.7f;
+    [SerializeField] private float placesMoveDistance = 8f;
+    [SerializeField] private float placesMoveDuration = 0.5f;
 
-    private Vector3 originalScale;
+    private Vector3[] placesOriginalPositions;
     private bool isAnimating = false;
 
     private void Awake()
     {
-        originalScale = transform.localScale;
-        
-        // Ensure we have a collider
-        Collider2D col = GetComponent<Collider2D>();
-        if (col == null)
+        CachePlacesPositions();
+    }
+
+    private void OnEnable()
+    {
+        CachePlacesPositions();
+    }
+
+    private void CachePlacesPositions()
+    {
+        if (placesContainer == null) return;
+        int count = placesContainer.childCount;
+        if (placesOriginalPositions == null || placesOriginalPositions.Length != count)
         {
-            Debug.LogError("TowerClickHandler requires a Collider2D component!");
+            placesOriginalPositions = new Vector3[count];
+        }
+        for (int i = 0; i < count; i++)
+        {
+            placesOriginalPositions[i] = placesContainer.GetChild(i).localPosition;
         }
     }
 
-    private void OnMouseDown()
+    private void Update()
     {
-        // Check if transition manager is busy
-        if (SceneTransitionManager.Instance.IsTransitioning)
+        if (towerPreview == null || isAnimating) return;
+        if (Input.GetMouseButtonDown(0))
         {
-            return;
+            // Raycast to towerPreview
+            Vector3 mousePos = Input.mousePosition;
+            RectTransform rt = towerPreview.GetComponent<RectTransform>();
+            if (rt != null)
+            {
+                Canvas canvas = rt.GetComponentInParent<Canvas>();
+                if (canvas != null && RectTransformUtility.ScreenPointToLocalPointInRectangle(rt, mousePos, canvas.worldCamera, out Vector2 localPoint))
+                {
+                    if (rt.rect.Contains(localPoint))
+                    {
+                        StartCoroutine(DollyZoomEffect());
+                    }
+                }
+            }
+            else
+            {
+                // Fallback for non-UI objects
+                Vector3 worldPoint = Camera.main.ScreenToWorldPoint(mousePos);
+                if (Vector2.Distance(worldPoint, towerPreview.position) < 1f) // crude hit
+                {
+                    StartCoroutine(DollyZoomEffect());
+                }
+            }
         }
-
-        // Check if we clicked on UI instead
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
-
-        OnTowerClicked();
     }
 
-    private void OnTowerClicked()
+    private System.Collections.IEnumerator DollyZoomEffect()
     {
-        Debug.Log("Tower clicked! Starting transition...");
+    isAnimating = true;
+    float elapsed = 0f;
+    Vector3 towerStart = towerPreview != null ? towerPreview.localScale : Vector3.one;
+    Vector3 towerEnd = towerStart * towerScaleTarget;
+    Vector3 bgStart = background != null ? background.localScale : Vector3.one;
+    Vector3 bgEnd = background != null ? background.localScale * backgroundScaleTarget : Vector3.one * backgroundScaleTarget;
 
-        // Play click sound
-        if (clickSound != null && AudioSource.FindObjectOfType<AudioSource>() != null)
+        // Calculate outward directions for places
+        int placesCount = placesContainer != null ? placesContainer.childCount : 0;
+        Vector3[] placesStart = new Vector3[placesCount];
+        Vector3[] placesEnd = new Vector3[placesCount];
+        for (int i = 0; i < placesCount; i++)
         {
-            AudioSource.PlayClipAtPoint(clickSound, transform.position);
+            Transform place = placesContainer.GetChild(i);
+            Vector3 origin = placesOriginalPositions != null && i < placesOriginalPositions.Length
+                ? placesOriginalPositions[i]
+                : place.localPosition;
+            placesStart[i] = origin;
+            Vector3 dir = (origin - Vector3.zero).normalized;
+            if (dir == Vector3.zero) dir = Vector3.up;
+            placesEnd[i] = origin + dir * placesMoveDistance;
         }
 
-        // Play particle effect
-        if (clickParticles != null)
+        // Optional: fade out overlay
+        CanvasGroup fade = null;
+        if (background != null)
         {
-            clickParticles.Play();
+            fade = background.GetComponentInParent<CanvasGroup>();
+            if (fade == null)
+            {
+                GameObject go = new GameObject("FadeOverlay");
+                go.transform.SetParent(background.parent, false);
+                fade = go.AddComponent<CanvasGroup>();
+                fade.transform.SetAsLastSibling();
+                fade.alpha = 0f;
+                RectTransform r = go.AddComponent<RectTransform>();
+                r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero;
+            }
         }
 
-        // Visual feedback - scale animation
-        if (!isAnimating)
-        {
-            StartCoroutine(ScaleFeedback());
-        }
-
-        // Trigger transition
-        Vector3 towerWorldPosition = transform.position;
-        SceneTransitionManager.Instance.TransitionMapToTower(
-            towerWorldPosition, 
-            transitionDuration,
-            OnTransitionComplete
-        );
-    }
-
-    private System.Collections.IEnumerator ScaleFeedback()
-    {
-        isAnimating = true;
-        
-        // Scale up
-        float elapsed = 0f;
-        while (elapsed < scaleAnimationDuration / 2f)
+        while (elapsed < scaleDuration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / (scaleAnimationDuration / 2f);
-            transform.localScale = Vector3.Lerp(originalScale, Vector3.Scale(originalScale, scaleMultiplier), t);
+            float t = Mathf.Clamp01(elapsed / scaleDuration);
+            float tBg = Mathf.Clamp01(elapsed / (scaleDuration * 0.7f)); // background scales faster
+            if (towerPreview != null)
+                towerPreview.localScale = Vector3.Lerp(towerStart, towerEnd, t);
+            if (background != null)
+                background.localScale = Vector3.Lerp(bgStart, bgEnd, tBg);
+            for (int i = 0; i < placesCount; i++)
+            {
+                if (placesContainer != null)
+                    placesContainer.GetChild(i).localPosition = Vector3.Lerp(placesStart[i], placesEnd[i], t);
+            }
+            if (fade != null)
+                fade.alpha = t * 0.8f; // fade in overlay
             yield return null;
         }
-
-        // Scale back
-        elapsed = 0f;
-        while (elapsed < scaleAnimationDuration / 2f)
+        // Snap to final
+        if (towerPreview != null)
+            towerPreview.localScale = towerEnd;
+        if (background != null)
+            background.localScale = bgEnd;
+        for (int i = 0; i < placesCount; i++)
         {
-            elapsed += Time.deltaTime;
-            float t = elapsed / (scaleAnimationDuration / 2f);
-            transform.localScale = Vector3.Lerp(Vector3.Scale(originalScale, scaleMultiplier), originalScale, t);
-            yield return null;
+            if (placesContainer != null)
+                placesContainer.GetChild(i).localPosition = placesEnd[i];
         }
+        if (fade != null) fade.alpha = 1f;
 
-        transform.localScale = originalScale;
+        // Wait a short moment, then load TowerScene
+        yield return new WaitForSeconds(0.1f);
+        UnityEngine.SceneManagement.SceneManager.LoadScene("TowerScene");
+        // (TowerScene should handle its own fade-in)
         isAnimating = false;
-    }
-
-    private void OnTransitionComplete()
-    {
-        Debug.Log("Transition to Tower complete!");
-        // Could trigger additional events here
-    }
-
-    // Debug visualization
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Collider2D col = GetComponent<Collider2D>();
-        if (col != null)
-        {
-            Gizmos.DrawWireCube(transform.position, col.bounds.size);
-        }
     }
 }

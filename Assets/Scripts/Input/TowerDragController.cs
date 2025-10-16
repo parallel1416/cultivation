@@ -7,6 +7,9 @@ using UnityEngine.EventSystems;
 /// </summary>
 public class TowerDragController : MonoBehaviour
 {
+    [Header("References")]
+    [SerializeField] private Transform tower; // Assign the TowerFull transform
+
     [Header("Drag Settings")]
     [SerializeField] private float dragSpeed = 1.0f;
     [SerializeField] private float smoothTime = 0.1f;
@@ -35,7 +38,14 @@ public class TowerDragController : MonoBehaviour
     private void Awake()
     {
         mainCamera = Camera.main;
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (tower == null)
+        {
+            Debug.LogError("TowerDragController requires a reference to the Tower transform.", this);
+            enabled = false;
+            return;
+        }
+
+        spriteRenderer = tower.GetComponent<SpriteRenderer>();
 
         if (autoCalculateBounds && spriteRenderer != null)
         {
@@ -52,6 +62,8 @@ public class TowerDragController : MonoBehaviour
 
     private void Update()
     {
+        if (!enabled || tower == null) return;
+
         // Check if transition is in progress
         if (SceneTransitionManager.Instance.IsTransitioning)
         {
@@ -91,8 +103,8 @@ public class TowerDragController : MonoBehaviour
     {
         isDragging = true;
         dragStartPosition = GetWorldPosition(Input.mousePosition);
-        towerStartPosition = transform.position;
-        lastPosition = transform.position;
+        towerStartPosition = tower.position;
+        lastPosition = tower.position;
         lastDragTime = Time.time;
         velocity = Vector3.zero;
     }
@@ -120,7 +132,7 @@ public class TowerDragController : MonoBehaviour
             velocity = (targetPosition - lastPosition) / deltaTime;
         }
 
-        transform.position = targetPosition;
+        tower.position = targetPosition;
         lastPosition = targetPosition;
         lastDragTime = Time.time;
     }
@@ -142,11 +154,11 @@ public class TowerDragController : MonoBehaviour
         if (velocity.magnitude > inertiaThreshold)
         {
             // Apply velocity
-            Vector3 newPosition = transform.position + velocity * Time.deltaTime;
+            Vector3 newPosition = tower.position + velocity * Time.deltaTime;
             
             // Only vertical movement
-            newPosition.x = transform.position.x;
-            newPosition.z = transform.position.z;
+            newPosition.x = tower.position.x;
+            newPosition.z = tower.position.z;
             
             // Clamp to bounds
             newPosition.y = Mathf.Clamp(newPosition.y, minY, maxY);
@@ -158,7 +170,7 @@ public class TowerDragController : MonoBehaviour
             }
             else
             {
-                transform.position = newPosition;
+                tower.position = newPosition;
                 velocity *= inertiaDamping;
             }
         }
@@ -171,9 +183,10 @@ public class TowerDragController : MonoBehaviour
     private Vector3 GetWorldPosition(Vector3 screenPosition)
     {
         if (mainCamera == null) mainCamera = Camera.main;
-        
+        if (tower == null) return Vector3.zero;
+
         Vector3 worldPos = mainCamera.ScreenToWorldPoint(screenPosition);
-        worldPos.z = transform.position.z; // Maintain z position
+        worldPos.z = tower.position.z; // Maintain z position
         return worldPos;
     }
 
@@ -215,7 +228,7 @@ public class TowerDragController : MonoBehaviour
 
     private System.Collections.IEnumerator ScrollToPositionCoroutine(float targetY, float duration)
     {
-        Vector3 startPos = transform.position;
+    Vector3 startPos = tower.position;
         Vector3 targetPos = new Vector3(startPos.x, Mathf.Clamp(targetY, minY, maxY), startPos.z);
         
         float elapsed = 0f;
@@ -227,11 +240,11 @@ public class TowerDragController : MonoBehaviour
             // Smooth step
             t = t * t * (3f - 2f * t);
             
-            transform.position = Vector3.Lerp(startPos, targetPos, t);
+            tower.position = Vector3.Lerp(startPos, targetPos, t);
             yield return null;
         }
-        
-        transform.position = targetPos;
+
+        tower.position = targetPos;
     }
 
     // Debug visualization
@@ -240,8 +253,10 @@ public class TowerDragController : MonoBehaviour
         Gizmos.color = Color.green;
         
         // Draw bounds
-        float xPos = transform.position.x;
-        float zPos = transform.position.z;
+        if (tower == null) return;
+
+        float xPos = tower.position.x;
+        float zPos = tower.position.z;
         
         // Min bound
         Gizmos.DrawLine(new Vector3(xPos - 5f, minY, zPos), new Vector3(xPos + 5f, minY, zPos));
@@ -251,6 +266,6 @@ public class TowerDragController : MonoBehaviour
         
         // Current position
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, 0.5f);
+        Gizmos.DrawWireSphere(tower.position, 0.5f);
     }
 }
