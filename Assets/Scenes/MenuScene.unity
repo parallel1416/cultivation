@@ -122,6 +122,51 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &47978284
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 47978285}
+  - component: {fileID: 47978286}
+  m_Layer: 0
+  m_Name: LogController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &47978285
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 47978284}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 935.89514, y: 862.15216, z: -7.132879}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &47978286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 47978284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4761845f09253a948810186a4b0491db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableDebugLog: 1
 --- !u!1 &244269876
 GameObject:
   m_ObjectHideFlags: 0
@@ -401,6 +446,8 @@ MonoBehaviour:
   degreesPerOption: 37
   smoothTime: 0.3
   invertScroll: 0
+  highlightColor: {r: 1, g: 0, b: 1, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1609,3 +1656,4 @@ SceneRoots:
   - {fileID: 244269880}
   - {fileID: 1859406294}
   - {fileID: 1616532634}
+  - {fileID: 47978285}

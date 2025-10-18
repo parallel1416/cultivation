@@ -1,0 +1,21 @@
+{
+    "nodes": [
+        {
+            "id": "test_tech_1",
+            "name": "测试用科技1",
+            "description": "测试描述1",
+            "cost": 3,
+            "prerequisites": [],
+            "isUnlocked": false
+        },
+        {
+            "id": "test_tech_2",
+            "name": "测试用科技2",
+            "description": "测试描述2",
+            "cost": 1,
+            "prerequisites": ["test_tech_1"],
+            "isUnlocked": false
+        }
+    ]
+    
+}
