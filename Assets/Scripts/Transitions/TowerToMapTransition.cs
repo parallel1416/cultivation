@@ -3,29 +3,29 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Handles shrinking the tower and switching to the map scene with a reverse dolly zoom effect.
+/// Handles fading out TowerScene and switching back to MapScene.
 /// Attach to an empty GameObject in TowerScene. Assign references in Inspector.
 /// </summary>
 public class TowerToMapTransition : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Transform tower; // Assign the tower image transform
-    [SerializeField] private Transform background; // Assign the background image transform
-    [SerializeField] private Button backButton; // Assign the BackButton
-    [SerializeField] private float towerShrinkTarget = 0.5f;
-    [SerializeField] private float backgroundShrinkTarget = 0.33f;
-    [SerializeField] private float shrinkDuration = 0.7f;
+    [SerializeField] private Transform fadeParent; // Parent for fade overlay (e.g., Canvas root)
+    [SerializeField] private Button backButton; // Optional manual assignment
+    [SerializeField] private string backButtonName = "BackButton";
+    [SerializeField] private float fadeDuration = 0.7f;
     [SerializeField] private string mapSceneName = "MapScene";
 
-    private Vector3 towerOriginalScale;
-    private Vector3 backgroundOriginalScale;
     private bool isAnimating = false;
+    private CanvasGroup fadeOverlay;
 
     private void Awake()
     {
-        if (tower != null) towerOriginalScale = tower.localScale;
-        if (background != null) backgroundOriginalScale = background.localScale;
-        if (backButton != null) backButton.onClick.AddListener(OnBackPressed);
+        SetupFadeOverlay();
+    }
+
+    private void Start()
+    {
+        ResolveBackButton();
     }
 
     private void OnDestroy()
@@ -43,49 +43,81 @@ public class TowerToMapTransition : MonoBehaviour
     {
         isAnimating = true;
         float elapsed = 0f;
-        Vector3 towerStart = towerOriginalScale;
-        Vector3 towerEnd = towerOriginalScale * towerShrinkTarget;
-        Vector3 bgStart = background != null ? backgroundOriginalScale : Vector3.one;
-        Vector3 bgEnd = background != null ? backgroundOriginalScale * backgroundShrinkTarget : Vector3.one * backgroundShrinkTarget;
-
-        // Optional: fade overlay
-        CanvasGroup fade = null;
-        if (background != null)
+        if (fadeOverlay == null)
         {
-            fade = background.GetComponentInParent<CanvasGroup>();
-            if (fade == null)
+            SetupFadeOverlay();
+        }
+
+        if (fadeOverlay != null)
+        {
+            fadeOverlay.blocksRaycasts = true;
+        }
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / fadeDuration);
+            if (fadeOverlay != null)
+                fadeOverlay.alpha = t;
+            yield return null;
+        }
+
+        if (fadeOverlay != null)
+            fadeOverlay.alpha = 1f;
+
+        yield return new WaitForSeconds(0.1f);
+
+        MapZoomInOnLoad.MarkComingFromTowerScene();
+        SceneManager.LoadScene(mapSceneName);
+        isAnimating = false;
+    }
+
+    private void ResolveBackButton()
+    {
+        if (backButton != null)
+        {
+            backButton.onClick.AddListener(OnBackPressed);
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(backButtonName))
+        {
+            GameObject buttonObj = GameObject.Find(backButtonName);
+            if (buttonObj != null)
             {
-                GameObject go = new GameObject("FadeOverlay");
-                go.transform.SetParent(background.parent, false);
-                fade = go.AddComponent<CanvasGroup>();
-                fade.transform.SetAsLastSibling();
-                fade.alpha = 0f;
-                RectTransform r = go.AddComponent<RectTransform>();
-                r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero;
+                backButton = buttonObj.GetComponent<Button>();
             }
         }
 
-        while (elapsed < shrinkDuration)
+        if (backButton == null)
         {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / shrinkDuration);
-            if (tower != null)
-                tower.localScale = Vector3.Lerp(towerStart, towerEnd, t);
-            if (background != null)
-                background.localScale = Vector3.Lerp(bgStart, bgEnd, t);
-            if (fade != null)
-                fade.alpha = t * 0.8f;
-            yield return null;
+            Debug.LogError($"TowerToMapTransition could not find a Button named '{backButtonName}'.", this);
+            return;
         }
-        if (tower != null) tower.localScale = towerEnd;
-        if (background != null) background.localScale = bgEnd;
-        if (fade != null) fade.alpha = 1f;
 
-    // Wait a short moment, then load MapScene
-    yield return new WaitForSeconds(0.1f);
-    MapZoomInOnLoad.MarkComingFromTowerScene();
-    SceneManager.LoadScene(mapSceneName);
-        // (MapScene should handle its own zoom-in)
-        isAnimating = false;
+        backButton.onClick.AddListener(OnBackPressed);
+    }
+
+    private void SetupFadeOverlay()
+    {
+        if (fadeOverlay != null) return;
+
+        Transform parent = fadeParent != null ? fadeParent : transform;
+        GameObject overlay = new GameObject("FadeOverlay");
+        overlay.transform.SetParent(parent, false);
+        overlay.transform.SetAsLastSibling();
+
+        RectTransform rect = overlay.AddComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        Image image = overlay.AddComponent<Image>();
+        image.color = Color.black;
+
+        fadeOverlay = overlay.AddComponent<CanvasGroup>();
+        fadeOverlay.alpha = 0f;
+        fadeOverlay.blocksRaycasts = false;
     }
 }
