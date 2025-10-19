@@ -1606,6 +1606,7 @@ GameObject:
   - component: {fileID: 1407012343}
   - component: {fileID: 1407012342}
   - component: {fileID: 1407012344}
+  - component: {fileID: 1407012345}
   m_Layer: 0
   m_Name: SceneManager
   m_TagString: Untagged
@@ -1667,6 +1668,27 @@ MonoBehaviour:
   enableInertia: 1
   inertiaDamping: 0.95
   inertiaThreshold: 0.01
+--- !u!114 &1407012345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1407012341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2060382d1a39a414991941a86714eaf9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toggleMappings:
+  - toggle: {fileID: 874548754}
+    techId: 1
+  - toggle: {fileID: 613988033}
+    techId: 2
+  - toggle: {fileID: 1851121055}
+    techId: 3
+  - toggle: {fileID: 1241114536}
+    techId: 4
 --- !u!1 &1441589084
 GameObject:
   m_ObjectHideFlags: 0
