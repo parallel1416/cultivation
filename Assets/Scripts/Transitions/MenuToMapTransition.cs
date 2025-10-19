@@ -1,60 +1,78 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /// <summary>
-/// Handles the animated transition from Menu to Map scene
-/// Animates obstacles moving out of the way to reveal the map
-/// Triggered by clicking Start button in circular menu
+/// Handles the animated transition from Menu to Map scene.
 /// </summary>
 public class MenuToMapTransition : TransitionAnimator
 {
     [Header("Button Reference")]
     [SerializeField] private Button startButton;
-    
-    [Header("Obstacle References")]
-    [SerializeField] private Transform obstacleContainer; // Canvas/ObstacleContainer
-    private Transform[] obstacles;
-    
-    [Header("Movement Settings")]
-    [SerializeField] private Vector2[] targetOffsets; // Where each obstacle moves to (off-screen)
-    [SerializeField] private float staggerDelay = 0.1f; // Delay between obstacle animations
-    [SerializeField] private float transitionDuration = 2.0f;
 
-    private Vector2[] originalPositions;
+    [Header("Move Elements")]
+    [SerializeField] private RectTransform title;
+    [SerializeField] private RectTransform smoke;
+    [SerializeField] private RectTransform hand;
+    [SerializeField] private RectTransform flame;
+
+    [Header("Move Offsets")]
+    [SerializeField] private Vector2 titleOffset = new Vector2(0f, 240f);
+    [SerializeField] private Vector2 smokeOffset = new Vector2(0f, 200f);
+    [SerializeField] private Vector2 handOffset = new Vector2(0f, -260f);
+    [SerializeField] private Vector2 flameOffset = new Vector2(0f, -220f);
+
+    [Header("Scale Elements")]
+    [SerializeField] private RectTransform menuBackground;
+    [SerializeField] private RectTransform outerRing;
+    [SerializeField] private RectTransform outerFlames;
+
+    [Header("Scale Multipliers")]
+    [SerializeField] private Vector3 menuBackgroundScaleMultiplier = new Vector3(1.15f, 1.15f, 1f);
+    [SerializeField] private Vector3 outerRingScaleMultiplier = new Vector3(1.3f, 1.3f, 1f);
+    [SerializeField] private Vector3 outerFlamesScaleMultiplier = new Vector3(1.3f, 1.3f, 1f);
+
+    [Header("Circular Menu Spin")]
+    [SerializeField] private RectTransform circularMenu;
+    [SerializeField] private float circularMenuInitialSpinSpeed = 90f;
+    [SerializeField] private float circularMenuFinalSpinSpeed = 900f;
+    [SerializeField] private float spinDuration = 2.5f;
+    [SerializeField] private bool spinClockwise = true;
+
+    [Header("Timing")]
+    [SerializeField] private float movementDuration = 1.4f;
+    [SerializeField] private float scaleDuration = 1.6f;
+    [SerializeField] private float fadeDelay = 0.3f;
+    [SerializeField] private float fadeDuration = 1.2f;
+
+    [Header("Fade Overlay")]
+    [SerializeField] private CanvasGroup fadeCanvasGroup;
+
+    private Vector2 titleStartPos;
+    private Vector2 smokeStartPos;
+    private Vector2 handStartPos;
+    private Vector2 flameStartPos;
+
+    private Vector3 menuBackgroundStartScale;
+    private Vector3 outerRingStartScale;
+    private Vector3 outerFlamesStartScale;
+
+    private Vector3 circularMenuStartEuler;
 
     protected override void Awake()
     {
         base.Awake();
-        
-        // Get obstacles from container
-        if (obstacleContainer != null)
-        {
-            obstacles = new Transform[obstacleContainer.childCount];
-            for (int i = 0; i < obstacleContainer.childCount; i++)
-            {
-                obstacles[i] = obstacleContainer.GetChild(i);
-            }
-        }
-        
-        // Store original positions
-        if (obstacles != null && obstacles.Length > 0)
-        {
-            originalPositions = new Vector2[obstacles.Length];
-            for (int i = 0; i < obstacles.Length; i++)
-            {
-                if (obstacles[i] != null)
-                {
-                    originalPositions[i] = obstacles[i].position;
-                }
-            }
-        }
+        CacheStartStates();
+    }
+
+    private void OnEnable()
+    {
+        ResetElements();
     }
 
     private void Start()
     {
-        // Hook up start button
         if (startButton != null)
         {
             startButton.onClick.AddListener(OnStartButtonClicked);
@@ -63,110 +81,189 @@ public class MenuToMapTransition : TransitionAnimator
 
     private void OnDestroy()
     {
-        // Clean up listener
         if (startButton != null)
         {
             startButton.onClick.RemoveListener(OnStartButtonClicked);
         }
     }
 
-    /// <summary>
-    /// Called when start button is clicked
-    /// </summary>
+    private void CacheStartStates()
+    {
+        if (title != null) titleStartPos = title.anchoredPosition;
+        if (smoke != null) smokeStartPos = smoke.anchoredPosition;
+        if (hand != null) handStartPos = hand.anchoredPosition;
+        if (flame != null) flameStartPos = flame.anchoredPosition;
+
+        if (menuBackground != null) menuBackgroundStartScale = menuBackground.localScale;
+        if (outerRing != null) outerRingStartScale = outerRing.localScale;
+        if (outerFlames != null) outerFlamesStartScale = outerFlames.localScale;
+
+        if (circularMenu != null) circularMenuStartEuler = circularMenu.localEulerAngles;
+
+        if (fadeCanvasGroup != null)
+        {
+            fadeCanvasGroup.alpha = 0f;
+        }
+    }
+
+    private void ResetElements()
+    {
+        if (title != null) title.anchoredPosition = titleStartPos;
+        if (smoke != null) smoke.anchoredPosition = smokeStartPos;
+        if (hand != null) hand.anchoredPosition = handStartPos;
+        if (flame != null) flame.anchoredPosition = flameStartPos;
+
+        if (menuBackground != null) menuBackground.localScale = menuBackgroundStartScale;
+        if (outerRing != null) outerRing.localScale = outerRingStartScale;
+        if (outerFlames != null) outerFlames.localScale = outerFlamesStartScale;
+
+        if (circularMenu != null) circularMenu.localEulerAngles = circularMenuStartEuler;
+
+        if (fadeCanvasGroup != null) fadeCanvasGroup.alpha = 0f;
+
+        if (startButton != null)
+        {
+            startButton.interactable = true;
+        }
+    }
+
     private void OnStartButtonClicked()
     {
         StartCoroutine(TransitionToMapScene());
     }
 
-    /// <summary>
-    /// Transition coroutine - animates obstacles and loads map scene
-    /// </summary>
     private IEnumerator TransitionToMapScene()
     {
-        // Animate obstacles
-        if (obstacles != null && obstacles.Length > 0)
+        if (startButton != null)
         {
-            // Start all obstacle animations with slight stagger
-            for (int i = 0; i < obstacles.Length; i++)
-            {
-                if (obstacles[i] != null)
-                {
-                    StartCoroutine(AnimateObstacle(i, transitionDuration - 0.5f));
-                    yield return new WaitForSeconds(staggerDelay);
-                }
-            }
-
-            // Wait for animations to complete
-            yield return new WaitForSeconds(transitionDuration - 0.5f - (staggerDelay * obstacles.Length));
+            startButton.interactable = false;
         }
 
-        // Load map scene
-        SceneManager.LoadScene("MapScene");
-    }
+        int runningAnimations = 0;
 
-    /// <summary>
-    /// Animates a single obstacle moving off-screen
-    /// </summary>
-    private IEnumerator AnimateObstacle(int index, float duration)
-    {
-        if (index >= obstacles.Length || obstacles[index] == null) yield break;
-
-        Transform obstacle = obstacles[index];
-        Vector2 startPos = originalPositions[index];
-        Vector2 endPos = startPos;
-
-        // Calculate end position based on target offset
-        if (targetOffsets != null && index < targetOffsets.Length)
+        IEnumerator WrapRoutine(IEnumerator routine)
         {
-            endPos = startPos + targetOffsets[index];
+            yield return routine;
+            runningAnimations--;
+        }
+
+        void Launch(IEnumerator routine)
+        {
+            if (routine == null)
+            {
+                return;
+            }
+
+            runningAnimations++;
+            StartCoroutine(WrapRoutine(routine));
+        }
+
+        Launch(AnimateAnchoredPosition(title, titleStartPos, titleStartPos + titleOffset, movementDuration));
+        Launch(AnimateAnchoredPosition(smoke, smokeStartPos, smokeStartPos + smokeOffset, movementDuration));
+        Launch(AnimateAnchoredPosition(hand, handStartPos, handStartPos + handOffset, movementDuration));
+        Launch(AnimateAnchoredPosition(flame, flameStartPos, flameStartPos + flameOffset, movementDuration));
+
+        Launch(AnimateScale(menuBackground, menuBackgroundStartScale, menuBackgroundScaleMultiplier, scaleDuration));
+        Launch(AnimateScale(outerRing, outerRingStartScale, outerRingScaleMultiplier, scaleDuration));
+        Launch(AnimateScale(outerFlames, outerFlamesStartScale, outerFlamesScaleMultiplier, scaleDuration));
+
+        Launch(SpinCircularMenuCoroutine());
+
+        while (runningAnimations > 0)
+        {
+            yield return null;
+        }
+
+        if (fadeDelay > 0f)
+        {
+            yield return new WaitForSeconds(fadeDelay);
+        }
+
+        if (fadeCanvasGroup != null)
+        {
+            yield return FadeCanvasGroup(fadeCanvasGroup, fadeCanvasGroup.alpha, 1f, fadeDuration);
         }
         else
         {
-            // Default: move away from center
-            Vector2 direction = (startPos - Vector2.zero).normalized;
-            endPos = startPos + direction * 10f; // Move 10 units away
+            yield return new WaitForSeconds(fadeDuration);
         }
 
-        // Animate position
+        SceneManager.LoadScene("MapScene");
+    }
+
+    private IEnumerator AnimateAnchoredPosition(RectTransform target, Vector2 start, Vector2 end, float duration)
+    {
+        if (target == null || duration <= 0f)
+        {
+            yield break;
+        }
+
+        Vector3 from = new Vector3(start.x, start.y, 0f);
+        Vector3 to = new Vector3(end.x, end.y, 0f);
+
         yield return AnimateVector3(
-            startPos,
-            endPos,
+            from,
+            to,
             duration,
             easeCurve,
-            (pos) => obstacle.position = pos
+            pos => target.anchoredPosition = new Vector2(pos.x, pos.y)
         );
     }
 
-    /// <summary>
-    /// Reset obstacles to original positions (for testing)
-    /// </summary>
-    public void ResetObstacles()
+    private IEnumerator AnimateScale(RectTransform target, Vector3 startScale, Vector3 scaleMultiplier, float duration)
     {
-        if (obstacles != null && originalPositions != null)
+        if (target == null || duration <= 0f)
         {
-            for (int i = 0; i < obstacles.Length && i < originalPositions.Length; i++)
-            {
-                if (obstacles[i] != null)
-                {
-                    obstacles[i].position = originalPositions[i];
-                }
-            }
+            yield break;
+        }
+
+        Vector3 endScale = Vector3.Scale(startScale, scaleMultiplier);
+
+        yield return AnimateVector3(
+            startScale,
+            endScale,
+            duration,
+            easeCurve,
+            scale => target.localScale = scale
+        );
+    }
+
+    private IEnumerator SpinCircularMenuCoroutine()
+    {
+        if (circularMenu == null || spinDuration <= 0f)
+        {
+            yield break;
+        }
+
+        float elapsed = 0f;
+        float direction = spinClockwise ? -1f : 1f;
+
+        while (elapsed < spinDuration)
+        {
+            float t = Mathf.Clamp01(elapsed / spinDuration);
+            float speed = Mathf.Lerp(circularMenuInitialSpinSpeed, circularMenuFinalSpinSpeed, easeCurve.Evaluate(t));
+            circularMenu.Rotate(0f, 0f, speed * Time.deltaTime * direction);
+
+            elapsed += Time.deltaTime;
+            yield return null;
         }
     }
 
-    // Editor helper
+#if UNITY_EDITOR
     private void OnValidate()
     {
-        // Auto-populate target offsets for 4 obstacles (default)
-        if (targetOffsets == null || targetOffsets.Length == 0)
-        {
-            targetOffsets = new Vector2[4]
-            {
-                new Vector2(-15f, 0f),  // Left
-                new Vector2(15f, 0f),   // Right
-                new Vector2(0f, 15f),   // Up
-                new Vector2(0f, -15f)   // Down
-            };
-        }
+        // Ensure multipliers stay positive and keep Z at 1 for UI elements.
+        menuBackgroundScaleMultiplier = SanitizeMultiplier(menuBackgroundScaleMultiplier);
+        outerRingScaleMultiplier = SanitizeMultiplier(outerRingScaleMultiplier);
+        outerFlamesScaleMultiplier = SanitizeMultiplier(outerFlamesScaleMultiplier);
     }
+
+    private static Vector3 SanitizeMultiplier(Vector3 value)
+    {
+        value.x = Mathf.Max(0.01f, value.x);
+        value.y = Mathf.Max(0.01f, value.y);
+        value.z = Mathf.Approximately(value.z, 0f) ? 1f : value.z;
+        return value;
+    }
+#endif
 }
