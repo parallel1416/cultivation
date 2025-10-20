@@ -1,5 +1,5 @@
-
 {
+    "title" : "鼠鼠",
     "sentences": [
         {
             "text": "你们走过荒弃的亭台、颓圮的篱墙，掌门罕见地一言不发，似乎也沉入了怀旧之中。你不知道她在怀想些什么，是往日师长的授业？同辈的笑语？风吹动满山的树叶，和十年百年前可是一样的吗？"
@@ -29,8 +29,10 @@
         {
             "id": "self_action_check",
             "type": "check",
-            "difficultyClass": "4",
-            "checkWhat": "diceroll",
+            "checkCondition": {
+                "difficultyClass": "4",
+                "checkWhat": "diceroll"
+            },            
             "successTarget": "capture_success",
             "failureTarget": "capture_failure"
         },
@@ -42,18 +44,15 @@
         },
         {
             "id": "capture_failure",
-            "type": "default",
             "text": "你抢上一步，那双眼睛却率先逃走了。是狡狯的妖兽，在仙人走后鸠占鹊巢吗？",
             "target": "master_reaction"
         },
         {
             "id": "master_reaction",
-            "type": "default",
             "speaker": "掌门",
             "text": "是你！你呀，你没有跟着师傅和他们，一起成仙吗？他们的座旁，总该有你一个位置。现在好了，你只能和我们相伴了！"
         },
         {
-            "type": "default",
             "text": "草丛里跳出来的，是一只八足的小鼠。它并不害怕你们，已经跃上了掌门的手掌，亲昵地摩挲着。当你试探着伸手时，它也友好地蹭了蹭你没有温度的指尖。",
             "target": "END"
         }

@@ -9,11 +9,13 @@ public partial class DialogueManager : MonoBehaviour
 {
     private void PlayCheckSentence(DialogueSentence sentence)
     {
-        int dc = sentence.checkCondition.checkWhat == "tech" ? 1 : GetDifficultyClass(sentence.checkCondition.difficultyClass);
-        int checkResult = GetCheckResult(sentence.checkCondition.checkWhat);
-        string resultDescription = GenerateCheckResultDescription(dc, checkResult, sentence.checkCondition.checkWhat);
+        CheckCondition condition = sentence.checkCondition;
+        int dc = condition.checkWhat == "tech" ? 1 : GetDifficultyClass(condition.difficultyClass);
+        int checkResult = GetCheckResult(condition.checkWhat, condition.stringId);
+        string resultDescription = GenerateCheckResultDescription(condition, dc, checkResult);
 
-        OutputDialogue(resultDescription);
+        // set this value to false to create a hidden check
+        if (sentence.showCheckResult) OutputDialogue(resultDescription);
 
         // decide jump target: success or failure
         bool isSuccess = checkResult >= dc;
@@ -46,7 +48,7 @@ public partial class DialogueManager : MonoBehaviour
         }
     }
 
-    private int GetCheckResult(string checkWhat)
+    private int GetCheckResult(string checkWhat, string stringId)
     {
         switch (checkWhat)
         {
@@ -58,13 +60,11 @@ public partial class DialogueManager : MonoBehaviour
 
             case "tech":
                 // For tech check, return 1 if unlocked, 0 if not
-                DialogueSentence currentSentence = currentEvent.sentences[currentSentenceIndex];
-                bool isUnlocked = TechManager.Instance.IsTechUnlocked(currentSentence.checkCondition.stringId);
+                bool isUnlocked = TechManager.Instance.IsTechUnlocked(stringId);
                 return isUnlocked ? 1 : 0;
 
             case "globaltag":
-                DialogueSentence sentence = currentEvent.sentences[currentSentenceIndex];
-                bool tagStatus = GlobalTagManager.Instance.GetTagValue(sentence.checkCondition.stringId);
+                bool tagStatus = GlobalTagManager.Instance.GetTagValue(stringId);
                 return tagStatus ? 1 : 0;
 
             default:
@@ -76,8 +76,9 @@ public partial class DialogueManager : MonoBehaviour
     /// <summary>
     /// Generate dialogue output describing check result, instead of sentence text
     /// </summary>
-    private string GenerateCheckResultDescription(int dc, int checkResult, string checkWhat)
+    private string GenerateCheckResultDescription(CheckCondition condition, int dc, int checkResult)
     {
+        string checkWhat = condition.checkWhat;
         bool isSuccess = checkResult >= dc;
         string successText = isSuccess ? "成功！" : "失败！"; // Full-width exclamation mark for better compatibility with Chinese fonts
         string comparison = isSuccess ? ">=" : "<";
@@ -94,19 +95,19 @@ public partial class DialogueManager : MonoBehaviour
                 break;
 
             case "tech":
-                string techName = TechManager.Instance.GetTechName(currentEvent.sentences[currentSentenceIndex].checkCondition.stringId);
+                string techName = TechManager.Instance.GetTechName(condition.stringId);
                 string techStatus = isSuccess ? "已解锁" : "未解锁";
                 checkDescription = $"科技 [{techName}] {techStatus}";
                 break;
 
             case "globaltag":
-                string tagId = currentEvent.sentences[currentSentenceIndex].checkCondition.stringId;
+                string tagId = condition.stringId;
                 string tagStatus = GlobalTagManager.Instance.GetTagDescription(tagId);
                 checkDescription = $"{tagStatus}"; // example:"你帮助了xxx。"
                 break;
 
             default:
-                checkDescription = $"无效检测目标！请检查当前事件JSON文件：{currentEvent.id}";
+                checkDescription = $"无效检测目标({checkWhat})！请检查当前事件JSON文件：{currentEvent.id}";
                 break;
         }
 

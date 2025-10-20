@@ -24,12 +24,20 @@ public class DialogueSentence
     public List<ChoiceOption> choices = new List<ChoiceOption>();
 
     // check
+    public bool showCheckResult = true;
     public CheckCondition checkCondition = new CheckCondition();
     public string successTarget = "";
     public string failureTarget = "";
 
+    // multicheck
+    public List<CheckCondition> multiCheckConditions = new List<CheckCondition>();
+    public List<MultiCheckTarget> multiCheckTargets = new List<MultiCheckTarget>();
+
     // effect
     public List<DialogueEffect> effects = new List<DialogueEffect>();
+
+    // display toggle
+    public bool hideSentence = false;
 }
 
 [System.Serializable]
@@ -53,6 +61,15 @@ public class DialogueEffect
     public string effectType = ""; // "money", "disciple", "globalTag"
     public string value = ""; // int value for money and disciple, tagID for globalTag
     public string operation = ""; // "+"(also works for activate a tag), "-"(also works for deactivate a tag)
+}
+
+[System.Serializable]
+public class MultiCheckTarget
+{
+    public int priority = 0; // high priority targets are checked first
+    public List<int> requiredConditionIndices = new List<int>();
+    public string targetID = "";
+    public string description = "";
 }
 
 
@@ -90,24 +107,6 @@ public partial class DialogueManager : MonoBehaviour
     }
 
     /// <summary>
-    /// temporarily handle input for dialogue playback debugging
-    /// should be deleted or replaced by proper UI input handling later
-    /// </summary>
-    private void Update()
-    {
-        if (!isPlaying) return;
-
-        if (isInChoiceMode)
-        {
-            HandleChoiceInput();
-        }
-        else if (!isOnCooldown && (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)))
-        {
-            PlayNextSentence();
-        }
-    }
-
-    /// <summary>
     /// Add event to queue, which will be sequently played later
     /// bound to every event in event map
     /// </summary>
@@ -118,25 +117,6 @@ public partial class DialogueManager : MonoBehaviour
         {
             dialogueQueue.Enqueue(dialogueEvent);
             LogController.Log($"DialogueEvent in queue: {eventId}");
-        }
-    }
-
-    /// <summary>
-    /// Start dialogue playback from the queue, bound to next turn method ( TurnManager.NextTurn() )
-    /// </summary>
-    public void StartDialoguePlayback()
-    {
-        if (dialogueQueue.Count > 0 && !isPlaying)
-        {
-            isPlaying = true;
-            currentEvent = dialogueQueue.Dequeue();
-            if (!string.IsNullOrEmpty(currentEvent.title))
-            {
-                OutputTitle($"=== {currentEvent.title} ===");
-            }
-            BuildIdIndexMap();
-            currentSentenceIndex = 0;
-            PlayCurrentSentence();
         }
     }
 
@@ -181,293 +161,7 @@ public partial class DialogueManager : MonoBehaviour
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// 3 types of sentence playback: default, choice, check
-    /// </summary>
-    private void PlayCurrentSentence()
-    {
-        if (currentEvent == null || currentSentenceIndex >= currentEvent.sentences.Count)
-        {
-            PlayNextEvent();
-            return;
-        }
-
-        DialogueSentence sentence = currentEvent.sentences[currentSentenceIndex];
-
-        switch (sentence.type)
-        {
-            case "choice":
-                PlayChoiceSentence(sentence);
-                break;
-
-            case "check":
-                PlayCheckSentence(sentence);
-                break;
-
-            default:
-                PlayDefaultSentence(sentence);
-                break;
-        }
-
-        ExecuteSentenceEffects(sentence);
-    }
-
-    private void PlayDefaultSentence(DialogueSentence sentence)
-    {
-        string output = FormatDialogueOutput(sentence);
-        OutputDialogue(output);
-
-        StartCooldown();
-    }
-
-    private void PlayChoiceSentence(DialogueSentence sentence)
-    {
-        if (!string.IsNullOrEmpty(sentence.question))
-        {
-            OutputDialogue(sentence.question);
-        }
-
-        if (sentence.choices != null && sentence.choices.Count > 0)
-        {
-            // List all options in the dialogue output
-            for (int i = 0; i < sentence.choices.Count; i++)
-            {
-                OutputDialogue($"{i + 1}. {sentence.choices[i].text}");
-            }
-
-            // temporary, might be deprecated in the future, might not
-            isInChoiceMode = true; 
-            LogController.Log("press key (1-" + sentence.choices.Count + ") to select answer");
-        }
-        else
-        {
-            LogController.LogError("no choice within sentence!");
-        }
-    }
-
-    private void HandleSentenceIndex(string targetID)
-    {
-        if (string.IsNullOrEmpty(targetID))
-        {
-            currentSentenceIndex++; // no target, sequencedly play by default
-            return;
-        }       
-        if (targetID == "END") // if set to END(reserved word), neglect all and end current event
-        {
-            currentSentenceIndex = currentEvent.sentences.Count;
-        }
-        else if (idToIndexMap.ContainsKey(targetID))
-        {
-            int targetIndex = idToIndexMap[targetID];
-
-            if (targetIndex >= 0 && targetIndex < currentEvent.sentences.Count)
-            {
-                currentSentenceIndex = targetIndex;
-                LogController.Log($"Successfully jumped to: {targetID} (Index: {targetIndex})");
-            }
-            else
-            {
-                LogController.LogError($"targetIndex out of range: {targetID} -> {targetIndex}, play the next sentence by default");
-                currentSentenceIndex++;
-            }
-        }
-        else
-        {
-            LogController.LogError($"targetID not exist: {targetID}, play the next sentence by default");
-            currentSentenceIndex++;
-        }
-    }
-
-    /// <summary>
-    /// Sequencedly play the next sentence, controlled by mouse click or space key
-    /// </summary>
-    private void PlayNextSentence()
-    {
-        string targetID = currentEvent.sentences[currentSentenceIndex].target;
-
-        HandleSentenceIndex(targetID);
-
-        if (currentSentenceIndex < currentEvent.sentences.Count)
-        {
-            PlayCurrentSentence();
-        }
-        else
-        {
-            PlayNextEvent();
-        }
-    }
-
-    /// <summary>
-    /// End current dialogue event and start the next one, from its first sentence
-    /// </summary>
-    private void PlayNextEvent()
-    {
-        idToIndexMap.Clear();
-
-        if (dialogueQueue.Count > 0)
-        {
-            currentEvent = dialogueQueue.Dequeue();
-            BuildIdIndexMap();
-            currentSentenceIndex = 0;
-            PlayCurrentSentence();
-        }
-        else
-        {
-            // All dialogue events in queue have completed, it's time for the next turn!
-            EndDialoguePlayback();
-        }
-    }
-
-    private void EndDialoguePlayback()
-    {
-        isPlaying = false;
-        isInChoiceMode = false;
-        currentEvent = null;
-        currentSentenceIndex = 0;
-        idToIndexMap.Clear();
-        LogController.Log("All DialogueEvent playback completed");
-    }
-
-    private string FormatDialogueOutput(DialogueSentence sentence)
-    {
-        if (string.IsNullOrEmpty(sentence.speaker))
-        {
-            // Narration by default (no speaker, no quotation marks)
-            // Sample Style: 你醒了，但不知道自己身在何处。
-            return sentence.text;
-        }
-        else
-        {
-            // Character dialogue: “speaker: “text”” (Full-width quotation marks)
-            // Sample Style: 主角：“何意味？”
-            return $"{sentence.speaker}：“{sentence.text}”";
-        }
-    }
-
-    private void OutputTitle(string title)
-    {
-        // temporarily use Debug.Log for output
-        // should be replaced by proper UI display later
-        Debug.Log(title);
-    }
-    private void OutputDialogue(string message)
-    {
-        // temporarily use Debug.Log for output
-        // should be replaced by proper UI display later
-        Debug.Log(message);
-    }
-
-    private void ExecuteSentenceEffects(DialogueSentence sentence)
-    {
-        if (sentence.effects == null || sentence.effects.Count == 0)
-            return;
-
-        foreach (var effect in sentence.effects)
-        {
-            switch (effect.effectType)
-            {
-                case "money":
-                    HandleMoneyEffect(effect);
-                    break;
-
-                case "disciple":
-                    HandleDiscipleEffect(effect);
-                    break;
-
-                case "globalTag":
-                    HandleGlobalTagEffect(effect);
-                    break;
-
-                default:
-                    LogController.LogWarning($"Unknown effect type: {effect.effectType}");
-                    break;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Handle money effects (add/subtract)
-    /// </summary>
-    private void HandleMoneyEffect(DialogueEffect effect)
-    {
-        if (int.TryParse(effect.value, out int amount))
-        {
-            switch (effect.operation)
-            {
-                case "+":
-                    LevelManager.Instance.AddMoney(amount);
-                    break;
-
-                case "-":
-                    LevelManager.Instance.SpendMoney(amount);
-                    break;
-
-                default:
-                    LogController.LogError($"Invalid operation: {effect.operation}");
-                    return;
-            }
-        }
-        else
-        {
-            LogController.LogError($"Invalid money value: {effect.value}");
-        }
-    }
-
-    /// <summary>
-    /// Handle disciple effects (plus/minus)
-    /// </summary>
-    private void HandleDiscipleEffect(DialogueEffect effect)
-    {
-        if (int.TryParse(effect.value, out int amount))
-        {
-            switch (effect.operation)
-            {
-                case "+":
-                    LevelManager.Instance.AddDisciples(amount);
-                    break;
-
-                case "-":
-                    LevelManager.Instance.SpendDisciples(amount);
-                    break;
-
-                default:
-                    LogController.LogError($"Invalid operation: {effect.operation}");
-                    return;
-            }
-            LogController.Log($"Disciple effect: {effect.operation} {amount} disciples");
-        }
-        else
-        {
-            LogController.LogError($"Invalid disciple value: {effect.value}");
-        }
-    }
-
-    /// <summary>
-    /// Handle global tag effects (+/-)
-    /// </summary>
-    private void HandleGlobalTagEffect(DialogueEffect effect)
-    {
-        if (!GlobalTagManager.Instance.HasTag(effect.value))
-        {
-            return;
-        }
-        switch (effect.operation)
-        {
-            case "+":
-                GlobalTagManager.Instance.EnableTag(effect.value);
-                break;
-
-            case "-":
-                GlobalTagManager.Instance.DisableTag(effect.value);
-                break;
-
-            default:
-                LogController.LogError($"Invalid operation: {effect.operation}");
-                return;
-        }
-    }
+    }  
 
     /// <summary>
     /// simple cooldown mechanism to prevent accidental fast skipping
