@@ -34,6 +34,14 @@ public class LogController : MonoBehaviour
         }
     }
 
+    public static void LogWarning(string message)
+    {
+        if (_instance != null && _instance.enableDebugLog)
+        {
+            Debug.LogWarning(message);
+        }
+    }
+
     public static void LogError(string message)
     {
         if (_instance != null && _instance.enableDebugLog)

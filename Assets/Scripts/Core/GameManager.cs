@@ -20,6 +20,9 @@ public class GameManager : MonoBehaviour
 
         GameObject turnmanagerObj = new GameObject("TurnManager");
         turnmanagerObj.AddComponent<TurnManager>();
+
+        GameObject dialoguemanagerObj = new GameObject("DialogueManager");
+        dialoguemanagerObj.AddComponent<DialogueManager>();
     }
 
     
