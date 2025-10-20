@@ -1,21 +1,139 @@
 {
     "nodes": [
         {
-            "id": "test_tech_1",
-            "name": "测试用科技1",
-            "description": "测试描述1",
-            "cost": 3,
+            "id": "story_1",
+            "name": "初入山门",
+            "description": "蓬门今始为君开。",
+            "cost": 1,
+            "prerequisites": [],
+            "isUnlocked": true
+        },{
+            "id": "story_2",
+            "name": "摘星台",
+            "description": "修建摘星台。",
+            "cost":25,
+            "prerequisites": ["story_1"],
+            "isUnlocked": false
+        },
+        {
+            "id": "recruit",
+            "name": "奇人异士",
+            "description": "宗门百废待兴，你和掌门需要为宗门延揽奇人异士。",
+            "cost": 1,
             "prerequisites": [],
             "isUnlocked": false
         },
         {
-            "id": "test_tech_2",
-            "name": "测试用科技2",
-            "description": "测试描述2",
+            "id": "recruit_normal_1",
+            "name": "广纳门徒",
+            "description": "延揽更多的弟子。",
+            "cost": 3,
+            "prerequisites": ["recruit"],
+            "isUnlocked": false
+        },
+        {
+            "id": "recruit_normal_2",
+            "name": "广纳门徒",
+            "description": "延揽更多的弟子。",
+            "cost": 3,
+            "prerequisites": ["recruit_normal_1"],
+            "isUnlocked": false
+        },
+        {
+            "id": "recruit_normal_3",
+            "name": "广纳门徒",
+            "description": "延揽更多的弟子。",
+            "cost": 3,
+            "prerequisites": ["recruit_normal_2"],
+            "isUnlocked": false
+        },
+        {
+            "id": "recruit_special_1",
+            "name": "松枝挂剑",
+            "description": "一位仗剑之人前来拜访。",
+            "cost": 5,
+            "prerequisites": ["recruit"],
+            "isUnlocked": false
+        },
+        {
+            "id": "recruit_special_2",
+            "name": "瑶草琪花",
+            "description": "门徒向你汇报了一则关于灵草的争端。",
+            "cost": 10,
+            "prerequisites": ["recruit_special_1"],
+            "isUnlocked": false
+        },{
+            "id": "recruit_special_3",
+            "name": "珠盘玉落",
+            "description": "门徒向你推举了一位怀抱琵琶的修士。",
+            "cost": 15,
+            "prerequisites": ["recruit_special_2"],
+            "isUnlocked": false
+        },
+        {
+            "id": "farm_1",
+            "name": "开垦荒园",
+            "description": "晨兴理荒秽，带月荷锄归。",
             "cost": 1,
-            "prerequisites": ["test_tech_1"],
+            "prerequisites": [],
+            "isUnlocked": false
+        },
+        {
+            "id": "farm_2",
+            "name": "扩建田园",
+            "description": "进一步扩建灵草园。",
+            "cost": 3,
+            "prerequisites": ["farm_1"],
+            "isUnlocked": false
+        },
+        {
+            "id": "farm_3",
+            "name": "扩建田园",
+            "description": "进一步扩建灵草园。",
+            "cost": 10,
+            "prerequisites": ["farm_2"],
+            "isUnlocked": false
+        },
+        {
+            "id": "alchemy_1",
+            "name": "玉照香炉",
+            "description": "修建炼丹炉。",
+            "cost": 10,
+            "prerequisites": ["farm_2"],
+            "isUnlocked": false
+        },{
+            "id": "alchemy_2",
+            "name": "炉生紫烟",
+            "description": "进一步扩建炼丹炉。",
+            "cost":20,
+            "prerequisites": ["alchemy_1"],
+            "isUnlocked": false
+        },
+        {
+            "id": "pet_1",
+            "name": "灵鼠",
+            "description": "良鼠择木而栖。",
+            "cost": 1,
+            "prerequisites": [],
+            "isUnlocked": false
+        },
+        {
+            "id": "pet_2",
+            "name": "凤雏",
+            "description": "凤凰于飞，翙翙其羽。",
+            "cost": 4,
+            "prerequisites": ["pet_1"],
+            "isUnlocked": false
+        },
+        {
+            "id": "pet_3",
+            "name": "獬豸",
+            "description": "四凶有獬豸，一臂无螳螂。",
+            "cost": 8,
+            "prerequisites": ["pet_2"],
             "isUnlocked": false
         }
+        
     ]
     
-}
+} 

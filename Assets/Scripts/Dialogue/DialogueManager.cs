@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 [System.Serializable]
-public class DialogueEvent
+public partial class DialogueEvent
 {
+    public string id = ""; // automatically set to the file name when loading
+    public string title = ""; // display before all sentences, maybe need bigger font size?
     public List<DialogueSentence> sentences = new List<DialogueSentence>();
 }
 
@@ -23,10 +24,12 @@ public class DialogueSentence
     public List<ChoiceOption> choices = new List<ChoiceOption>();
 
     // check
-    public string difficultyClass = "0";
-    public string checkWhat = "";
+    public CheckCondition checkCondition = new CheckCondition();
     public string successTarget = "";
     public string failureTarget = "";
+
+    // effect
+    public List<DialogueEffect> effects = new List<DialogueEffect>();
 }
 
 [System.Serializable]
@@ -36,7 +39,27 @@ public class ChoiceOption
     public string target = "";
 }
 
-public class DialogueManager : MonoBehaviour
+[System.Serializable]
+public class CheckCondition
+{
+    public string difficultyClass = "0";
+    public string checkWhat = "";
+    public string stringId = ""; // techID or tagID
+}
+
+[System.Serializable]
+public class DialogueEffect
+{
+    public string effectType = ""; // "money", "disciple", "globalTag"
+    public string value = ""; // int value for money and disciple, tagID for globalTag
+    public string operation = ""; // "+"(also works for activate a tag), "-"(also works for deactivate a tag)
+}
+
+
+/// <summary>
+/// Core part of DialogueManager class
+/// </summary>
+public partial class DialogueManager : MonoBehaviour
 {
     private static DialogueManager _instance;
     public static DialogueManager Instance => _instance;
@@ -107,6 +130,10 @@ public class DialogueManager : MonoBehaviour
         {
             isPlaying = true;
             currentEvent = dialogueQueue.Dequeue();
+            if (!string.IsNullOrEmpty(currentEvent.title))
+            {
+                OutputTitle($"=== {currentEvent.title} ===");
+            }
             BuildIdIndexMap();
             currentSentenceIndex = 0;
             PlayCurrentSentence();
@@ -121,7 +148,9 @@ public class DialogueManager : MonoBehaviour
         TextAsset jsonFile = Resources.Load<TextAsset>($"Dialogues/{eventId}");
         if (jsonFile != null)
         {
-            return JsonUtility.FromJson<DialogueEvent>(jsonFile.text);
+            DialogueEvent dialogueEvent = JsonUtility.FromJson<DialogueEvent>(jsonFile.text);
+            dialogueEvent.id = eventId;
+            return dialogueEvent;
         }
         else
         {
@@ -181,6 +210,8 @@ public class DialogueManager : MonoBehaviour
                 PlayDefaultSentence(sentence);
                 break;
         }
+
+        ExecuteSentenceEffects(sentence);
     }
 
     private void PlayDefaultSentence(DialogueSentence sentence)
@@ -213,134 +244,6 @@ public class DialogueManager : MonoBehaviour
         else
         {
             LogController.LogError("no choice within sentence!");
-        }
-    }
-
-    private void PlayCheckSentence(DialogueSentence sentence)
-    {
-        int dc = GetDifficultyClass(sentence.difficultyClass);
-        int checkResult = GetCheckResult(sentence.checkWhat);
-        string resultDescription = GenerateCheckResultDescription(dc, checkResult, sentence.checkWhat);
-
-        OutputDialogue(resultDescription);
-
-        // decide jump target: success or failure
-        bool isSuccess = checkResult >= dc;
-        string targetID = isSuccess ? sentence.successTarget : sentence.failureTarget;
-
-        StartCooldown();
-
-        HandleSentenceIndex(targetID);
-
-        if (currentSentenceIndex < currentEvent.sentences.Count)
-        {
-            PlayCurrentSentence();
-        }
-        else
-        {
-            PlayNextEvent();
-        }
-    }
-
-    private int GetDifficultyClass(string dcString)
-    {
-        if (int.TryParse(dcString, out int result))
-        {
-            return result;
-        }
-        else
-        {
-            LogController.LogError($"Wrong DC Syntax: {dcString}, set to 0 by default");
-            return 0;
-        }
-    }
-
-    private int GetCheckResult(string checkWhat)
-    {
-        switch (checkWhat)
-        {
-            case "diceroll":
-                return random.Next(1, 7);
-
-            case "money":
-                return LevelManager.Instance.Money;
-
-            default:
-                LogController.LogError($"Invalid checkWhat: {checkWhat}, result set to 0 by default");
-                return 0;
-        }
-    }
-
-    /// <summary>
-    /// Generate dialogue output describing check result, instead of sentence text
-    /// </summary>
-    private string GenerateCheckResultDescription(int dc, int checkResult, string checkWhat)
-    {
-        bool isSuccess = checkResult >= dc;
-        string successText = isSuccess ? "成功！" : "失败！"; // Full-width exclamation mark for better compatibility with Chinese fonts
-
-        string checkDescription = "";
-        switch (checkWhat)
-        {
-            case "diceroll":
-                checkDescription = $"1d6 = {checkResult}";
-                break;
-
-            case "money":
-                checkDescription = $"当前灵石数量 = {checkResult}";
-                break;
-
-            default:
-                checkDescription = $"无效检测目标，默认设置为 {checkResult}";
-                break;
-        }
-
-        string comparison = isSuccess ? ">=" : "<";
-
-        // Sample Style: [ 成功！] ( DC = 5, 1d6 = 6 >= 5 )
-        return $"[ {successText}] ( DC = {dc}, {checkDescription} {comparison} {dc} )";
-    }
-
-
-    private void HandleChoiceInput()
-    {
-        DialogueSentence currentSentence = currentEvent.sentences[currentSentenceIndex];
-
-        if (currentSentence.choices == null) return;
-
-        for (int i = 0; i < currentSentence.choices.Count; i++)
-        {
-            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
-            {
-                int choiceIndex = i;
-                if (choiceIndex < currentSentence.choices.Count)
-                {
-                    HandleChoiceSelection(choiceIndex);
-                    break;
-                }
-            }
-        }
-    }
-
-    private void HandleChoiceSelection(int choiceIndex)
-    {
-        DialogueSentence currentSentence = currentEvent.sentences[currentSentenceIndex];
-        ChoiceOption selectedChoice = currentSentence.choices[choiceIndex];
-
-        OutputDialogue($"player selected choice {choiceIndex + 1}: {selectedChoice.text}");
-
-        // Restore sequenced playback input
-        isInChoiceMode = false;
-
-        HandleSentenceIndex(selectedChoice.target);
-
-        if (currentSentenceIndex < currentEvent.sentences.Count)
-        {
-            PlayCurrentSentence();
-        }
-        else
-        {
-            PlayNextEvent();
         }
     }
 
@@ -443,11 +346,127 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
+    private void OutputTitle(string title)
+    {
+        // temporarily use Debug.Log for output
+        // should be replaced by proper UI display later
+        Debug.Log(title);
+    }
     private void OutputDialogue(string message)
     {
         // temporarily use Debug.Log for output
         // should be replaced by proper UI display later
         Debug.Log(message);
+    }
+
+    private void ExecuteSentenceEffects(DialogueSentence sentence)
+    {
+        if (sentence.effects == null || sentence.effects.Count == 0)
+            return;
+
+        foreach (var effect in sentence.effects)
+        {
+            switch (effect.effectType)
+            {
+                case "money":
+                    HandleMoneyEffect(effect);
+                    break;
+
+                case "disciple":
+                    HandleDiscipleEffect(effect);
+                    break;
+
+                case "globalTag":
+                    HandleGlobalTagEffect(effect);
+                    break;
+
+                default:
+                    LogController.LogWarning($"Unknown effect type: {effect.effectType}");
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handle money effects (add/subtract)
+    /// </summary>
+    private void HandleMoneyEffect(DialogueEffect effect)
+    {
+        if (int.TryParse(effect.value, out int amount))
+        {
+            switch (effect.operation)
+            {
+                case "+":
+                    LevelManager.Instance.AddMoney(amount);
+                    break;
+
+                case "-":
+                    LevelManager.Instance.SpendMoney(amount);
+                    break;
+
+                default:
+                    LogController.LogError($"Invalid operation: {effect.operation}");
+                    return;
+            }
+        }
+        else
+        {
+            LogController.LogError($"Invalid money value: {effect.value}");
+        }
+    }
+
+    /// <summary>
+    /// Handle disciple effects (plus/minus)
+    /// </summary>
+    private void HandleDiscipleEffect(DialogueEffect effect)
+    {
+        if (int.TryParse(effect.value, out int amount))
+        {
+            switch (effect.operation)
+            {
+                case "+":
+                    LevelManager.Instance.AddDisciples(amount);
+                    break;
+
+                case "-":
+                    LevelManager.Instance.SpendDisciples(amount);
+                    break;
+
+                default:
+                    LogController.LogError($"Invalid operation: {effect.operation}");
+                    return;
+            }
+            LogController.Log($"Disciple effect: {effect.operation} {amount} disciples");
+        }
+        else
+        {
+            LogController.LogError($"Invalid disciple value: {effect.value}");
+        }
+    }
+
+    /// <summary>
+    /// Handle global tag effects (+/-)
+    /// </summary>
+    private void HandleGlobalTagEffect(DialogueEffect effect)
+    {
+        if (!GlobalTagManager.Instance.HasTag(effect.value))
+        {
+            return;
+        }
+        switch (effect.operation)
+        {
+            case "+":
+                GlobalTagManager.Instance.EnableTag(effect.value);
+                break;
+
+            case "-":
+                GlobalTagManager.Instance.DisableTag(effect.value);
+                break;
+
+            default:
+                LogController.LogError($"Invalid operation: {effect.operation}");
+                return;
+        }
     }
 
     /// <summary>

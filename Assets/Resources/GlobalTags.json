@@ -1,0 +1,16 @@
+{
+    "tags": [
+        {
+            "tagID": "let_master_notice_mouse",
+            "isTrue": false,
+            "descriptionTrue": "你提醒掌门注意鼠鼠。",
+            "descriptionFalse": "你打算自己抓住鼠鼠。"
+        },
+        {
+            "tagID": "if_catch_mouse",
+            "isTrue": false,
+            "descriptionTrue": "你身手矫健，抓住了鼠鼠。",
+            "descriptionFalse": "你笨手笨脚，鼠鼠逃走了。"
+        }
+    ]
+}

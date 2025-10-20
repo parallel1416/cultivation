@@ -111,7 +111,7 @@ public class TechManager : MonoBehaviour
     // Only for debugging
     public void DebugTechTreeStatus()
     {
-        LogController.Log("=== Techtree Status ===");
+        Debug.Log("=== Techtree Status ===");
 
         foreach (var kvp in techNodes)
         {
@@ -129,4 +129,7 @@ public class TechManager : MonoBehaviour
 
     public TechNode GetTechNode(string techId) =>
         techNodes.ContainsKey(techId) ? techNodes[techId] : null;
+
+    public string GetTechName(string techId) =>
+        techNodes.ContainsKey(techId) ? techNodes[techId].name : "WARNING: No such tech";
 }
