@@ -15,17 +15,20 @@ public class GameManager : MonoBehaviour
         GameObject techManagerObj = new GameObject("TechManager");
         techManagerObj.AddComponent<TechManager>();
 
-        GameObject levelmanagerObj = new GameObject("LevelManager");
-        levelmanagerObj.AddComponent<LevelManager>();
+        GameObject levelManagerObj = new GameObject("LevelManager");
+        levelManagerObj.AddComponent<LevelManager>();
 
-        GameObject turnmanagerObj = new GameObject("TurnManager");
-        turnmanagerObj.AddComponent<TurnManager>();
+        GameObject turnManagerObj = new GameObject("TurnManager");
+        turnManagerObj.AddComponent<TurnManager>();
 
-        GameObject dialoguemanagerObj = new GameObject("DialogueManager");
-        dialoguemanagerObj.AddComponent<DialogueManager>();
+        GameObject dialogueManagerObj = new GameObject("DialogueManager");
+        dialogueManagerObj.AddComponent<DialogueManager>();
 
-        GameObject globaltagmanagerObj = new GameObject("GlobalTagManager");
-        globaltagmanagerObj.AddComponent<GlobalTagManager>();
+        GameObject globaltagManagerObj = new GameObject("GlobalTagManager");
+        globaltagManagerObj.AddComponent<GlobalTagManager>();
+
+        GameObject resourceBarUIManagerObj = new GameObject("ResourceBarUIManagerObj");
+        resourceBarUIManagerObj.AddComponent<ResourceBarUIManager>();
     }
 
     

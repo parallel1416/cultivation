@@ -59,6 +59,7 @@ public class CheckCondition
 [System.Serializable]
 public class DialogueEffect
 {
+    public bool showOutput = true;
     public string type = ""; // "money", "disciple", "globalTag", "item"
     public int intValue = 0; // int value for money, item and disciple, tagID for globalTag
     public string stringValue = ""; // tagID for globalTag and itemID for item
