@@ -24,6 +24,7 @@ public class TechToggleBinder : MonoBehaviour
         public Material OriginalMaterial;
         public RectTransform RectTransform;
         public UnityAction<bool> Listener;
+        public ColorBlock OriginalColors;
     }
 
     [Header("Toggle → TechID Mapping")]
@@ -101,6 +102,7 @@ public class TechToggleBinder : MonoBehaviour
                 TechId = entry.techId.Trim(),
                 BackgroundImage = ResolveBackgroundImage(toggle),
                 RectTransform = toggle.transform as RectTransform,
+                OriginalColors = toggle.colors,
             };
 
             if (binding.BackgroundImage != null)
@@ -185,6 +187,7 @@ public class TechToggleBinder : MonoBehaviour
             return;
         }
 
+        ResourceBarUIManager.Instance?.UpdateResourceDisplay();
         onTechUnlocked?.Invoke();
 
         SyncToggleStatesFromTechTree();
@@ -222,6 +225,8 @@ public class TechToggleBinder : MonoBehaviour
 
         binding.BackgroundImage.material = binding.OriginalMaterial;
         binding.BackgroundImage.SetMaterialDirty();
+
+        ApplyDisabledColor(binding.Toggle, Color.white);
     }
 
     private void ApplyLockedVisual(ToggleBinding binding, bool isAvailable)
@@ -242,6 +247,8 @@ public class TechToggleBinder : MonoBehaviour
 
         binding.BackgroundImage.material = targetMaterial;
         binding.BackgroundImage.SetMaterialDirty();
+
+        binding.Toggle.colors = binding.OriginalColors;
     }
 
     private void CacheTogglePositions()
@@ -302,5 +309,26 @@ public class TechToggleBinder : MonoBehaviour
         }
 
         return toggle.GetComponentInChildren<Image>();
+    }
+
+    private static void ApplyDisabledColor(Toggle toggle, Color targetColor)
+    {
+        if (toggle == null)
+        {
+            return;
+        }
+
+        ColorBlock colors = toggle.colors;
+        colors.normalColor = targetColor;
+        colors.highlightedColor = targetColor;
+        colors.pressedColor = targetColor;
+        colors.selectedColor = targetColor;
+        colors.disabledColor = targetColor;
+        toggle.colors = colors;
+
+        if (toggle.targetGraphic != null)
+        {
+            toggle.targetGraphic.color = targetColor;
+        }
     }
 }

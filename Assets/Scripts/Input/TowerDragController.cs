@@ -2,98 +2,120 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 /// <summary>
-/// Handles dragging the tower vertically in the Tower view
-/// Supports both mouse and touch input with smooth drag physics
+/// Provides drag and scroll-wheel control for the tech tree background.
+/// Only the background RectTransform moves while child content (nodes) follows.
 /// </summary>
+[DisallowMultipleComponent]
 public class TowerDragController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Transform tower; // Assign the TowerFull transform
+    [SerializeField] private RectTransform treeBackground;
+    [SerializeField] private RectTransform nodesContainer;
 
-    [Header("Drag Settings")]
-    [SerializeField] private float dragSpeed = 1.0f;
-    [SerializeField] private float smoothTime = 0.1f;
-    [SerializeField] private bool invertDrag = false;
+    [Header("Drag")]
+    [SerializeField] private float dragMultiplier = 1f;
+    [SerializeField] private bool invertDrag;
+
+    [Header("Scroll Wheel")]
+    [SerializeField] private bool enableScrollWheel = true;
+    [SerializeField] private float scrollSensitivity = 250f;
 
     [Header("Bounds")]
-    [SerializeField] private float minY = -50f; // Bottom of tower
-    [SerializeField] private float maxY = 50f;  // Top of tower
-    [SerializeField] private bool autoCalculateBounds = true;
+    [SerializeField] private float lowerPadding = 0f;
+    [SerializeField] private float overscrollPadding = 500f;
 
     [Header("Inertia")]
     [SerializeField] private bool enableInertia = true;
-    [SerializeField] private float inertiaDamping = 0.95f;
-    [SerializeField] private float inertiaThreshold = 0.01f;
+    [SerializeField] private float inertiaDamping = 0.9f;
+    [SerializeField] private float velocityCutoff = 5f;
 
-    private Camera mainCamera;
-    private Vector3 dragStartPosition;
-    private Vector3 towerStartPosition;
-    private bool isDragging = false;
-    private Vector3 velocity = Vector3.zero;
-    private Vector3 lastPosition;
-    private float lastDragTime;
+    private static readonly Vector3[] cornersBuffer = new Vector3[4];
 
-    private SpriteRenderer spriteRenderer;
+    private Camera cachedCamera;
+    private RectTransform parentRect;
+    private Vector2 dragStartLocalPoint;
+    private float dragStartY;
+    private float lastSampleY;
+    private float lastSampleTime;
+    private float velocityY;
+    private bool isDragging;
+
+    private float baseY;
+    private float minY;
+    private float maxY;
 
     private void Awake()
     {
-        mainCamera = Camera.main;
-        if (tower == null)
+        if (treeBackground == null)
         {
-            Debug.LogError("TowerDragController requires a reference to the Tower transform.", this);
+            Debug.LogError("TowerDragController requires a TreeBackground reference.", this);
             enabled = false;
             return;
         }
 
-        spriteRenderer = tower.GetComponent<SpriteRenderer>();
-
-        if (autoCalculateBounds && spriteRenderer != null)
+        if (nodesContainer == null && treeBackground.childCount > 0)
         {
-            CalculateBoundsFromSprite();
+            nodesContainer = treeBackground.GetChild(0) as RectTransform;
         }
+
+        Canvas canvas = treeBackground.GetComponentInParent<Canvas>();
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+        {
+            cachedCamera = canvas.worldCamera;
+        }
+
+        if (cachedCamera == null)
+        {
+            cachedCamera = Camera.main;
+        }
+
+        parentRect = treeBackground.parent as RectTransform;
+        baseY = treeBackground.anchoredPosition.y;
+        RecalculateBounds();
     }
 
     private void OnEnable()
     {
-        // Reset velocity when enabled
-        velocity = Vector3.zero;
         isDragging = false;
+        velocityY = 0f;
+        baseY = treeBackground != null ? treeBackground.anchoredPosition.y : 0f;
+        RecalculateBounds();
     }
 
     private void Update()
     {
-        if (!enabled || tower == null) return;
-
-        // Check if transition is in progress
-        if (SceneTransitionManager.Instance.IsTransitioning)
+        if (!enabled || treeBackground == null)
         {
             return;
         }
 
-        HandleInput();
+        if (SceneTransitionManager.Instance != null && SceneTransitionManager.Instance.IsTransitioning)
+        {
+            return;
+        }
+
+        HandlePointerInput();
+        HandleScrollWheel();
         ApplyInertia();
     }
 
-    private void HandleInput()
+    private void HandlePointerInput()
     {
-        // Mouse/Touch down
-        if (Input.GetMouseButtonDown(0))
-        {
-            // Check if we're clicking on UI
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            {
-                return;
-            }
+        bool pointerOverTree = RectTransformUtility.RectangleContainsScreenPoint(treeBackground, Input.mousePosition, cachedCamera);
 
+        if (Input.GetMouseButtonDown(0) && pointerOverTree)
+        {
             StartDrag();
+            return;
         }
-        // Mouse/Touch drag
-        else if (Input.GetMouseButton(0) && isDragging)
+
+        if (isDragging && Input.GetMouseButton(0))
         {
             UpdateDrag();
+            return;
         }
-        // Mouse/Touch up
-        else if (Input.GetMouseButtonUp(0) && isDragging)
+
+        if (isDragging && Input.GetMouseButtonUp(0))
         {
             EndDrag();
         }
@@ -102,170 +124,182 @@ public class TowerDragController : MonoBehaviour
     private void StartDrag()
     {
         isDragging = true;
-        dragStartPosition = GetWorldPosition(Input.mousePosition);
-        towerStartPosition = tower.position;
-        lastPosition = tower.position;
-        lastDragTime = Time.time;
-        velocity = Vector3.zero;
+        dragStartY = treeBackground.anchoredPosition.y;
+        dragStartLocalPoint = ScreenToParentLocal(Input.mousePosition);
+        lastSampleY = dragStartY;
+        lastSampleTime = Time.unscaledTime;
+        velocityY = 0f;
     }
 
     private void UpdateDrag()
     {
-        Vector3 currentWorldPosition = GetWorldPosition(Input.mousePosition);
-        Vector3 dragDelta = currentWorldPosition - dragStartPosition;
-
+        Vector2 currentLocalPoint = ScreenToParentLocal(Input.mousePosition);
+        float delta = currentLocalPoint.y - dragStartLocalPoint.y;
         if (invertDrag)
         {
-            dragDelta = -dragDelta;
+            delta = -delta;
         }
 
-        // Only allow vertical movement
-        Vector3 targetPosition = towerStartPosition + new Vector3(0, dragDelta.y * dragSpeed, 0);
-        
-        // Clamp to bounds
-        targetPosition.y = Mathf.Clamp(targetPosition.y, minY, maxY);
+        float target = dragStartY + delta * dragMultiplier;
+        float clamped = Mathf.Clamp(target, minY, maxY);
+        SetTreeY(clamped);
 
-        // Calculate velocity for inertia
-        float deltaTime = Time.time - lastDragTime;
-        if (deltaTime > 0)
+        float now = Time.unscaledTime;
+        float deltaTime = now - lastSampleTime;
+        if (deltaTime > Mathf.Epsilon)
         {
-            velocity = (targetPosition - lastPosition) / deltaTime;
+            velocityY = (treeBackground.anchoredPosition.y - lastSampleY) / deltaTime;
         }
 
-        tower.position = targetPosition;
-        lastPosition = targetPosition;
-        lastDragTime = Time.time;
+        lastSampleY = treeBackground.anchoredPosition.y;
+        lastSampleTime = now;
     }
 
     private void EndDrag()
     {
         isDragging = false;
-        
-        if (!enableInertia)
+    }
+
+    private void HandleScrollWheel()
+    {
+        if (!enableScrollWheel)
         {
-            velocity = Vector3.zero;
+            return;
         }
+
+        float scrollDelta = Input.mouseScrollDelta.y;
+        if (Mathf.Abs(scrollDelta) < Mathf.Epsilon)
+        {
+            return;
+        }
+
+        bool pointerOverTree = RectTransformUtility.RectangleContainsScreenPoint(treeBackground, Input.mousePosition, cachedCamera);
+        if (!pointerOverTree)
+        {
+            return;
+        }
+
+        float direction = invertDrag ? 1f : -1f;
+        float delta = scrollDelta * scrollSensitivity * direction;
+        float target = Mathf.Clamp(treeBackground.anchoredPosition.y + delta, minY, maxY);
+        SetTreeY(target);
+
+        velocityY = 0f;
+        lastSampleY = treeBackground.anchoredPosition.y;
+        lastSampleTime = Time.unscaledTime;
     }
 
     private void ApplyInertia()
     {
-        if (!enableInertia || isDragging) return;
-
-        if (velocity.magnitude > inertiaThreshold)
+        if (!enableInertia || isDragging)
         {
-            // Apply velocity
-            Vector3 newPosition = tower.position + velocity * Time.deltaTime;
-            
-            // Only vertical movement
-            newPosition.x = tower.position.x;
-            newPosition.z = tower.position.z;
-            
-            // Clamp to bounds
-            newPosition.y = Mathf.Clamp(newPosition.y, minY, maxY);
-            
-            // Check if we hit bounds - stop inertia
-            if (newPosition.y <= minY || newPosition.y >= maxY)
-            {
-                velocity = Vector3.zero;
-            }
-            else
-            {
-                tower.position = newPosition;
-                velocity *= inertiaDamping;
-            }
+            return;
         }
-        else
+
+        if (Mathf.Abs(velocityY) <= velocityCutoff)
         {
-            velocity = Vector3.zero;
+            velocityY = 0f;
+            return;
+        }
+
+        float newY = Mathf.Clamp(treeBackground.anchoredPosition.y + velocityY * Time.unscaledDeltaTime, minY, maxY);
+        SetTreeY(newY);
+        velocityY *= inertiaDamping;
+
+        if (Mathf.Approximately(newY, minY) || Mathf.Approximately(newY, maxY))
+        {
+            velocityY = 0f;
         }
     }
 
-    private Vector3 GetWorldPosition(Vector3 screenPosition)
+    private void SetTreeY(float newY)
     {
-        if (mainCamera == null) mainCamera = Camera.main;
-        if (tower == null) return Vector3.zero;
-
-        Vector3 worldPos = mainCamera.ScreenToWorldPoint(screenPosition);
-        worldPos.z = tower.position.z; // Maintain z position
-        return worldPos;
+        Vector2 anchored = treeBackground.anchoredPosition;
+        anchored.y = newY;
+        treeBackground.anchoredPosition = anchored;
     }
 
-    private void CalculateBoundsFromSprite()
+    private Vector2 ScreenToParentLocal(Vector2 screenPosition)
     {
-        if (spriteRenderer == null) return;
-
-        // Get sprite bounds in world space
-        Bounds bounds = spriteRenderer.bounds;
-        float spriteHeight = bounds.size.y;
-        
-        // Calculate camera visible height
-        float cameraHeight = mainCamera.orthographicSize * 2f;
-        
-        // Set bounds so we can scroll through entire tower
-        // But keep some of it always on screen
-        minY = -(spriteHeight - cameraHeight) / 2f;
-        maxY = (spriteHeight - cameraHeight) / 2f;
-
-        Debug.Log($"Auto-calculated bounds: minY={minY}, maxY={maxY}, spriteHeight={spriteHeight}");
+        RectTransform target = parentRect != null ? parentRect : treeBackground;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(target, screenPosition, cachedCamera, out Vector2 localPoint);
+        return localPoint;
     }
 
     /// <summary>
-    /// Manually set the drag bounds
+    /// Recompute the drag bounds from the tallest active node.
     /// </summary>
-    public void SetBounds(float min, float max)
+    public void RecalculateBounds()
     {
-        minY = min;
-        maxY = max;
-    }
-
-    /// <summary>
-    /// Smoothly scroll to a specific Y position
-    /// </summary>
-    public void ScrollToPosition(float targetY, float duration = 0.5f)
-    {
-        StartCoroutine(ScrollToPositionCoroutine(targetY, duration));
-    }
-
-    private System.Collections.IEnumerator ScrollToPositionCoroutine(float targetY, float duration)
-    {
-    Vector3 startPos = tower.position;
-        Vector3 targetPos = new Vector3(startPos.x, Mathf.Clamp(targetY, minY, maxY), startPos.z);
-        
-        float elapsed = 0f;
-        while (elapsed < duration)
+        if (treeBackground == null)
         {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            
-            // Smooth step
-            t = t * t * (3f - 2f * t);
-            
-            tower.position = Vector3.Lerp(startPos, targetPos, t);
-            yield return null;
+            return;
         }
 
-        tower.position = targetPos;
+        baseY = treeBackground.anchoredPosition.y;
+        minY = baseY - Mathf.Abs(lowerPadding);
+        maxY = baseY;
+
+        if (nodesContainer == null)
+        {
+            return;
+        }
+
+        float highest = float.MinValue;
+        for (int i = 0; i < nodesContainer.childCount; i++)
+        {
+            RectTransform child = nodesContainer.GetChild(i) as RectTransform;
+            if (child == null || !child.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            float top = CalculateTopEdge(child);
+            if (top > highest)
+            {
+                highest = top;
+            }
+        }
+
+        if (highest <= float.MinValue)
+        {
+            return;
+        }
+
+        float paddedMax = highest + overscrollPadding;
+        maxY = Mathf.Max(baseY, paddedMax);
+        float clamped = Mathf.Clamp(treeBackground.anchoredPosition.y, minY, maxY);
+        SetTreeY(clamped);
     }
 
-    // Debug visualization
-    private void OnDrawGizmosSelected()
+    private float CalculateTopEdge(RectTransform rect)
     {
-        Gizmos.color = Color.green;
-        
-        // Draw bounds
-        if (tower == null) return;
-
-        float xPos = tower.position.x;
-        float zPos = tower.position.z;
-        
-        // Min bound
-        Gizmos.DrawLine(new Vector3(xPos - 5f, minY, zPos), new Vector3(xPos + 5f, minY, zPos));
-        
-        // Max bound
-        Gizmos.DrawLine(new Vector3(xPos - 5f, maxY, zPos), new Vector3(xPos + 5f, maxY, zPos));
-        
-        // Current position
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(tower.position, 0.5f);
+        rect.GetWorldCorners(cornersBuffer);
+        Vector3 worldTop = cornersBuffer[1];
+        Vector3 localTop = treeBackground.InverseTransformPoint(worldTop);
+        return localTop.y;
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (treeBackground == null)
+        {
+            return;
+        }
+
+        if (!Application.isPlaying)
+        {
+            cachedCamera = null;
+        }
+
+        if (nodesContainer == null && treeBackground.childCount > 0)
+        {
+            nodesContainer = treeBackground.GetChild(0) as RectTransform;
+        }
+
+        baseY = treeBackground.anchoredPosition.y;
+        RecalculateBounds();
+    }
+#endif
 }

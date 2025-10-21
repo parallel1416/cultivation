@@ -11,10 +11,11 @@ public class ResourceBarUIManager : MonoBehaviour
     [SerializeField] private GameObject resourceBarPanel;
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private TextMeshProUGUI discipleText;
-    [SerializeField] private Image moneyIcon;
-    [SerializeField] private Image discipleIcon;
+    [Header("Auto Binding")]
+    [SerializeField] private string autoFindPanelName = "ResourceBar";
 
     private bool isInitialized = false;
+    private bool hasAttemptedAutoBind;
 
     private void Awake()
     {
@@ -28,7 +29,14 @@ public class ResourceBarUIManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         if (resourceBarPanel != null)
+        {
             resourceBarPanel.SetActive(false);
+        }
+    }
+
+    private void Start()
+    {
+        TryAutoBindExistingPanel();
     }
 
     /// <summary>
@@ -44,11 +52,22 @@ public class ResourceBarUIManager : MonoBehaviour
 
         resourceBarPanel = resourceBarInstance;
 
-        // bind components
+        // bind components (direct lookup first)
         moneyText = resourceBarInstance.transform.Find("MoneyText")?.GetComponent<TextMeshProUGUI>();
         discipleText = resourceBarInstance.transform.Find("DiscipleText")?.GetComponent<TextMeshProUGUI>();
-        moneyIcon = resourceBarInstance.transform.Find("MoneyIcon")?.GetComponent<Image>();
-        discipleIcon = resourceBarInstance.transform.Find("DiscipleIcon")?.GetComponent<Image>();
+
+        string[] moneyTextCandidates = { "MoneyText", "Money" };
+        string[] discipleTextCandidates = { "DiscipleText", "Disciple" };
+
+        if (moneyText == null)
+        {
+            moneyText = FindChildComponentByCandidates<TextMeshProUGUI>(resourceBarInstance.transform, moneyTextCandidates);
+        }
+
+        if (discipleText == null)
+        {
+            discipleText = FindChildComponentByCandidates<TextMeshProUGUI>(resourceBarInstance.transform, discipleTextCandidates);
+        }
 
         // temporarily allows image sprite to be null
         if (moneyText == null || discipleText == null)
@@ -68,9 +87,20 @@ public class ResourceBarUIManager : MonoBehaviour
     /// </summary>
     public void UpdateResourceDisplay()
     {
-        if (!isInitialized || resourceBarPanel == null) return;
+        TryAutoBindExistingPanel();
 
-        moneyText.text = LevelManager.Instance.Money.ToString();
+        if (!isInitialized || resourceBarPanel == null)
+        {
+            return;
+        }
+
+        if (LevelManager.Instance == null)
+        {
+            Debug.LogError("[ResourceBarUIManager] LevelManager instance not found.");
+            return;
+        }
+
+        moneyText.text = $"Money Left: {LevelManager.Instance.Money}";
         discipleText.text = LevelManager.Instance.Disciples.ToString();
     }
 
@@ -88,5 +118,70 @@ public class ResourceBarUIManager : MonoBehaviour
     public bool IsResourceBarActive()
     {
         return isInitialized && resourceBarPanel != null && resourceBarPanel.activeInHierarchy;
+    }
+
+    private void TryAutoBindExistingPanel()
+    {
+        if (isInitialized)
+        {
+            return;
+        }
+
+        if (resourceBarPanel == null && !hasAttemptedAutoBind)
+        {
+            GameObject found = !string.IsNullOrWhiteSpace(autoFindPanelName) ? GameObject.Find(autoFindPanelName) : null;
+            resourceBarPanel = found;
+
+            hasAttemptedAutoBind = true;
+        }
+
+        if (resourceBarPanel != null && !isInitialized)
+        {
+            BindResourceBar(resourceBarPanel);
+        }
+    }
+
+    private static T FindChildComponentByCandidates<T>(Transform root, string[] candidateNames) where T : Component
+    {
+        if (root == null || candidateNames == null || candidateNames.Length == 0)
+        {
+            return null;
+        }
+
+        var components = root.GetComponentsInChildren<T>(true);
+        foreach (var component in components)
+        {
+            foreach (string candidate in candidateNames)
+            {
+                if (string.IsNullOrWhiteSpace(candidate))
+                {
+                    continue;
+                }
+
+                if (component.name.Equals(candidate, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return component;
+                }
+            }
+        }
+
+        // fallback partial match
+        foreach (var component in components)
+        {
+            foreach (string candidate in candidateNames)
+            {
+                if (string.IsNullOrWhiteSpace(candidate))
+                {
+                    continue;
+                }
+
+                if (component.name.IndexOf(candidate, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return component;
+                }
+            }
+        }
+
+        return null;
     }
 }

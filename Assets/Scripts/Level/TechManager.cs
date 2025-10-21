@@ -105,6 +105,7 @@ public class TechManager : MonoBehaviour
 
         tech.isUnlocked = true;
         LogController.Log($"Tech unlocked!: {tech.name}");
+        Debug.Log($"[TechManager] Tech activated: {tech.name} ({tech.id}) | Remaining money: {LevelManager.Instance.Money}");
 
         return true;
     }
