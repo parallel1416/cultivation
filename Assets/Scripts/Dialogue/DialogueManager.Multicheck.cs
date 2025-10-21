@@ -21,7 +21,7 @@ public partial class DialogueManager: MonoBehaviour
         for (int i = 0; i < sentence.multiCheckConditions.Count; i++)
         {
             var condition = sentence.multiCheckConditions[i];
-            int dc = condition.checkWhat == "tech" ? 1 : GetDifficultyClass(condition.difficultyClass);
+            int dc = condition.checkWhat == "tech" ? 1 : condition.difficultyClass;
             int checkResult = GetCheckResult(condition.checkWhat, condition.stringId);
             bool isSuccess = checkResult >= dc;
             conditionResults.Add(isSuccess);
@@ -42,9 +42,20 @@ public partial class DialogueManager: MonoBehaviour
 
             foreach (int conditionIndex in target.requiredConditionIndices)
             {
-                if (conditionIndex < 0 || conditionIndex >= conditionResults.Count || !conditionResults[conditionIndex])
+                // make conditionIndex start from 1 for easier use
+                int factualIndex = conditionIndex - 1;
+
+                // skip invalid indices
+                if (factualIndex < 0 || factualIndex >= conditionResults.Count)
                 {
-                    allRequiredMet = false;
+                    LogController.LogWarning($"ConditionIndex out of range! Please check json file {currentEvent.id}, sentence {sentence.id ?? "noID"}\nCheck will continue.");
+                    break;
+                }
+
+                // only "fuse" when a valid index is false
+                if (!conditionResults[factualIndex])
+                {
+                    allRequiredMet = false; // "fuse"
                     break;
                 }
             }

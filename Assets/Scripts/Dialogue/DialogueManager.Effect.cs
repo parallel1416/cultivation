@@ -11,7 +11,7 @@ public partial class DialogueManager : MonoBehaviour
 
         foreach (var effect in sentence.effects)
         {
-            switch (effect.effectType)
+            switch (effect.type)
             {
                 case "money":
                     HandleMoneyEffect(effect);
@@ -26,7 +26,7 @@ public partial class DialogueManager : MonoBehaviour
                     break;
 
                 default:
-                    LogController.LogWarning($"Unknown effect type: {effect.effectType}");
+                    LogController.LogWarning($"Unknown effect type: {effect.type}");
                     break;
             }
         }
@@ -37,27 +37,22 @@ public partial class DialogueManager : MonoBehaviour
     /// </summary>
     private void HandleMoneyEffect(DialogueEffect effect)
     {
-        if (int.TryParse(effect.value, out int amount))
+        int amount = effect.intValue;
+        switch (effect.operation)
         {
-            switch (effect.operation)
-            {
-                case "+":
-                    LevelManager.Instance.AddMoney(amount);
-                    break;
+            case "+":
+                LevelManager.Instance.AddMoney(amount);
+                break;
 
-                case "-":
-                    LevelManager.Instance.SpendMoney(amount);
-                    break;
+            case "-":
+                LevelManager.Instance.SpendMoney(amount);
+                break;
 
-                default:
-                    LogController.LogError($"Invalid operation: {effect.operation}");
-                    return;
-            }
+            default:
+                LogController.LogError($"Invalid operation: {effect.operation}");
+                return;
         }
-        else
-        {
-            LogController.LogError($"Invalid money value: {effect.value}");
-        }
+        LogController.Log($"Effect: {effect.operation} {amount} money");
     }
 
     /// <summary>
@@ -65,28 +60,22 @@ public partial class DialogueManager : MonoBehaviour
     /// </summary>
     private void HandleDiscipleEffect(DialogueEffect effect)
     {
-        if (int.TryParse(effect.value, out int amount))
+        int amount = effect.intValue;
+        switch (effect.operation)
         {
-            switch (effect.operation)
-            {
-                case "+":
-                    LevelManager.Instance.AddDisciples(amount);
-                    break;
+            case "+":
+                LevelManager.Instance.AddDisciples(amount);
+                break;
 
-                case "-":
-                    LevelManager.Instance.SpendDisciples(amount);
-                    break;
+            case "-":
+                LevelManager.Instance.SpendDisciples(amount);
+                break;
 
-                default:
-                    LogController.LogError($"Invalid operation: {effect.operation}");
-                    return;
-            }
-            LogController.Log($"Disciple effect: {effect.operation} {amount} disciples");
+            default:
+                LogController.LogError($"Invalid operation: {effect.operation}");
+                return;
         }
-        else
-        {
-            LogController.LogError($"Invalid disciple value: {effect.value}");
-        }
+        LogController.Log($"Effect: {effect.operation} {amount} disciple(s)");
     }
 
     /// <summary>
@@ -94,23 +83,26 @@ public partial class DialogueManager : MonoBehaviour
     /// </summary>
     private void HandleGlobalTagEffect(DialogueEffect effect)
     {
-        if (!GlobalTagManager.Instance.HasTag(effect.value))
+        if (!GlobalTagManager.Instance.HasTag(effect.stringValue))
         {
+            LogController.LogError($"GlobalTag not exist, ID: {effect.stringValue}");
             return;
         }
         switch (effect.operation)
         {
             case "+":
-                GlobalTagManager.Instance.EnableTag(effect.value);
+                GlobalTagManager.Instance.EnableTag(effect.stringValue);
                 break;
 
             case "-":
-                GlobalTagManager.Instance.DisableTag(effect.value);
+                GlobalTagManager.Instance.DisableTag(effect.stringValue);
                 break;
 
             default:
                 LogController.LogError($"Invalid operation: {effect.operation}");
                 return;
         }
+        string tagEffectLogOutput = effect.operation == "+" ? "enabled" : "disabled";
+        LogController.Log($"GlobalTag {tagEffectLogOutput}, ID: {effect.stringValue}");
     }
 }

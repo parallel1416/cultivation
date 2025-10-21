@@ -10,7 +10,7 @@ public partial class DialogueManager : MonoBehaviour
     private void PlayCheckSentence(DialogueSentence sentence)
     {
         CheckCondition condition = sentence.checkCondition;
-        int dc = condition.checkWhat == "tech" ? 1 : GetDifficultyClass(condition.difficultyClass);
+        int dc = condition.checkWhat == "tech" ? 1 : condition.difficultyClass;
         int checkResult = GetCheckResult(condition.checkWhat, condition.stringId);
         string resultDescription = GenerateCheckResultDescription(condition, dc, checkResult);
 
@@ -32,19 +32,6 @@ public partial class DialogueManager : MonoBehaviour
         else
         {
             PlayNextEvent();
-        }
-    }
-
-    private int GetDifficultyClass(string dcString)
-    {
-        if (int.TryParse(dcString, out int result))
-        {
-            return result;
-        }
-        else
-        {
-            LogController.LogError($"Wrong DC Syntax: {dcString}, set to 0 by default");
-            return 0;
         }
     }
 

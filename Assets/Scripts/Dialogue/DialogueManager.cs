@@ -1,12 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 [System.Serializable]
 public partial class DialogueEvent
 {
     public string id = ""; // automatically set to the file name when loading
     public string title = ""; // display before all sentences, maybe need bigger font size?
+    public int diceLimit = 0; // max dice(disciple) number you can assign to this event, 0 by default (like normal dialogue event), which means you can not assign any dice(disciple) to it
+    public bool triggersImmediately = true; // immediately triggered events will show event UI at once, and not be added to event queue, which plays after player clicks the next turn button.
+    public bool major = false; // major event will lock the next turn button and force player to handle this event 
     public List<DialogueSentence> sentences = new List<DialogueSentence>();
 }
 
@@ -24,7 +28,7 @@ public class DialogueSentence
     public List<ChoiceOption> choices = new List<ChoiceOption>();
 
     // check
-    public bool showCheckResult = true;
+    public bool showCheckResult = true; // set this value to false to create a hidden check
     public CheckCondition checkCondition = new CheckCondition();
     public string successTarget = "";
     public string failureTarget = "";
@@ -35,9 +39,6 @@ public class DialogueSentence
 
     // effect
     public List<DialogueEffect> effects = new List<DialogueEffect>();
-
-    // display toggle
-    public bool hideSentence = false;
 }
 
 [System.Serializable]
@@ -50,7 +51,7 @@ public class ChoiceOption
 [System.Serializable]
 public class CheckCondition
 {
-    public string difficultyClass = "0";
+    public int difficultyClass = 0;
     public string checkWhat = "";
     public string stringId = ""; // techID or tagID
 }
@@ -58,8 +59,9 @@ public class CheckCondition
 [System.Serializable]
 public class DialogueEffect
 {
-    public string effectType = ""; // "money", "disciple", "globalTag"
-    public string value = ""; // int value for money and disciple, tagID for globalTag
+    public string type = ""; // "money", "disciple", "globalTag", "item"
+    public int intValue = 0; // int value for money, item and disciple, tagID for globalTag
+    public string stringValue = ""; // tagID for globalTag and itemID for item
     public string operation = ""; // "+"(also works for activate a tag), "-"(also works for deactivate a tag)
 }
 
@@ -67,7 +69,7 @@ public class DialogueEffect
 public class MultiCheckTarget
 {
     public int priority = 0; // high priority targets are checked first
-    public List<int> requiredConditionIndices = new List<int>();
+    public List<int> requiredConditionIndices = new List<int>(); // start from 1 instead of 0
     public string targetID = "";
     public string description = "";
 }

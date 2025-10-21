@@ -68,6 +68,24 @@ public class LevelManager : MonoBehaviour
         return false;
     }
 
+    // If the player doesnt have enough money, it will spend all money and set money to 0.
+    public void ForceSpendMoney(int amount)
+    {
+        if (amount < 0)
+        {
+            LogController.LogError("Cannot force spend negative money amount.");
+            return;
+        }
+        if (money >= amount)
+        {
+            money -= amount;
+            LogController.Log($"{amount}money force spent!");
+            return;
+        }
+        LogController.Log("Not enough money to force spend! Set money to 0.");
+        return;
+    }
+
     public void AddDisciples(int amount)
     {
         if (amount < 0)
