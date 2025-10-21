@@ -5,8 +5,7 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
-/// Binds UI toggles in the Tower scene to specific technology IDs defined in the TechManager's tech tree.
-/// When a toggle is switched on, the script attempts to unlock the corresponding technology.
+/// Synchronises Tower scene tech toggles with the tech tree state and visuals.
 /// </summary>
 public class TechToggleBinder : MonoBehaviour
 {
@@ -17,11 +16,33 @@ public class TechToggleBinder : MonoBehaviour
         public string techId;
     }
 
+    private sealed class ToggleBinding
+    {
+        public Toggle Toggle;
+        public string TechId;
+        public Image BackgroundImage;
+        public Material OriginalMaterial;
+        public RectTransform RectTransform;
+        public UnityAction<bool> Listener;
+    }
+
     [Header("Toggle → TechID Mapping")]
     [SerializeField] private List<TechToggleEntry> toggleMappings = new List<TechToggleEntry>();
 
-    private readonly Dictionary<Toggle, string> runtimeMap = new Dictionary<Toggle, string>();
-    private readonly Dictionary<Toggle, UnityAction<bool>> listenerMap = new Dictionary<Toggle, UnityAction<bool>>();
+    [Header("Visual Assets")]
+    [SerializeField] private Sprite lockedStateSprite; // node_unlit.png
+    [SerializeField] private Sprite[] activeStateSprites; // node1.png … node6.png ordered ascending
+    [SerializeField] private Material availablePulseMaterial; // Pulse.mat
+
+    [Header("Height Mapping")]
+    [SerializeField] private float heightInterval = 1000f;
+
+    [Header("Events")]
+    [SerializeField] private UnityEvent onTechUnlocked;
+
+    private readonly Dictionary<Toggle, ToggleBinding> bindings = new Dictionary<Toggle, ToggleBinding>();
+    private readonly Dictionary<Toggle, float> toggleYPositions = new Dictionary<Toggle, float>();
+
     private bool isSyncingState;
 
     private void Awake()
@@ -36,22 +57,22 @@ public class TechToggleBinder : MonoBehaviour
 
     private void OnDestroy()
     {
-        foreach (var kvp in listenerMap)
+        foreach (var binding in bindings.Values)
         {
-            if (kvp.Key != null)
+            if (binding.Toggle != null && binding.Listener != null)
             {
-                kvp.Key.onValueChanged.RemoveListener(kvp.Value);
+                binding.Toggle.onValueChanged.RemoveListener(binding.Listener);
             }
         }
 
-        listenerMap.Clear();
-        runtimeMap.Clear();
+        bindings.Clear();
+        toggleYPositions.Clear();
     }
 
     private void InitializeMappings()
     {
-        runtimeMap.Clear();
-        listenerMap.Clear();
+        bindings.Clear();
+        toggleYPositions.Clear();
 
         foreach (var entry in toggleMappings)
         {
@@ -67,18 +88,30 @@ public class TechToggleBinder : MonoBehaviour
                 continue;
             }
 
-            if (runtimeMap.ContainsKey(entry.toggle))
+            if (bindings.ContainsKey(entry.toggle))
             {
                 Debug.LogWarning($"TechToggleBinder: Duplicate toggle entry detected for {entry.toggle.name}.", this);
                 continue;
             }
 
             var toggle = entry.toggle;
-            runtimeMap.Add(toggle, entry.techId);
+            var binding = new ToggleBinding
+            {
+                Toggle = toggle,
+                TechId = entry.techId.Trim(),
+                BackgroundImage = ResolveBackgroundImage(toggle),
+                RectTransform = toggle.transform as RectTransform,
+            };
 
-            UnityAction<bool> handler = isOn => OnToggleValueChanged(toggle, isOn);
-            listenerMap.Add(toggle, handler);
-            toggle.onValueChanged.AddListener(handler);
+            if (binding.BackgroundImage != null)
+            {
+                binding.OriginalMaterial = binding.BackgroundImage.material;
+            }
+
+            binding.Listener = isOn => OnToggleValueChanged(toggle, isOn);
+
+            bindings.Add(toggle, binding);
+            toggle.onValueChanged.AddListener(binding.Listener);
         }
     }
 
@@ -86,19 +119,26 @@ public class TechToggleBinder : MonoBehaviour
     {
         if (TechManager.Instance == null)
         {
-            Debug.LogError("TechToggleBinder: TechManager instance not found. Ensure TechManager is initialized before syncing toggles.");
+            Debug.LogError("TechToggleBinder: TechManager instance not found. Ensure TechManager is initialised before syncing toggles.");
             return;
         }
 
+        CacheTogglePositions();
+
         isSyncingState = true;
 
-        foreach (var kvp in runtimeMap)
+        foreach (var binding in bindings.Values)
         {
-            Toggle toggle = kvp.Key;
-            string techId = kvp.Value;
-            bool isUnlocked = TechManager.Instance.IsTechUnlocked(techId);
-            toggle.isOn = isUnlocked;
-            toggle.interactable = !isUnlocked; // Prevent re-locking already unlocked techs
+            if (binding.Toggle == null)
+            {
+                continue;
+            }
+
+            TechNode node = TechManager.Instance.GetTechNode(binding.TechId);
+            bool isUnlocked = node != null && node.isUnlocked;
+            bool isAvailable = !isUnlocked && TechManager.Instance.CanUnlockTech(binding.TechId);
+
+            ApplyState(binding, isUnlocked, isAvailable);
         }
 
         isSyncingState = false;
@@ -107,16 +147,20 @@ public class TechToggleBinder : MonoBehaviour
     private void OnToggleValueChanged(Toggle toggle, bool isOn)
     {
         if (isSyncingState)
+        {
             return;
+        }
 
-        HandleToggle(toggle, isOn);
-    }
-
-    private void HandleToggle(Toggle toggle, bool isOn)
-    {
-        if (!runtimeMap.TryGetValue(toggle, out string techId))
+        if (!bindings.TryGetValue(toggle, out ToggleBinding binding))
         {
             Debug.LogWarning("TechToggleBinder: Toggle not registered in runtime map.");
+            return;
+        }
+
+        if (!isOn)
+        {
+            // Disallow turning off via UI.
+            SyncToggleStatesFromTechTree();
             return;
         }
 
@@ -127,24 +171,136 @@ public class TechToggleBinder : MonoBehaviour
             return;
         }
 
-        if (!isOn)
+        bool canUnlock = TechManager.Instance.CanUnlockTech(binding.TechId);
+        if (!canUnlock)
         {
-            // Disallow turning off once unlocked. Re-sync state to match tech tree.
             SyncToggleStatesFromTechTree();
             return;
         }
 
-        bool unlocked = TechManager.Instance.UnlockTech(techId);
-
+        bool unlocked = TechManager.Instance.UnlockTech(binding.TechId);
         if (!unlocked)
         {
-            // Unlock failed; revert toggle state.
             SyncToggleStatesFromTechTree();
             return;
         }
 
-        // Successful unlock: disable toggle to prevent further interaction.
-        toggle.isOn = true;
-        toggle.interactable = false;
+        onTechUnlocked?.Invoke();
+
+        SyncToggleStatesFromTechTree();
+    }
+
+    private void ApplyState(ToggleBinding binding, bool isUnlocked, bool isAvailable)
+    {
+        // Avoid triggering OnValueChanged while syncing.
+        binding.Toggle.SetIsOnWithoutNotify(isUnlocked);
+
+        if (isUnlocked)
+        {
+            binding.Toggle.interactable = false;
+            ApplyActiveVisual(binding);
+        }
+        else
+        {
+            binding.Toggle.interactable = true;
+            ApplyLockedVisual(binding, isAvailable);
+        }
+    }
+
+    private void ApplyActiveVisual(ToggleBinding binding)
+    {
+        if (binding.BackgroundImage == null)
+        {
+            return;
+        }
+
+        Sprite activeSprite = GetActiveSpriteFor(binding.Toggle);
+        if (activeSprite != null)
+        {
+            binding.BackgroundImage.sprite = activeSprite;
+        }
+
+        binding.BackgroundImage.material = binding.OriginalMaterial;
+        binding.BackgroundImage.SetMaterialDirty();
+    }
+
+    private void ApplyLockedVisual(ToggleBinding binding, bool isAvailable)
+    {
+        if (binding.BackgroundImage == null)
+        {
+            return;
+        }
+
+        if (lockedStateSprite != null)
+        {
+            binding.BackgroundImage.sprite = lockedStateSprite;
+        }
+
+        Material targetMaterial = isAvailable && availablePulseMaterial != null
+            ? availablePulseMaterial
+            : binding.OriginalMaterial;
+
+        binding.BackgroundImage.material = targetMaterial;
+        binding.BackgroundImage.SetMaterialDirty();
+    }
+
+    private void CacheTogglePositions()
+    {
+        toggleYPositions.Clear();
+
+        foreach (var binding in bindings.Values)
+        {
+            RectTransform rect = binding.RectTransform != null
+                ? binding.RectTransform
+                : binding.Toggle != null ? binding.Toggle.transform as RectTransform : null;
+
+            if (rect == null)
+            {
+                continue;
+            }
+
+            float y = rect.anchoredPosition.y;
+            toggleYPositions[binding.Toggle] = y;
+        }
+    }
+
+    private Sprite GetActiveSpriteFor(Toggle toggle)
+    {
+        if (activeStateSprites == null || activeStateSprites.Length == 0)
+        {
+            return lockedStateSprite;
+        }
+
+        if (!toggleYPositions.TryGetValue(toggle, out float yPosition))
+        {
+            return activeStateSprites[activeStateSprites.Length - 1];
+        }
+
+        float interval = Mathf.Max(1f, heightInterval);
+        float clampedHeight = Mathf.Max(0f, yPosition);
+        int spriteIndex = Mathf.FloorToInt(clampedHeight / interval);
+        spriteIndex = Mathf.Clamp(spriteIndex, 0, activeStateSprites.Length - 1);
+        return activeStateSprites[spriteIndex];
+    }
+
+    private static Image ResolveBackgroundImage(Toggle toggle)
+    {
+        if (toggle == null)
+        {
+            return null;
+        }
+
+        Image img = toggle.targetGraphic as Image;
+        if (img != null)
+        {
+            return img;
+        }
+
+        if (toggle.TryGetComponent(out img))
+        {
+            return img;
+        }
+
+        return toggle.GetComponentInChildren<Image>();
     }
 }

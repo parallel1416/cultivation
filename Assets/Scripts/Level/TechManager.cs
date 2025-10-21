@@ -73,13 +73,11 @@ public class TechManager : MonoBehaviour
 
     public bool UnlockTech(string techId)
     {
-        if (!techNodes.ContainsKey(techId))
+        if (!techNodes.TryGetValue(techId, out TechNode tech))
         {
             LogController.LogError($"Tech ID not exist: {techId}");
             return false;
         }
-
-        TechNode tech = techNodes[techId];
 
         if (tech.isUnlocked)
         {
@@ -87,13 +85,16 @@ public class TechManager : MonoBehaviour
             return false;
         }
 
-        foreach (string prereqId in tech.prerequisites)
+        if (!ArePrerequisitesUnlocked(tech))
         {
-            if (!techNodes.ContainsKey(prereqId) || !techNodes[prereqId].isUnlocked)
-            {
-                LogController.LogError($"Prerequisites not unlocked: {prereqId}");
-                return false;
-            }
+            LogController.LogError($"Prerequisites not unlocked for tech: {tech.name}");
+            return false;
+        }
+
+        if (LevelManager.Instance == null)
+        {
+            LogController.LogError("LevelManager instance not found while unlocking tech.");
+            return false;
         }
 
         if (!LevelManager.Instance.SpendMoney(tech.cost))
@@ -104,6 +105,51 @@ public class TechManager : MonoBehaviour
 
         tech.isUnlocked = true;
         LogController.Log($"Tech unlocked!: {tech.name}");
+
+        return true;
+    }
+
+    public bool CanUnlockTech(string techId)
+    {
+        if (!techNodes.TryGetValue(techId, out TechNode tech))
+        {
+            LogController.LogError($"Tech ID not exist: {techId}");
+            return false;
+        }
+
+        if (tech.isUnlocked)
+        {
+            return false;
+        }
+
+        if (!ArePrerequisitesUnlocked(tech))
+        {
+            return false;
+        }
+
+        if (LevelManager.Instance == null)
+        {
+            LogController.LogError("LevelManager instance not found while checking tech availability.");
+            return false;
+        }
+
+        return LevelManager.Instance.Money >= tech.cost;
+    }
+
+    private bool ArePrerequisitesUnlocked(TechNode tech)
+    {
+        if (tech.prerequisites == null || tech.prerequisites.Count == 0)
+        {
+            return true;
+        }
+
+        foreach (string prereqId in tech.prerequisites)
+        {
+            if (!techNodes.TryGetValue(prereqId, out TechNode prereq) || !prereq.isUnlocked)
+            {
+                return false;
+            }
+        }
 
         return true;
     }
