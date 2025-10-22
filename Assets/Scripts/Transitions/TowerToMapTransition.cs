@@ -67,7 +67,6 @@ public class TowerToMapTransition : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
-        MapZoomInOnLoad.MarkComingFromTowerScene();
         SceneManager.LoadScene(mapSceneName);
         isAnimating = false;
     }

@@ -124,6 +124,14 @@ public partial class DialogueManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the dialogue definition for the given event without enqueuing it.
+    /// </summary>
+    public DialogueEvent GetDialogueDefinition(string eventId)
+    {
+        return LoadDialogueEvent(eventId);
+    }
+
+    /// <summary>
     /// Load DialogueEvent from json file
     /// </summary>
     private DialogueEvent LoadDialogueEvent(string eventId)
