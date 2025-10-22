@@ -132,16 +132,19 @@ public class SceneTransitionManager : MonoBehaviour
         OnSceneTransitionStarted?.Invoke(GameScene.Tower);
 
         // Find the map to tower transition controller
-        MapTowerTransition mapTransition = FindObjectOfType<MapTowerTransition>();
+        MapToTowerTransition mapTransition = FindObjectOfType<MapToTowerTransition>();
         
         if (mapTransition != null)
         {
-            yield return mapTransition.TransitionToTower(towerPosition, duration);
+            // The MapToTowerTransition will handle loading the scene
+            yield return new WaitForSeconds(duration);
         }
         else
         {
-            Debug.LogError("MapTowerTransition component not found in scene!");
+            Debug.LogError("MapToTowerTransition component not found in scene!");
             yield return new WaitForSeconds(duration);
+            // Fallback: load scene directly
+            SceneManager.LoadScene("TowerScene");
         }
 
         currentScene = GameScene.Tower;
@@ -156,17 +159,20 @@ public class SceneTransitionManager : MonoBehaviour
         isTransitioning = true;
         OnSceneTransitionStarted?.Invoke(GameScene.Map);
 
-        // Find the map to tower transition controller
-        MapTowerTransition mapTransition = FindObjectOfType<MapTowerTransition>();
+        // Use TowerToMapTransition for fade effect
+        TowerToMapTransition towerTransition = FindObjectOfType<TowerToMapTransition>();
         
-        if (mapTransition != null)
+        if (towerTransition != null)
         {
-            yield return mapTransition.TransitionToMap(duration);
+            // TowerToMapTransition will handle the scene loading
+            yield return new WaitForSeconds(duration);
         }
         else
         {
-            Debug.LogError("MapTowerTransition component not found in scene!");
+            Debug.LogError("TowerToMapTransition component not found in scene!");
             yield return new WaitForSeconds(duration);
+            // Fallback: load scene directly
+            SceneManager.LoadScene("MapScene");
         }
 
         currentScene = GameScene.Map;
