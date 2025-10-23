@@ -1,0 +1,80 @@
+// 本文件夹中的所有文件仅供JSON格式参考，且由于带有注释，无法被Unity直接识别和使用。
+// 完成事件文件写作后，请删除可能存在的注释，并将其放置在以下目录：Assets/Resources/Dialogues/
+// 如果文本编辑器针对注释报错，请将编辑器的语言模式切换为“JSONC”或“JSON with Comments”。
+// 事件文件名就是这个事件的唯一ID，建议使用英文和下划线命名法（例如 manage_the_family_estate.json），以避免潜在的编码问题。
+
+// 这是一个关于由不同的特殊弟子分配（例如，当前的事件中被分配了掌门骰子）而导向的“事件分支”示例。
+
+{
+    "desc": "这是一个根据“你是否在事件上分配了掌门骰子”而导向不同事件分支的示例。",
+
+    "title": "事件分支示例",
+
+    // 本事件允许分配的骰子上限，如果你打算让这个事件能够通过分配特殊骰子并触发分支，请确保这里的数值至少不为0。
+    "dicelimit": 1,
+
+    // 在事件触发后立即执行事件内容。具体参见"Assets\Resources\Dialogue Examples\example_dialogue_2.json"
+    "triggersImmediately": true,
+
+    // 如果没有确定事件的骰子分配情况，则这个事件会阻止“下一回合”按钮被点击后生效。具体参见"Assets\Resources\Dialogue Examples\example_dialogue_2.json"
+    "major": true,
+
+
+
+    "sentences": [
+        {
+            // 我们使用检定语句来实现这一效果。
+            // 如果想让整个事件都随着一个特殊骰子的分配产生巨大变化，可以将这个检定语句放在事件的最开始处，比如这个示例。
+            // 把这种检定语句放在事件的中间位置也可以，用来达成各类RPG事件经典的“如果这个队友在场，则ta会吐槽两句，或者帮你一把”的效果。
+            "type": "check",
+
+            // 不会将检定结果(例如："检定成功！你分配了id为Master的骰子")显示在对话框中。
+            // 制造一种“隐形检定”的效果。
+            "showCheckResult": false, 
+
+            // ，并将stringID字段设置为你想要检测的特殊弟子的ID（例如，这里是“master”），
+            "checkCondition": {
+
+                // 将checkCondition的checkWhat字段设置为“specialDice”（请注意大小写），以表示这里需要检测是否为事件分配了某个特殊弟子骰子。
+                "checkWhat": "specialDice",
+
+                // 将checkCondition的stringID字段设置为你想要检测的特殊弟子骰子的ID（例如，这里是“Master”，代表掌门）。
+                // 暂时使用大写开头命名，以区分出人物姓名。其他例如"Jingshi", "Jianjun", "Yuezheng"。
+                // 若有更多可以入队的特殊骰子的检定需求，请及时和我沟通，以为其分配唯一的字符串id。
+                // 此检定的最终结果是：如果玩家在事件上分配了掌门骰子，则检定成功，导向successTarget；否则检定失败，导向failureTarget。
+                "stringID": "Master"
+            },
+
+            "successTarget": "master_assigned",
+            "failureTarget": "master_not_assigned"
+        },
+        {
+            "id": "master_assigned",
+            "text": "你和掌门一起去观星。"
+        },
+        {
+            "text": "共同观星文本1"
+        },
+        {
+            "text": "共同观星文本2"
+        },
+        {
+            "text": "共同观星文本3",
+            "target": "END" // 直接跳转到事件结束。具体参见"Assets\Resources\Dialogue Examples\example_dialogue_2.json"，以区分大小写方式搜索"END"。
+        },
+        {
+            "id": "master_not_assigned",
+            "text": "你独自一人去观星。"
+        },
+        {
+            "text": "独自观星文本1"
+        },
+        {
+            "text": "独自观星文本2"
+        },
+        {
+            "text": "独自观星文本3"
+        }
+        // 事件结束
+    ]
+}
