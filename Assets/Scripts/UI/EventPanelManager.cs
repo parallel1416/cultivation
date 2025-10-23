@@ -117,6 +117,8 @@ public class EventPanelManager : MonoBehaviour
 
     private void Awake()
     {
+        // selection panel anchoring will be ensured after rect is resolved
+
         canvas = GetComponentInParent<Canvas>();
 
         if (panelRoot != null && panelRectTransform == null)
@@ -153,6 +155,9 @@ public class EventPanelManager : MonoBehaviour
             selectionPanelRoot.SetActive(false);
             selectionPanelCanvasGroup.alpha = 0f;
         }
+
+        // Now that selectionPanelRect is available, ensure it's anchored to the left
+        EnsureSelectionPanelAnchoredLeft();
 
         InitializeButtonMappings();
 
@@ -348,7 +353,6 @@ public class EventPanelManager : MonoBehaviour
 
         if (mapping.image == null)
         {
-            Debug.LogWarning($"[EventPanelManager] Button '{mapping.button.name}' has no Image component.", mapping.button);
             return;
         }
 
@@ -356,7 +360,6 @@ public class EventPanelManager : MonoBehaviour
         {
             mapping.image.sprite = buttonActiveSprite != null ? buttonActiveSprite : mapping.originalSprite;
             mapping.button.transform.localScale = mapping.originalScale * activeButtonScaleMultiplier;
-            Debug.Log($"[EventPanelManager] Set button '{mapping.button.name}' to ACTIVE (sprite: {mapping.image.sprite?.name}, scale: {mapping.button.transform.localScale})");
         }
         else
         {
@@ -387,7 +390,7 @@ public class EventPanelManager : MonoBehaviour
 
         data.availablePeople = RequestAvailablePeople(eventId);
 
-        Debug.Log($"[EventPanelManager] Event '{eventId}' loaded. DiceLimit={data.diceLimit}, Description='{data.description}', AvailablePeople={data.availablePeople.Count}");
+        // event data loaded
         return data;
     }
 
@@ -477,7 +480,6 @@ public class EventPanelManager : MonoBehaviour
     {
         if (teamSlotPrefab == null || teamSlotContainer == null)
         {
-            Debug.LogWarning("Team slot prefab or container is not set on EventPanelManager.", this);
             return;
         }
 
@@ -521,7 +523,7 @@ public class EventPanelManager : MonoBehaviour
             LayoutRebuilder.ForceRebuildLayoutImmediate(teamSlotContainer as RectTransform);
         }
 
-        Debug.Log($"[EventPanelManager] Created {slotCount} team slots for event '{currentEventData?.eventId}'.");
+        // created team slots
     }
 
     private void ClearTeamSlots()
@@ -537,9 +539,17 @@ public class EventPanelManager : MonoBehaviour
             {
                 Destroy(slot.root);
             }
+
+            if (slot != null)
+            {
+                slot.button = null;
+                slot.portraitImage = null;
+                slot.root = null;
+            }
         }
 
         teamSlots.Clear();
+        activeSelectionSlot = null;
     }
 
     private void OnSlotClicked(TeamSlot slot)
@@ -552,7 +562,6 @@ public class EventPanelManager : MonoBehaviour
         // Check if slot object still exists
         if (slot.root == null || slot.button == null)
         {
-            Debug.LogWarning("[EventPanelManager] Attempted to click a destroyed slot.");
             return;
         }
 
@@ -579,6 +588,8 @@ public class EventPanelManager : MonoBehaviour
         slot.portraitImage.sprite = null;
         slot.portraitImage.color = slotEmptyColor;
 
+    // cleared slot assignment
+
         activeSelectionSlot = null;
         ToggleSelectionPanel(false);
         UpdateSelectionButtonStates();
@@ -592,7 +603,15 @@ public class EventPanelManager : MonoBehaviour
 
     private void PopulateSelectionPanel()
     {
+    // Ensure selection grid layout is present and configured
+    EnsureSelectionGridLayout();
+
         if (selectionGrid == null || currentEventData == null)
+        {
+            return;
+        }
+
+        if (portraitButtonPrefab == null)
         {
             return;
         }
@@ -630,12 +649,18 @@ public class EventPanelManager : MonoBehaviour
 
             portraitButtons[capturedId] = data;
         }
-
         UpdateSelectionButtonStates();
+
+        // Rebuild layout to ensure even spacing
+        if (selectionGrid != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(selectionGrid as RectTransform);
+        }
     }
 
     private void ClearSelectionPanelContent()
     {
+        // Clear existing children
         foreach (Transform child in selectionGrid)
         {
             Destroy(child.gameObject);
@@ -718,7 +743,8 @@ public class EventPanelManager : MonoBehaviour
 
     private IEnumerator AnimateSelectionPanel(bool show)
     {
-        isSelectionAnimating = true;
+
+    isSelectionAnimating = true;
 
         if (show)
         {
@@ -802,7 +828,8 @@ public class EventPanelManager : MonoBehaviour
             yield break;
         }
 
-        isPanelAnimating = true;
+
+    isPanelAnimating = true;
 
         if (slideIn)
         {
@@ -850,7 +877,6 @@ public class EventPanelManager : MonoBehaviour
 
         // TODO: send selection data to backend when available.
         List<string> selectedMembers = GetSelectedTeamMembers();
-        Debug.Log($"Confirmed event '{currentEventData?.eventId}' with members: {string.Join(",", selectedMembers)}");
 
         if (confirmButton != null)
         {
@@ -895,5 +921,42 @@ public class EventPanelManager : MonoBehaviour
             cg.blocksRaycasts = interactable;
             cg.alpha = interactable ? 1f : 0.5f;
         }
+    }
+
+    private void EnsureSelectionGridLayout()
+    {
+        if (selectionGrid == null)
+        {
+            return;
+        }
+
+        var rect = selectionGrid as RectTransform;
+        if (rect == null) return;
+
+        GridLayoutGroup grid = selectionGrid.GetComponent<GridLayoutGroup>();
+        if (grid == null)
+        {
+            grid = selectionGrid.gameObject.AddComponent<GridLayoutGroup>();
+            grid.cellSize = new Vector2(64f, 64f);
+            grid.spacing = new Vector2(8f, 8f);
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = 3;
+        }
+    }
+
+    private void EnsureSelectionPanelAnchoredLeft()
+    {
+        if (selectionPanelRect == null)
+        {
+            return;
+        }
+
+        // Anchor to left center and set pivot so sliding from -width -> 0 works
+        selectionPanelRect.pivot = new Vector2(0f, 0.5f);
+        selectionPanelRect.anchorMin = new Vector2(0f, 0.5f);
+        selectionPanelRect.anchorMax = new Vector2(0f, 0.5f);
+        // Place it off-screen to the left initially
+        float width = selectionPanelRect.rect.width;
+        selectionPanelRect.anchoredPosition = new Vector2(-width, selectionPanelRect.anchoredPosition.y);
     }
 }

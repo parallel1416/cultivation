@@ -14,7 +14,7 @@ public class LevelManager : MonoBehaviour
     // Core resources
     // SerializeField only for debugging in inspector
     [SerializeField] private int money = 200;
-    [SerializeField] private int disciples = 0;
+    [SerializeField] private int disciples = 10;
     //[SerializeField] private int moneyPerTurn = 0;
     //[SerializeField] private int disciplesPerTurn = 0;
 
