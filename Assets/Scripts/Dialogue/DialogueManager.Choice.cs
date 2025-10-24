@@ -19,6 +19,9 @@ public partial class DialogueManager : MonoBehaviour
                 OutputDialogue($"{i + 1}. {sentence.choices[i].text}");
             }
 
+            // Trigger UI display
+            OutputChoiceUI(sentence);
+
             // temporary, might be deprecated in the future, might not
             isInChoiceMode = true;
             LogController.Log("press key (1-" + sentence.choices.Count + ") to select answer");
@@ -58,6 +61,7 @@ public partial class DialogueManager : MonoBehaviour
 
         // Restore sequenced playback input
         isInChoiceMode = false;
+        TriggerChoiceEnd();
 
         HandleSentenceIndex(selectedChoice.target);
 

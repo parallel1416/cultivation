@@ -33,7 +33,9 @@ public partial class DialogueManager : MonoBehaviour
             currentEvent = dialogueQueue.Dequeue();
             if (!string.IsNullOrEmpty(currentEvent.title))
             {
-                OutputTitle($"=== {currentEvent.title} ===");
+                string titleText = $"=== {currentEvent.title} ===";
+                OutputTitle(titleText);
+                OutputTitleUI(titleText);
             }
             BuildIdIndexMap();
             currentSentenceIndex = 0;
@@ -80,6 +82,9 @@ public partial class DialogueManager : MonoBehaviour
     {
         string output = FormatDialogueOutput(sentence);
         OutputDialogue(output);
+        string speaker = sentence?.speaker ?? string.Empty;
+        string text = sentence?.text ?? string.Empty;
+        OutputDialogueUI(speaker, text);
 
         StartCooldown();
     }   
@@ -165,6 +170,7 @@ public partial class DialogueManager : MonoBehaviour
         currentSentenceIndex = 0;
         idToIndexMap.Clear();
         LogController.Log("All DialogueEvent playback completed");
+        TriggerDialogueEnd();
     }
 
     private string FormatDialogueOutput(DialogueSentence sentence)
@@ -172,14 +178,14 @@ public partial class DialogueManager : MonoBehaviour
         if (string.IsNullOrEmpty(sentence.speaker))
         {
             // Narration by default (no speaker, no quotation marks)
-            // Sample Style: ÄãÐÑÁË£¬µ«²»ÖªµÀ×Ô¼ºÉíÔÚºÎ´¦¡£
+            // Sample Style: ï¿½ï¿½ï¿½ï¿½ï¿½Ë£ï¿½ï¿½ï¿½ï¿½ï¿½Öªï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ÚºÎ´ï¿½ï¿½ï¿½
             return sentence.text;
         }
         else
         {
-            // Character dialogue: ¡°speaker: ¡°text¡±¡± (Full-width quotation marks)
-            // Sample Style: Ö÷½Ç£º¡°ºÎÒâÎ¶£¿¡±
-            return $"{sentence.speaker}£º¡°{sentence.text}¡±";
+            // Character dialogue: ï¿½ï¿½speaker: ï¿½ï¿½textï¿½ï¿½ï¿½ï¿½ (Full-width quotation marks)
+            // Sample Style: ï¿½ï¿½ï¿½Ç£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¶ï¿½ï¿½ï¿½ï¿½
+            return $"{sentence.speaker}ï¿½ï¿½ï¿½ï¿½{sentence.text}ï¿½ï¿½";
         }
     }
 
