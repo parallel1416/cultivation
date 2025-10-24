@@ -10,7 +10,8 @@ public partial class DialogueManager : MonoBehaviour
     private void PlayCheckSentence(DialogueSentence sentence)
     {
         CheckCondition condition = sentence.checkCondition;
-        int dc = condition.checkWhat == "tech" ? 1 : condition.difficultyClass;
+        // for these checkWhat values(yes or no check), lock dc to 1
+        int dc = condition.checkWhat switch { string str when str == "tech" || str == "globalTag" || str == "specialDice" => 1, _ => condition.difficultyClass};
         int checkResult = GetCheckResult(condition.checkWhat, condition.stringId);
         string resultDescription = GenerateCheckResultDescription(condition, dc, checkResult);
 
@@ -40,7 +41,7 @@ public partial class DialogueManager : MonoBehaviour
         switch (checkWhat)
         {
             case "diceroll":
-                return random.Next(1, 7);
+                return DiceRollManager.Instance.GetDiceResult();
 
             case "money":
                 return LevelManager.Instance.Money;

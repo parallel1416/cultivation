@@ -68,7 +68,7 @@ public partial class DialogueManager : MonoBehaviour
                 break;
 
             case "-":
-                LevelManager.Instance.SpendDisciples(amount);
+                LevelManager.Instance.KillDisciples(amount);
                 break;
 
             default:

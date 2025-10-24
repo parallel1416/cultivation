@@ -8,19 +8,19 @@ public partial class DialogueManager : MonoBehaviour
     /// temporarily handle input for dialogue playback debugging
     /// should be deleted or replaced by proper UI input handling later
     /// </summary>
-    private void Update()
-    {
-        if (!isPlaying) return;
+    //private void Update()
+    //{
+    //    if (!isPlaying) return;
 
-        if (isInChoiceMode)
-        {
-            HandleChoiceInput();
-        }
-        else if (!isOnCooldown && (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)))
-        {
-            PlayNextSentence();
-        }
-    }
+    //    if (isInChoiceMode)
+    //    {
+    //        HandleChoiceInput();
+    //    }
+    //    else if (!isOnCooldown && (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)))
+    //    {
+    //        PlayNextSentence();
+    //    }
+    //}
 
     /// <summary>
     /// Start dialogue playback from the queue, bound to next turn method ( TurnManager.NextTurn() )
@@ -193,12 +193,12 @@ public partial class DialogueManager : MonoBehaviour
     {
         // temporarily use Debug.Log for output
         // should be replaced by proper UI display later
-        Debug.Log(title);
+        // Debug.Log(title);
     }
     private void OutputDialogue(string message)
     {
         // temporarily use Debug.Log for output
         // should be replaced by proper UI display later
-        Debug.Log(message);
+        // Debug.Log(message);
     }
 }

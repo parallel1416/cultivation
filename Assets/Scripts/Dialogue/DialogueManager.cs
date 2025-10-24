@@ -7,6 +7,7 @@ using static UnityEngine.Rendering.DebugUI;
 public partial class DialogueEvent
 {
     public string id = ""; // automatically set to the file name when loading
+    public string desc = ""; // show simple description in event select interface
     public string title = ""; // display before all sentences, maybe need bigger font size?
     public int diceLimit = 0; // max dice(disciple) number you can assign to this event, 0 by default (like normal dialogue event), which means you can not assign any dice(disciple) to it
     public bool triggersImmediately = true; // immediately triggered events will show event UI at once, and not be added to event queue, which plays after player clicks the next turn button.
@@ -53,7 +54,7 @@ public class CheckCondition
 {
     public int difficultyClass = 0;
     public string checkWhat = "";
-    public string stringId = ""; // techID or tagID
+    public string stringId = ""; // techID or tagID, special disciple dice id
 }
 
 [System.Serializable]

@@ -24,7 +24,7 @@ public partial class DialogueManager : MonoBehaviour
 
             // temporary, might be deprecated in the future, might not
             isInChoiceMode = true;
-            LogController.Log("press key (1-" + sentence.choices.Count + ") to select answer");
+            LogController.Log($"press key (1-{sentence.choices.Count}) to select answer");
         }
         else
         {

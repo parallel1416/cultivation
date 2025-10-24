@@ -1,5 +1,6 @@
-using Unity.VisualScripting;
 using UnityEngine;
+using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// Manages level resources like money and disciples
@@ -18,10 +19,71 @@ public class LevelManager : MonoBehaviour
     //[SerializeField] private int moneyPerTurn = 0;
     //[SerializeField] private int disciplesPerTurn = 0;
 
+    // status
+    // normal disciples
+    [SerializeField] private int activeDisciples = 0;
+
+    // spirit animals
+    [SerializeField] private int statusMouse = -1;
+    [SerializeField] private int statusChicken = -1;
+    [SerializeField] private int statusSheep = -1;
+
+    // special disciples
+    [SerializeField] private int statusJingshi = -1;
+    [SerializeField] private int statusJianjun = -1;
+    [SerializeField] private int statusYuezheng = -1;
+
+    // dice control
+    [SerializeField] private int normalDiscipleDiceScale = 6;
+    [SerializeField] private int jingshiDiceScale = 8;
+    [SerializeField] private int jianjunDiceScale = 8;
+    [SerializeField] private int yuezhengDiceScale = 8;
+
     public int Money => money;
     // public int MoneyPerTurn => moneyPerTurn;
     public int Disciples => disciples;
     //public int DisciplesPerTurn => disciplesPerTurn;
+
+    public int ActiveDisciples
+    {
+        get => activeDisciples;
+        set // Well, maybe a useless setter.
+        {
+            if (value > disciples)
+            {
+                activeDisciples = value;
+                LogController.Log($"LevelManager: Too much active disciples({value})! Set to max({disciples}).");
+            }
+            else if (value < 0)
+            {
+                activeDisciples = 0;
+                LogController.Log($"LevelManager: Negative number of active disciples({value})! Set to 0.");
+            }
+            else activeDisciples = value;
+        }
+    }
+    public int StatusMouse
+    { get => statusMouse; set => statusMouse = Math.Sign(value); }
+
+    public int StatusChicken
+    { get => statusChicken; set => statusChicken = Math.Sign(value); }
+
+    public int StatusSheep
+    { get => statusSheep; set => statusSheep = Math.Sign(value); }
+
+    public int StatusJingshi
+    { get => statusJingshi; set => statusJingshi = Math.Sign(value); }
+
+    public int StatusJianjun
+    { get => statusJianjun; set => statusJianjun = Math.Sign(value); }
+
+    public int StatusYuezheng
+    { get => statusYuezheng; set => statusYuezheng = Math.Sign(value); }
+
+    public int NormalDiscipleDiceScale => normalDiscipleDiceScale;
+    public int JingshiDiceScale => jingshiDiceScale;
+    public int JianjunDiceScale => jianjunDiceScale;
+    public int YuezhengDiceScale => yuezhengDiceScale;
 
     private void Awake()
     {
@@ -44,27 +106,27 @@ public class LevelManager : MonoBehaviour
     {
         if (amount < 0)
         {
-            LogController.LogError("Cannot add negative money amount.");
+            LogController.LogError("LevelManager: Cannot add negative money amount.");
             return;
         }
         money += amount;
-        LogController.Log($"{amount}money added!");
+        LogController.Log($"LevelManager: {amount} money added!");
     }
 
     public bool SpendMoney(int amount)
     {
         if (amount < 0)
         {
-            LogController.LogError("Cannot spend negative money amount.");
+            LogController.LogError("LevelManager: Cannot spend negative money amount.");
             return false;
         }
         if (money >= amount)
         {
             money -= amount;
-            LogController.Log($"{amount}money spent!");
+            LogController.Log($"LevelManager: {amount} money spent!");
             return true;
         }
-        LogController.LogError("Not enough money to spend.");
+        LogController.LogError("LevelManager: Not enough money to spend.");
         return false;
     }
 
@@ -73,16 +135,17 @@ public class LevelManager : MonoBehaviour
     {
         if (amount < 0)
         {
-            LogController.LogError("Cannot force spend negative money amount.");
+            LogController.LogError("LevelManager: Cannot force spend negative money amount.");
             return;
         }
-        if (money >= amount)
+        if (money >= amount) // same as normal spend
         {
             money -= amount;
-            LogController.Log($"{amount}money force spent!");
+            LogController.Log($"LevelManager: {amount} money force spent!");
             return;
         }
-        LogController.Log("Not enough money to force spend! Set money to 0.");
+        money = 0;
+        LogController.Log("LevelManager: Not enough money to force spend! Set money to 0.");
         return;
     }
 
@@ -90,28 +153,71 @@ public class LevelManager : MonoBehaviour
     {
         if (amount < 0)
         {
-            LogController.LogError("Cannot add negative disciple amount.");
+            LogController.LogError("LevelManager: Cannot add negative disciple amount.");
             return;
         }
         disciples += amount;
-        LogController.Log($"{amount}disciples added!");
+        LogController.Log($"LevelManager: {amount} disciples added!");
     }
 
-    public bool SpendDisciples(int amount)
+    /// <summary>
+    /// This will reduce the upper limit of available disciples per turn!
+    /// </summary>
+    public bool KillDisciples(int amount)
     {
         if (amount < 0)
         {
-            LogController.LogError("Cannot spend negative disciple amount.");
+            LogController.LogError("LevelManager: Cannot kill negative disciple amount.");
             return false;
         }
-        if (disciples >= amount)
+        if (disciples >= amount) // success
         {
             disciples -= amount;
-            LogController.Log($"{amount}disciples spent!");
+            LogController.Log($"LevelManager: {amount} disciples killed!");
             return true;
         }
-        LogController.LogError("Not enough disciples to spend.");
+        LogController.LogError("LevelManager: Not enough disciples to kill.");
         return false;
+    }
+
+    /// <summary>
+    /// Only to reduce active disciple number! for example, assign to an event
+    /// Need accompanying UI refresh after this method
+    ///// </summary>
+    public bool SpendActiveDisciples(int amount)
+    {
+        if (amount < 0)
+        {
+            LogController.LogError("LevelManager: Cannot spend negative disciple amount.");
+            return false;
+        }
+        if (activeDisciples >= amount) // success
+        {
+            activeDisciples -= amount;
+            LogController.Log($"LevelManager: {amount} disciples set to inactive!");
+            return true;
+        }
+        LogController.LogError("LevelManager: Not enough disciples to spend.");
+        return false;
+    }
+
+    public void ResetActiveDisciples()
+    {
+        activeDisciples = disciples;
+    }
+
+    public Dictionary<string, int> GetAllStatus()
+    {
+        return new Dictionary<string, int>
+        {
+            { "Normal", ActiveDisciples },
+            { "Mouse", StatusMouse },
+            { "Chicken", StatusChicken },
+            { "Sheep", StatusSheep },
+            { "Jingshi", StatusJingshi },
+            { "Jianjun", StatusJianjun },
+            { "Yuezheng", StatusYuezheng }
+        };
     }
 
     /// <summary>
