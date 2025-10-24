@@ -307,7 +307,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.8079387, g: 0.9622642, b: 0.93760985, a: 1}
+  m_Color: {r: 0.7610062, g: 0.7610062, b: 0.7610062, a: 0.3254902}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -714,7 +714,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 798d039b010da8a4d812c250bbd6240a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -868,7 +868,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f393a4e1af92274f87d90aa36174b65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialogueEventId: example_dialogue
+  dialogueEventId: test_dialogue
   autoStartOnEnable: 1
   dialogContainer: {fileID: 2115839687}
   dialogPanel: {fileID: 876741340}
