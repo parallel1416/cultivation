@@ -27,8 +27,8 @@ public class GameManager : MonoBehaviour
         GameObject globaltagManagerObj = new GameObject("GlobalTagManager");
         globaltagManagerObj.AddComponent<GlobalTagManager>();
 
-        GameObject resourceBarUIManagerObj = new GameObject("ResourceBarUIManagerObj");
-        resourceBarUIManagerObj.AddComponent<ResourceBarUIManager>();
+        GameObject dialogueListManagerObj = new GameObject("DialogueListManager");
+        dialogueListManagerObj.AddComponent<DialogueListManager>();
     }
 
     
