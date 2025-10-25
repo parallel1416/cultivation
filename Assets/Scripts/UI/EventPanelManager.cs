@@ -5,6 +5,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 /// <summary>
@@ -292,6 +293,14 @@ public class EventPanelManager : MonoBehaviour
         }
 
         currentEventData = FetchEventData(mapping.eventId);
+        
+        // If event has no dice limit (diceLimit = 0), go directly to DialogScene
+        if (currentEventData != null && currentEventData.diceLimit == 0)
+        {
+            LoadDialogueScene(mapping.eventId);
+            return;
+        }
+
         ApplyEventDataToUI();
         PositionPanel(mapping.button.GetComponent<RectTransform>());
 
@@ -958,5 +967,22 @@ public class EventPanelManager : MonoBehaviour
         // Place it off-screen to the left initially
         float width = selectionPanelRect.rect.width;
         selectionPanelRect.anchoredPosition = new Vector2(-width, selectionPanelRect.anchoredPosition.y);
+    }
+
+    private void LoadDialogueScene(string eventId)
+    {
+        // Enqueue the dialogue event so it's ready when DialogScene loads
+        if (DialogueManager.Instance != null)
+        {
+            DialogueManager.Instance.EnqueueDialogueEvent(eventId);
+        }
+        else
+        {
+            Debug.LogError("DialogueManager.Instance is null. Cannot enqueue dialogue for event: " + eventId);
+            return;
+        }
+
+        // Load DialogScene
+        SceneManager.LoadScene("DialogScene");
     }
 }

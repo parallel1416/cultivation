@@ -41,7 +41,7 @@ public partial class DialogueManager : MonoBehaviour
         switch (checkWhat)
         {
             case "diceroll":
-                return DiceRollManager.Instance.GetDiceResult();
+                return DiceRollManager.Instance.GetDiceResult().result;
 
             case "money":
                 return LevelManager.Instance.Money;
@@ -68,7 +68,7 @@ public partial class DialogueManager : MonoBehaviour
     {
         string checkWhat = condition.checkWhat;
         bool isSuccess = checkResult >= dc;
-        string successText = isSuccess ? "³É¹¦£¡" : "Ê§°Ü£¡"; // Full-width exclamation mark for better compatibility with Chinese fonts
+        string successText = isSuccess ? "ï¿½É¹ï¿½ï¿½ï¿½" : "Ê§ï¿½Ü£ï¿½"; // Full-width exclamation mark for better compatibility with Chinese fonts
         string comparison = isSuccess ? ">=" : "<";
 
         string checkDescription = "";
@@ -79,27 +79,27 @@ public partial class DialogueManager : MonoBehaviour
                 break;
 
             case "money":
-                checkDescription = $"ÖÁÉÙÐèÒª{dc}¸öÁéÊ¯£¬µ±Ç°ÁéÊ¯ÊýÁ¿ = {checkResult} {comparison} {dc}";
+                checkDescription = $"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òª{dc}ï¿½ï¿½ï¿½ï¿½Ê¯ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½Ê¯ï¿½ï¿½ï¿½ï¿½ = {checkResult} {comparison} {dc}";
                 break;
 
             case "tech":
                 string techName = TechManager.Instance.GetTechName(condition.stringId);
-                string techStatus = isSuccess ? "ÒÑ½âËø" : "Î´½âËø";
-                checkDescription = $"¿Æ¼¼ [{techName}] {techStatus}";
+                string techStatus = isSuccess ? "ï¿½Ñ½ï¿½ï¿½ï¿½" : "Î´ï¿½ï¿½ï¿½ï¿½";
+                checkDescription = $"ï¿½Æ¼ï¿½ [{techName}] {techStatus}";
                 break;
 
             case "globaltag":
                 string tagId = condition.stringId;
                 string tagStatus = GlobalTagManager.Instance.GetTagDescription(tagId);
-                checkDescription = $"{tagStatus}"; // example:"Äã°ïÖúÁËxxx¡£"
+                checkDescription = $"{tagStatus}"; // example:"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xxxï¿½ï¿½"
                 break;
 
             default:
-                checkDescription = $"ÎÞÐ§¼ì²âÄ¿±ê({checkWhat})£¡Çë¼ì²éµ±Ç°ÊÂ¼þJSONÎÄ¼þ£º{currentEvent.id}";
+                checkDescription = $"ï¿½ï¿½Ð§ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½({checkWhat})ï¿½ï¿½ï¿½ï¿½ï¿½éµ±Ç°ï¿½Â¼ï¿½JSONï¿½Ä¼ï¿½ï¿½ï¿½{currentEvent.id}";
                 break;
         }
 
-        // Sample Style: [ ³É¹¦£¡] ( DC = 5, 1d6 = 6 >= 5 )
+        // Sample Style: [ ï¿½É¹ï¿½ï¿½ï¿½] ( DC = 5, 1d6 = 6 >= 5 )
         return $"[ {successText}] ( {checkDescription} )";
     }
 

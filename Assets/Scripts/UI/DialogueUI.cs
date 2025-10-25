@@ -18,8 +18,13 @@ public class DialogueUI : MonoBehaviour
     [Header("Dialog Panel References")]
     [SerializeField] private GameObject dialogContainer;
     [SerializeField] private GameObject dialogPanel;
-    [SerializeField] private TextMeshProUGUI speakerText;
-    [SerializeField] private TextMeshProUGUI dialogText;
+    [SerializeField] private TextMeshProUGUI dialogText; // Now shows full history
+    [SerializeField] private ScrollRect dialogScrollRect; // For scrollable history
+
+    [Header("Title References")]
+    [SerializeField] private CanvasGroup titleContainer; // Container for title display
+    [SerializeField] private TextMeshProUGUI titleText; // Text component for title
+    [SerializeField] private float titleFadeDuration = 2f; // Duration for title fade animation
 
     [Header("Choices References")]
     [SerializeField] private GameObject choicesContainer;
@@ -27,12 +32,15 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private Transform choiceParent; // Parent transform for instantiated choice buttons
 
     [Header("UI Settings")]
-    [SerializeField] private string narratorName = ""; // Empty speaker name for narration
-    [SerializeField] private Color narratorColor = Color.gray;
-    [SerializeField] private Color speakerColor = Color.white;
+    [SerializeField] private string narratorName = "Narrator"; // Name for narration lines
+    [SerializeField] private bool autoScrollToBottom = true; // Auto-scroll to newest dialogue
+    [SerializeField] private float scrollDelay = 0.1f; // Delay before scrolling (to let layout update)
 
     private List<GameObject> currentChoiceButtons = new List<GameObject>();
+    private List<string> currentChoiceTexts = new List<string>();
     private bool hasSubscribedToEvents = false;
+    private System.Text.StringBuilder dialogueHistory = new System.Text.StringBuilder();
+    private Coroutine pendingScrollCoroutine;
 
     private void Awake()
     {
@@ -49,6 +57,11 @@ public class DialogueUI : MonoBehaviour
     private void OnDisable()
     {
         UnsubscribeFromEvents();
+        if (pendingScrollCoroutine != null)
+        {
+            StopCoroutine(pendingScrollCoroutine);
+            pendingScrollCoroutine = null;
+        }
     }
 
     private void SubscribeToEvents()
@@ -98,8 +111,52 @@ public class DialogueUI : MonoBehaviour
             choicesContainer.SetActive(false);
         }
 
+        // Initialize title container - start visible at full opacity
+        if (titleContainer != null)
+        {
+            titleContainer.alpha = 1f;
+            titleContainer.gameObject.SetActive(true);
+        }
+
+        // Clear dialogue history
+        ClearDialogueHistory();
+
+        // Initialize scroll rect
+        InitializeScrollRect();
+
         // Begin initialization routine that waits for DialogueManager instance
         StartCoroutine(InitializeWhenReady());
+    }
+
+    private void InitializeScrollRect()
+    {
+        if (dialogScrollRect == null)
+        {
+            return;
+        }
+
+        dialogScrollRect.horizontal = false;
+        dialogScrollRect.vertical = true;
+        dialogScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+        dialogScrollRect.movementType = ScrollRect.MovementType.Clamped;
+        dialogScrollRect.verticalNormalizedPosition = 0f;
+        RefreshContentLayout();
+    }
+
+    private void ClearDialogueHistory()
+    {
+        dialogueHistory.Clear();
+
+        if (dialogText != null)
+        {
+            dialogText.text = string.Empty;
+        }
+
+        if (pendingScrollCoroutine != null)
+        {
+            StopCoroutine(pendingScrollCoroutine);
+            pendingScrollCoroutine = null;
+        }
     }
 
     private IEnumerator InitializeWhenReady()
@@ -146,6 +203,9 @@ public class DialogueUI : MonoBehaviour
             throw new ArgumentException($"Dialogue definition not found for id '{dialogueEventId}'. Expected file at Resources/Dialogues/{dialogueEventId}.json");
         }
 
+        ClearDialogueHistory();
+        InitializeScrollRect();
+
         // Enqueue the event (GetDialogueDefinition already loads it, but enqueue is still needed)
         DialogueManager.Instance.EnqueueDialogueEvent(dialogueEventId);
         DialogueManager.Instance.StartDialoguePlayback();
@@ -177,29 +237,20 @@ public class DialogueUI : MonoBehaviour
             throw new ArgumentException($"Dialogue definition not found for id '{eventId}'. Expected file at Resources/Dialogues/{eventId}.json");
         }
 
+        ClearDialogueHistory();
+        InitializeScrollRect();
+
         DialogueManager.Instance.EnqueueDialogueEvent(eventId);
         DialogueManager.Instance.StartDialoguePlayback();
     }
 
     private void HandleTitleDisplay(string title)
     {
-        // Display title - you could show this in a separate UI element
-        // For now, we'll show it as dialogue with no speaker
-        if (dialogContainer != null)
+        // Display title in separate container with fade animation
+        if (titleContainer != null && titleText != null)
         {
-            dialogContainer.SetActive(true);
-        }
-
-        if (speakerText != null)
-        {
-            speakerText.text = "";
-            speakerText.gameObject.SetActive(false);
-        }
-
-        if (dialogText != null)
-        {
-            dialogText.text = title;
-            dialogText.color = narratorColor;
+            titleText.text = title;
+            StartCoroutine(ShowAndFadeTitle());
         }
     }
 
@@ -217,30 +268,152 @@ public class DialogueUI : MonoBehaviour
             choicesContainer.SetActive(false);
         }
 
-        // Update speaker text
-        if (speakerText != null)
+        // Format the line as "Speaker: text" and append to history
+        string speakerDisplay = string.IsNullOrEmpty(speaker) ? narratorName : speaker;
+        string formattedLine = $"<b>{speakerDisplay}:</b> {text}";
+
+        AppendToHistory(formattedLine);
+    }
+
+    private void AppendToHistory(string line)
+    {
+        // Add line break if not the first line
+        if (dialogueHistory.Length > 0)
         {
-            if (string.IsNullOrEmpty(speaker))
+            dialogueHistory.AppendLine();
+            dialogueHistory.AppendLine(); // Double line break for spacing
+        }
+
+        dialogueHistory.Append(line);
+
+        // Update the text display
+        if (dialogText != null)
+        {
+            dialogText.text = dialogueHistory.ToString();
+        }
+
+        RefreshContentLayout();
+
+        if (autoScrollToBottom && dialogScrollRect != null)
+        {
+            QueueScrollToBottom();
+        }
+    }
+
+    private void AppendPlayerChoice(string choiceText)
+    {
+        if (string.IsNullOrWhiteSpace(choiceText))
+        {
+            return;
+        }
+
+        AppendToHistory($"<color=#7EE0FF><b>You:</b> {choiceText}</color>");
+    }
+
+    private void QueueScrollToBottom()
+    {
+        if (!autoScrollToBottom)
+        {
+            return;
+        }
+
+        if (pendingScrollCoroutine != null)
+        {
+            StopCoroutine(pendingScrollCoroutine);
+        }
+
+        pendingScrollCoroutine = StartCoroutine(ScrollToBottomRoutine());
+    }
+
+    private IEnumerator ScrollToBottomRoutine()
+    {
+        if (scrollDelay > 0f)
+        {
+            yield return new WaitForSeconds(scrollDelay);
+        }
+        else
+        {
+            yield return null;
+        }
+
+        Canvas.ForceUpdateCanvases();
+
+        if (dialogScrollRect != null)
+        {
+            if (dialogScrollRect.content != null)
             {
-                // Narration - hide speaker name
-                speakerText.text = narratorName;
-                speakerText.gameObject.SetActive(false);
+                LayoutRebuilder.ForceRebuildLayoutImmediate(dialogScrollRect.content);
             }
-            else
+
+            dialogScrollRect.verticalNormalizedPosition = 0f;
+        }
+
+        pendingScrollCoroutine = null;
+    }
+
+    private void RefreshContentLayout()
+    {
+        if (dialogScrollRect == null)
+        {
+            return;
+        }
+
+        // Ensure content is anchored to top-stretch so it grows downward
+        if (dialogScrollRect.content != null)
+        {
+            RectTransform content = dialogScrollRect.content;
+            content.anchorMin = new Vector2(0f, 1f);
+            content.anchorMax = new Vector2(1f, 1f);
+            content.pivot = new Vector2(0.5f, 1f);
+            
+            // Ensure text is also anchored to top
+            if (dialogText != null)
             {
-                // Character dialogue - show speaker name
-                speakerText.text = speaker;
-                speakerText.gameObject.SetActive(true);
-                speakerText.color = speakerColor;
+                RectTransform textRect = dialogText.rectTransform;
+                textRect.anchorMin = new Vector2(0f, 1f);
+                textRect.anchorMax = new Vector2(1f, 1f);
+                textRect.pivot = new Vector2(0.5f, 1f);
+                textRect.anchoredPosition = Vector2.zero;
             }
         }
 
-        // Update dialog text
+        Canvas.ForceUpdateCanvases();
+
         if (dialogText != null)
         {
-            dialogText.text = text;
-            dialogText.color = string.IsNullOrEmpty(speaker) ? narratorColor : Color.white;
+            LayoutRebuilder.ForceRebuildLayoutImmediate(dialogText.rectTransform);
         }
+
+        if (dialogScrollRect.content != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(dialogScrollRect.content);
+        }
+    }
+
+    private IEnumerator ShowAndFadeTitle()
+    {
+        if (titleContainer == null)
+        {
+            yield break;
+        }
+
+        // Title is already visible at full opacity from Start()
+        // Just wait a moment before fading
+        yield return new WaitForSeconds(1.5f);
+
+        // Fade out
+        float elapsed = 0f;
+        while (elapsed < titleFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / titleFadeDuration;
+            titleContainer.alpha = 1f - t;
+            yield return null;
+        }
+
+        // Hide after fade completes
+        titleContainer.alpha = 0f;
+        titleContainer.gameObject.SetActive(false);
     }
 
     private void HandleChoiceDisplay(string question, ChoiceOption[] choices)
@@ -248,10 +421,7 @@ public class DialogueUI : MonoBehaviour
         // Display question as dialogue if present
         if (!string.IsNullOrEmpty(question))
         {
-            if (dialogText != null)
-            {
-                dialogText.text = question;
-            }
+            AppendToHistory($"<b>{question}</b>");
         }
 
         // Show choices container
@@ -262,6 +432,7 @@ public class DialogueUI : MonoBehaviour
 
         // Clear existing choice buttons
         ClearChoiceButtons();
+        currentChoiceTexts.Clear();
 
         // Create choice buttons
         if (choicePrefab != null && choiceParent != null && choices != null)
@@ -270,6 +441,8 @@ public class DialogueUI : MonoBehaviour
             {
                 int choiceIndex = i; // Capture for lambda
                 ChoiceOption choice = choices[i];
+
+                currentChoiceTexts.Add(choice.text);
 
                 GameObject choiceObj = Instantiate(choicePrefab, choiceParent);
                 currentChoiceButtons.Add(choiceObj);
@@ -336,6 +509,9 @@ public class DialogueUI : MonoBehaviour
         }
 
         ClearChoiceButtons();
+
+        // Clear dialogue history for next dialogue
+        ClearDialogueHistory();
     }
 
     private void ClearChoiceButtons()
@@ -348,10 +524,16 @@ public class DialogueUI : MonoBehaviour
             }
         }
         currentChoiceButtons.Clear();
+        currentChoiceTexts.Clear();
     }
 
     private void OnChoiceButtonClicked(int choiceIndex)
     {
+        if (choiceIndex >= 0 && choiceIndex < currentChoiceTexts.Count)
+        {
+            AppendPlayerChoice(currentChoiceTexts[choiceIndex]);
+        }
+
         if (DialogueManager.Instance != null)
         {
             DialogueManager.Instance.SelectChoice(choiceIndex);

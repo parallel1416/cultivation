@@ -423,6 +423,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 264838960}
+  - component: {fileID: 264838961}
   m_Layer: 5
   m_Name: NodesContainer
   m_TagString: Untagged
@@ -454,6 +455,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0}
+--- !u!225 &264838961
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 264838959}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &298693165
 GameObject:
   m_ObjectHideFlags: 0
@@ -1815,6 +1828,7 @@ GameObject:
   - component: {fileID: 1407012342}
   - component: {fileID: 1407012344}
   - component: {fileID: 1407012345}
+  - component: {fileID: 1407012346}
   m_Layer: 0
   m_Name: SceneManager
   m_TagString: Untagged
@@ -1913,6 +1927,128 @@ MonoBehaviour:
   onTechUnlocked:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1407012346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1407012341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fb68b15cb8de2f43aa5d8629ba885fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tree1: {fileID: 1876240479}
+  tree2: {fileID: 1388585034}
+  tree3: {fileID: 1411381928}
+  nodesContainer: {fileID: 264838961}
+  tree1Delay: 0
+  tree1Duration: 1
+  tree1Distance: 300
+  tree1Curve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  tree2Delay: 0.3
+  tree2Duration: 0.9
+  tree2Distance: 500
+  tree2Curve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  tree3Delay: 1
+  tree3Duration: 0.6
+  tree3Curve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  nodesFadeDelay: 1.5
+  nodesFadeDuration: 1
+  nodesFadeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1411381927
 GameObject:
   m_ObjectHideFlags: 0

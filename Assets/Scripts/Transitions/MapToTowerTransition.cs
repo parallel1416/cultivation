@@ -41,9 +41,15 @@ public class MapToTowerTransition : MonoBehaviour
 
     private void OnTreeButtonClicked()
     {
+        Debug.Log("TreeButton clicked! Starting transition...");
+        
         if (!isTransitioning)
         {
             StartCoroutine(FadeToTowerScene());
+        }
+        else
+        {
+            Debug.LogWarning("Transition already in progress, ignoring click.");
         }
     }
 
@@ -51,16 +57,7 @@ public class MapToTowerTransition : MonoBehaviour
     {
         isTransitioning = true;
         
-        // Notify SceneTransitionManager if it exists
-        if (SceneTransitionManager.Instance != null)
-        {
-            SceneTransitionManager.Instance.TransitionMapToTower(Vector3.zero, fadeDuration);
-            yield break; // Let the manager handle it
-        }
-
-        // Fallback if no manager exists - do simple fade
-        float elapsed = 0f;
-        
+        // Setup fade overlay
         if (fadeOverlay == null)
         {
             SetupFadeOverlay();
@@ -72,6 +69,7 @@ public class MapToTowerTransition : MonoBehaviour
         }
 
         // Fade to black
+        float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
             elapsed += Time.deltaTime;
@@ -103,6 +101,7 @@ public class MapToTowerTransition : MonoBehaviour
     {
         if (treeButton != null)
         {
+            Debug.Log($"TreeButton assigned in Inspector: {treeButton.name}");
             treeButton.onClick.AddListener(OnTreeButtonClicked);
             return;
         }
@@ -114,6 +113,7 @@ public class MapToTowerTransition : MonoBehaviour
             if (buttonObj != null)
             {
                 treeButton = buttonObj.GetComponent<Button>();
+                Debug.Log($"TreeButton found by name: {treeButton.name}");
             }
         }
 
