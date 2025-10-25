@@ -167,11 +167,11 @@ public class DialogueListManager : MonoBehaviour
     }
 
     /// <summary>
-    /// stupid but stable
+    /// stupid, simple, but stable
     /// </summary>
     private void SetUpSpecialDiscipleDialogues(int currentTurn)
     {
-        // personal dialogue event phase 1
+        // personal dialogue event phase 1 target confirm
         if (TechManager.Instance.IsTechUnlocked(jingshiTech) && 
             !GlobalTagManager.Instance.GetTagValue("jingshi_event_1_triggered")) 
             jingshiEvent1TargetTurn = currentTurn;
@@ -184,7 +184,7 @@ public class DialogueListManager : MonoBehaviour
             !GlobalTagManager.Instance.GetTagValue("yuezheng_event_1_triggered"))
             yuezhengEvent1TargetTurn = currentTurn;
 
-        // personal dialogue event phase 2
+        // personal dialogue event phase 2 target confirm
         if (GlobalTagManager.Instance.GetTagValue("jingshi_event_1_triggered"))
             jingshiEvent2TargetTurn = currentTurn + specialDisciplePersonalDialogueInterval - 1;
         if (GlobalTagManager.Instance.GetTagValue("jianjun_event_1_triggered"))
@@ -192,18 +192,27 @@ public class DialogueListManager : MonoBehaviour
         if (GlobalTagManager.Instance.GetTagValue("yuezheng_event_1_triggered"))
             yuezhengEvent2TargetTurn = currentTurn + specialDisciplePersonalDialogueInterval - 1;
 
-        // add personal dialogue events to current turn dialogues
-        if (currentTurn == jingshiEvent1TargetTurn)
+        // add personal dialogue events to corresponding current turn dialogues
+        // phase 1
+        if (currentTurn >= jingshiEvent1TargetTurn &&
+            !GlobalTagManager.Instance.GetTagValue("jingshi_event_1_triggered"))
             AddDialogue("jingshi_event_1");
-        if (currentTurn == jingshiEvent2TargetTurn)
-            AddDialogue("jingshi_event_2");
-        if (currentTurn == jianjunEvent1TargetTurn)
+        if (currentTurn == jianjunEvent1TargetTurn &&
+            !GlobalTagManager.Instance.GetTagValue("jianjun_event_1_triggered"))
             AddDialogue("jianjun_event_1");
-        if (currentTurn == jianjunEvent2TargetTurn)
-            AddDialogue("jianjun_event_2");
-        if (currentTurn == yuezhengEvent1TargetTurn)
+        if (currentTurn == yuezhengEvent1TargetTurn &&
+            !GlobalTagManager.Instance.GetTagValue("yuezheng_event_1_triggered"))
             AddDialogue("yuezheng_event_1");
-        if (currentTurn == yuezhengEvent2TargetTurn)
+
+        // phase 2
+        if (currentTurn == jingshiEvent2TargetTurn &&
+            !GlobalTagManager.Instance.GetTagValue("jingshi_event_2_triggered"))
+            AddDialogue("jingshi_event_2");
+        if (currentTurn == jianjunEvent2TargetTurn &&
+            !GlobalTagManager.Instance.GetTagValue("jianjun_event_2_triggered"))
+            AddDialogue("jianjun_event_2");
+        if (currentTurn == yuezhengEvent2TargetTurn &&
+            !GlobalTagManager.Instance.GetTagValue("yuezheng_event_2_triggered"))
             AddDialogue("yuezheng_event_2");
     }
 

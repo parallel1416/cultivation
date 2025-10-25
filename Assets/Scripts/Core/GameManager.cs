@@ -29,6 +29,9 @@ public class GameManager : MonoBehaviour
 
         GameObject dialogueListManagerObj = new GameObject("DialogueListManager");
         dialogueListManagerObj.AddComponent<DialogueListManager>();
+
+        GameObject diceRollManagerObj = new GameObject("DiceRollManager");
+        diceRollManagerObj.AddComponent<DiceRollManager>();
     }
 
     
