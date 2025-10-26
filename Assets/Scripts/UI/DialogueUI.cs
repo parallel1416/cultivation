@@ -36,11 +36,17 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private bool autoScrollToBottom = true; // Auto-scroll to newest dialogue
     [SerializeField] private float scrollDelay = 0.1f; // Delay before scrolling (to let layout update)
 
+    [Header("Scene Transition Settings")]
+    [SerializeField] private bool fadeOutOnDialogueEnd = false; // Fade to black when dialogue ends
+    [SerializeField] private float fadeOutDuration = 1f; // Duration of fade to black
+    [SerializeField] private string returnSceneName = "MapScene"; // Scene to return to after dialogue ends
+
     private List<GameObject> currentChoiceButtons = new List<GameObject>();
     private List<string> currentChoiceTexts = new List<string>();
     private bool hasSubscribedToEvents = false;
     private System.Text.StringBuilder dialogueHistory = new System.Text.StringBuilder();
     private Coroutine pendingScrollCoroutine;
+    private CanvasGroup fadeOverlay;
 
     private void Awake()
     {
@@ -118,6 +124,9 @@ public class DialogueUI : MonoBehaviour
             titleContainer.gameObject.SetActive(true);
         }
 
+        // Setup fade overlay for scene transitions
+        SetupFadeOverlay();
+
         // Clear dialogue history
         ClearDialogueHistory();
 
@@ -170,11 +179,29 @@ public class DialogueUI : MonoBehaviour
         // Ensure subscription now that instance exists
         SubscribeToEvents();
 
-        // Auto-start dialogue if enabled (slight delay to ensure subscriptions complete)
-        if (autoStartOnEnable && !string.IsNullOrEmpty(dialogueEventId))
+        // Check if there are already queued dialogues (from map scene events)
+        bool hasQueuedDialogues = DialogueManager.Instance.GetQueueCount() > 0;
+
+        // Auto-start dialogue only if:
+        // 1. autoStartOnEnable is true
+        // 2. dialogueEventId is not empty
+        // 3. No dialogues are already queued (priority to queued events)
+        if (autoStartOnEnable && !string.IsNullOrEmpty(dialogueEventId) && !hasQueuedDialogues)
         {
             yield return null; // wait one more frame
+            LogController.Log($"Auto-starting dialogue: {dialogueEventId}");
             StartDialogue();
+        }
+        else if (hasQueuedDialogues)
+        {
+            LogController.Log($"Skipping auto-start, {DialogueManager.Instance.GetQueueCount()} dialogue(s) already queued");
+            // Start playback of queued dialogues
+            yield return null;
+            DialogueManager.Instance.StartDialoguePlayback();
+        }
+        else if (autoStartOnEnable && string.IsNullOrEmpty(dialogueEventId))
+        {
+            LogController.LogWarning("autoStartOnEnable is true but dialogueEventId is empty");
         }
     }
 
@@ -512,6 +539,12 @@ public class DialogueUI : MonoBehaviour
 
         // Clear dialogue history for next dialogue
         ClearDialogueHistory();
+
+        // Fade to black and return to previous scene if enabled
+        if (fadeOutOnDialogueEnd)
+        {
+            StartCoroutine(FadeOutAndEndScene());
+        }
     }
 
     private void ClearChoiceButtons()
@@ -556,5 +589,96 @@ public class DialogueUI : MonoBehaviour
                 DialogueManager.Instance.AdvanceDialogue();
             }
         }
+    }
+
+    /// <summary>
+    /// Setup a fade overlay for scene transitions
+    /// </summary>
+    private void SetupFadeOverlay()
+    {
+        if (fadeOverlay != null) return;
+
+        // Find or create a canvas for the fade overlay
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas == null)
+        {
+            Debug.LogError("DialogueUI: No Canvas found in scene for fade overlay");
+            return;
+        }
+
+        GameObject overlay = new GameObject("DialogueFadeOverlay");
+        overlay.transform.SetParent(canvas.transform, false);
+        overlay.transform.SetAsLastSibling(); // Ensure it's on top
+
+        RectTransform rect = overlay.AddComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        Image image = overlay.AddComponent<Image>();
+        image.color = Color.black;
+
+        fadeOverlay = overlay.AddComponent<CanvasGroup>();
+        fadeOverlay.alpha = 0f;
+        fadeOverlay.blocksRaycasts = false;
+    }
+
+    /// <summary>
+    /// Fade to black and return to the specified scene
+    /// </summary>
+    private IEnumerator FadeOutAndEndScene()
+    {
+        if (fadeOverlay == null)
+        {
+            SetupFadeOverlay();
+        }
+
+        if (fadeOverlay == null)
+        {
+            Debug.LogError("DialogueUI: Failed to create fade overlay");
+            yield break;
+        }
+
+        // Get return scene name from DialogueManager, fallback to returnSceneName field
+        string sceneToLoad = returnSceneName;
+        if (DialogueManager.Instance != null)
+        {
+            string managerReturnScene = DialogueManager.Instance.GetReturnSceneName();
+            if (!string.IsNullOrEmpty(managerReturnScene))
+            {
+                sceneToLoad = managerReturnScene;
+            }
+        }
+
+        // Block input during fade
+        fadeOverlay.blocksRaycasts = true;
+
+        // Fade to black
+        float elapsed = 0f;
+        while (elapsed < fadeOutDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / fadeOutDuration);
+            fadeOverlay.alpha = t;
+            yield return null;
+        }
+
+        fadeOverlay.alpha = 1f;
+
+        // Small delay at full black
+        yield return new WaitForSeconds(0.2f);
+
+        // Load the return scene
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneToLoad);
+    }
+
+    /// <summary>
+    /// Public method to trigger fade out and scene end manually
+    /// Can be called from anywhere in DialogScene
+    /// </summary>
+    public void EndDialogueScene()
+    {
+        StartCoroutine(FadeOutAndEndScene());
     }
 }

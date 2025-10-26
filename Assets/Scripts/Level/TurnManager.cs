@@ -34,11 +34,53 @@ public class TurnManager : MonoBehaviour
 
     public void NextTurn()
     {
-        DialogueManager.Instance.StartDialoguePlayback();
+        LogController.Log($"=== NextTurn() called. Current turn before increment: {currentTurn} ===");
+        
+        // Clear event tracker for new turn
+        if (EventTracker.Instance != null)
+        {
+            EventTracker.Instance.OnTurnAdvance();
+        }
+
+        // Play queued dialogues from previous turn
+        if (DialogueManager.Instance != null)
+        {
+            int queueCount = DialogueManager.Instance.GetQueueCount();
+            LogController.Log($"DialogueManager queue count: {queueCount}");
+            
+            if (queueCount > 0)
+            {
+                DialogueManager.Instance.StartDialoguePlayback();
+            }
+            else
+            {
+                LogController.Log("No dialogues queued for playback");
+            }
+        }
+        else
+        {
+            Debug.LogError("DialogueManager.Instance is null!");
+        }
+        
+        // Advance turn
         currentTurn++;
         resetActionPoints();
+        
+        LogController.Log($"Turn incremented to: {currentTurn}");
+        
+        // Setup new turn's dialogue events
+        if (DialogueListManager.Instance != null)
+        {
+            DialogueListManager.Instance.SetUpTurnDialogues();
+            LogController.Log($"Setup dialogues for turn {currentTurn}. Available events: {DialogueListManager.Instance.CurrentTurnDialogues.Count}");
+        }
+        else
+        {
+            Debug.LogError("DialogueListManager.Instance is null!");
+        }
+        
         // LevelManager.Instance.GenerateResourcesPerTurn();
-        LogController.Log($"Current Turn: {currentTurn}");
+        LogController.Log($"=== Turn {currentTurn} started ===");
     }
 
     public void ResetTurns(int targetTurn)

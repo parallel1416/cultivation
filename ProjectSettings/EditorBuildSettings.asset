@@ -14,4 +14,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TowerScene.unity
     guid: c18df0c19e4c08041b78230a8423af56
+  - enabled: 1
+    path: Assets/Scenes/DialogScene.unity
+    guid: d7f249b81b98e8a44b601d258055fe7a
+  - enabled: 1
+    path: Assets/Scenes/TurnScene.unity
+    guid: 2c4314056b931634a82b3049c0898eca
   m_configObjects: {}

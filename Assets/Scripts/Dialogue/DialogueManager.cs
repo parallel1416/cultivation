@@ -98,6 +98,8 @@ public partial class DialogueManager : MonoBehaviour
 
     private System.Random random = new System.Random();
 
+    private string returnSceneName = "MapScene"; // Scene to return to after dialogue ends
+
     private void Awake()
     {
         if (_instance != null && _instance != this)
@@ -130,6 +132,33 @@ public partial class DialogueManager : MonoBehaviour
     public DialogueEvent GetDialogueDefinition(string eventId)
     {
         return LoadDialogueEvent(eventId);
+    }
+
+    /// <summary>
+    /// Plays a dialogue event by loading the DialogScene with the specified event.
+    /// Can be called from anywhere in the game to trigger a dialogue sequence.
+    /// </summary>
+    /// <param name="eventId">The ID of the dialogue event to play</param>
+    /// <param name="returnSceneName">Optional scene name to return to after dialogue ends. If null, defaults to "MapScene"</param>
+    public static void PlayDialogueEvent(string eventId, string returnSceneName = null)
+    {
+        if (Instance == null)
+        {
+            LogController.LogError("DialogueManager.Instance is null. Cannot play dialogue event: " + eventId);
+            return;
+        }
+
+        // Store the return scene name if provided
+        if (!string.IsNullOrEmpty(returnSceneName))
+        {
+            Instance.returnSceneName = returnSceneName;
+        }
+
+        // Enqueue the dialogue event so it's ready when DialogScene loads
+        Instance.EnqueueDialogueEvent(eventId);
+
+        // Load DialogScene
+        UnityEngine.SceneManagement.SceneManager.LoadScene("DialogScene");
     }
 
     /// <summary>
@@ -217,5 +246,15 @@ public partial class DialogueManager : MonoBehaviour
     public bool IsOnCooldown()
     {
         return isOnCooldown;
+    }
+
+    public string GetReturnSceneName()
+    {
+        return returnSceneName;
+    }
+
+    public int GetQueueCount()
+    {
+        return dialogueQueue.Count;
     }
 }

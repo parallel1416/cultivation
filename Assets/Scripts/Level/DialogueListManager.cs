@@ -28,7 +28,7 @@ public class DialogueListManager : MonoBehaviour
     //[SerializeField]
     //private readonly List<string> TutorialDialogues = new List<string>()
     //{
-    //    // 教程对话
+    //    // 锟教程对伙拷
     //    "grass",
     //    "mouse",
     //    "stars"
@@ -38,7 +38,7 @@ public class DialogueListManager : MonoBehaviour
     [SerializeField]
     private readonly List<string> ExpeditionDialoguePool = new List<string>()
     { 
-        // 下山游历
+        // 锟斤拷山锟斤拷锟斤拷
     };
 
     // Mainline dialogue events, show on event map, trigger when player clicks
@@ -98,9 +98,15 @@ public class DialogueListManager : MonoBehaviour
     /// </summary>
     public void AddDialogueFromPool(List<string> dialoguePool)
     {
-        if (dialoguePool == null) return;
+        if (dialoguePool == null || dialoguePool.Count == 0)
+        {
+            LogController.Log("AddDialogueFromPool: Pool is null or empty, skipping");
+            return;
+        }
+        
         int randomIndex = Random.Range(0, dialoguePool.Count);
         AddDialogue(dialoguePool[randomIndex]);
+        LogController.Log($"Added dialogue from pool: {dialoguePool[randomIndex]}");
     }
 
 
@@ -117,12 +123,23 @@ public class DialogueListManager : MonoBehaviour
     public void SetUpTurnDialogues()
     {
         currentTurnDialogues.Clear();
+        
+        if (TurnManager.Instance == null)
+        {
+            Debug.LogError("SetUpTurnDialogues: TurnManager.Instance is null!");
+            return;
+        }
+        
         int turnNumber = TurnManager.Instance.CurrentTurn;
+        LogController.Log($"SetUpTurnDialogues for turn {turnNumber}");
+        
         //SetUpTutorialDialogues(turnNumber);
         SetUpMainlineDialogues(turnNumber);
         SetUpCultivationDialogues();
         SetUpExpeditionDialogues();
         SetUpSpecialDiscipleDialogues(turnNumber);
+        
+        LogController.Log($"SetUpTurnDialogues complete. Total dialogues: {currentTurnDialogues.Count}");
     }
 
 
@@ -134,6 +151,11 @@ public class DialogueListManager : MonoBehaviour
 
     private void SetUpMainlineDialogues(int currentTurn)
     {
+        if (!mainlineInTurnDialogueEvents.ContainsKey(currentTurn))
+        {
+            return; // No mainline dialogues for this turn
+        }
+        
         List<string> dialogues = mainlineInTurnDialogueEvents[currentTurn];
         if (dialogues == null) return;
         foreach (string dialogue in dialogues)
@@ -144,6 +166,12 @@ public class DialogueListManager : MonoBehaviour
 
     private void SetUpCultivationDialogues()
     {
+        if (TechManager.Instance == null)
+        {
+            LogController.LogWarning("SetUpCultivationDialogues: TechManager.Instance is null, skipping");
+            return;
+        }
+        
         if (TechManager.Instance.IsTechUnlocked(cultivationTechLevelId_3))
         {
             AddDialogue("farm_3");
@@ -171,6 +199,12 @@ public class DialogueListManager : MonoBehaviour
     /// </summary>
     private void SetUpSpecialDiscipleDialogues(int currentTurn)
     {
+        if (TechManager.Instance == null || GlobalTagManager.Instance == null)
+        {
+            LogController.LogWarning("SetUpSpecialDiscipleDialogues: TechManager or GlobalTagManager is null, skipping");
+            return;
+        }
+        
         // personal dialogue event phase 1 target confirm
         if (TechManager.Instance.IsTechUnlocked(jingshiTech) && 
             !GlobalTagManager.Instance.GetTagValue("jingshi_event_1_triggered")) 
@@ -229,7 +263,7 @@ public class DialogueListManager : MonoBehaviour
         if (dialogues == null) return;
         foreach (string dialogue in dialogues)
         {
-            // Directly play in dialogue scene
+            DialogueManager.PlayDialogueEvent(dialogue); // Directly play in dialogue scene
         }
     }
 }

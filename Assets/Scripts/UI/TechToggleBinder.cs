@@ -25,6 +25,7 @@ public class TechToggleBinder : MonoBehaviour
         public RectTransform RectTransform;
         public UnityAction<bool> Listener;
         public ColorBlock OriginalColors;
+        public TMPro.TextMeshProUGUI TextComponent; // For updating tech name
     }
 
     [Header("Toggle → TechID Mapping")]
@@ -103,12 +104,16 @@ public class TechToggleBinder : MonoBehaviour
                 BackgroundImage = ResolveBackgroundImage(toggle),
                 RectTransform = toggle.transform as RectTransform,
                 OriginalColors = toggle.colors,
+                TextComponent = ResolveTextComponent(toggle),
             };
 
             if (binding.BackgroundImage != null)
             {
                 binding.OriginalMaterial = binding.BackgroundImage.material;
             }
+
+            // Update toggle text to tech name
+            UpdateToggleText(binding);
 
             binding.Listener = isOn => OnToggleValueChanged(toggle, isOn);
 
@@ -330,5 +335,54 @@ public class TechToggleBinder : MonoBehaviour
         {
             toggle.targetGraphic.color = targetColor;
         }
+    }
+
+    private static TMPro.TextMeshProUGUI ResolveTextComponent(Toggle toggle)
+    {
+        if (toggle == null)
+        {
+            return null;
+        }
+
+        // Try to find TextMeshProUGUI component in children
+        TMPro.TextMeshProUGUI tmp = toggle.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+        if (tmp != null)
+        {
+            return tmp;
+        }
+
+        // Fallback to legacy Text component (convert if needed)
+        UnityEngine.UI.Text legacyText = toggle.GetComponentInChildren<UnityEngine.UI.Text>();
+        if (legacyText != null)
+        {
+            Debug.LogWarning($"TechToggleBinder: Toggle '{toggle.name}' uses legacy Text component. Consider upgrading to TextMeshProUGUI.");
+        }
+
+        return null;
+    }
+
+    private void UpdateToggleText(ToggleBinding binding)
+    {
+        if (binding == null || binding.TextComponent == null)
+        {
+            return;
+        }
+
+        if (TechManager.Instance == null)
+        {
+            Debug.LogWarning($"TechToggleBinder: TechManager not available when updating text for toggle '{binding.Toggle?.name}'");
+            return;
+        }
+
+        TechNode node = TechManager.Instance.GetTechNode(binding.TechId);
+        if (node == null)
+        {
+            Debug.LogWarning($"TechToggleBinder: Tech node not found for ID '{binding.TechId}' on toggle '{binding.Toggle?.name}'");
+            return;
+        }
+
+        // Update the text to the tech name
+        string techName = !string.IsNullOrEmpty(node.name) ? node.name : binding.TechId;
+        binding.TextComponent.text = techName;
     }
 }

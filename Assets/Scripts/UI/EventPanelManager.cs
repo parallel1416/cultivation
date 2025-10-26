@@ -120,7 +120,17 @@ public class EventPanelManager : MonoBehaviour
     {
         // selection panel anchoring will be ensured after rect is resolved
 
+        // Find the root canvas in the scene
         canvas = GetComponentInParent<Canvas>();
+        if (canvas == null)
+        {
+            canvas = FindObjectOfType<Canvas>();
+        }
+        
+        if (canvas == null)
+        {
+            Debug.LogError("EventPanelManager: No Canvas found in scene!");
+        }
 
         if (panelRoot != null && panelRectTransform == null)
         {
@@ -285,23 +295,42 @@ public class EventPanelManager : MonoBehaviour
         SetAllButtonsInactive();
         SetButtonState(mapping, true);
 
-        isConfirmed = false;
-        SetTeamAreaInteractable(true);
-        if (confirmButton != null)
-        {
-            confirmButton.interactable = true;
-        }
-
         currentEventData = FetchEventData(mapping.eventId);
         
-        // If event has no dice limit (diceLimit = 0), go directly to DialogScene
-        if (currentEventData != null && currentEventData.diceLimit == 0)
+        // Check if this event was already confirmed
+        bool wasConfirmed = EventTracker.Instance != null && 
+                           EventTracker.Instance.IsEventConfirmed(mapping.eventId);
+        
+        isConfirmed = wasConfirmed;
+        
+        if (wasConfirmed)
         {
-            LoadDialogueScene(mapping.eventId);
-            return;
+            // Event was previously confirmed, restore that state
+            SetTeamAreaInteractable(false);
+            if (confirmButton != null)
+            {
+                confirmButton.interactable = false;
+            }
+            Debug.Log($"Opening panel for already-confirmed event: {mapping.eventId}");
         }
-
+        else
+        {
+            // Event not yet confirmed, allow interaction
+            SetTeamAreaInteractable(true);
+            if (confirmButton != null)
+            {
+                confirmButton.interactable = true;
+            }
+        }
+        
         ApplyEventDataToUI();
+        
+        // Restore team selection if event was confirmed
+        if (wasConfirmed && EventTracker.Instance != null)
+        {
+            RestoreTeamSelection(mapping.eventId);
+        }
+        
         PositionPanel(mapping.button.GetComponent<RectTransform>());
 
         if (panelAnimationCoroutine != null)
@@ -804,30 +833,38 @@ public class EventPanelManager : MonoBehaviour
     {
         if (panelRectTransform == null || canvas == null || buttonRect == null)
         {
+            Debug.LogWarning($"PositionPanel failed: panelRect={panelRectTransform != null}, canvas={canvas != null}, buttonRect={buttonRect != null}");
             return;
         }
 
+        // Get button's RectTransform and its anchored position
+        Vector2 buttonAnchoredPos = buttonRect.anchoredPosition;
+        
+        // Determine if button is on left or right side based on its anchored position
+        // Since buttons are anchored at center (0.5, 0.5), negative X = left, positive X = right
+        bool isButtonOnLeft = buttonAnchoredPos.x < 0;
+
+        // Set pivot based on which side the panel should appear
+        // If button is on left, panel appears on right (pivot = 0 = left edge of panel)
+        // If button is on right, panel appears on left (pivot = 1 = right edge of panel)
+        panelRectTransform.pivot = new Vector2(isButtonOnLeft ? 0f : 1f, 0.5f);
+        panelRectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        panelRectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+
+        // Set panel width using sizeDelta (when anchors are at same point, use sizeDelta)
         float canvasWidth = (canvas.transform as RectTransform).rect.width;
         float panelWidth = canvasWidth * panelWidthRatio;
-        panelRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, panelWidth);
+        panelRectTransform.sizeDelta = new Vector2(panelWidth, panelRectTransform.sizeDelta.y);
 
-        Vector3[] corners = new Vector3[4];
-        buttonRect.GetWorldCorners(corners);
-        Vector2 screenBottomLeft = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, corners[0]);
-        Vector2 screenTopRight = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, corners[2]);
-        Vector2 buttonCenterScreen = (screenBottomLeft + screenTopRight) * 0.5f;
+        // Calculate offset: place panel next to button with margin
+        float buttonHalfWidth = buttonRect.rect.width * 0.5f;
+        float xOffset = isButtonOnLeft 
+            ? buttonHalfWidth + panelMargin  // Button on left, panel to the right
+            : -(buttonHalfWidth + panelMargin); // Button on right, panel to the left
 
-        bool isButtonOnLeft = buttonCenterScreen.x < Screen.width * 0.5f;
-
-        panelRectTransform.pivot = new Vector2(isButtonOnLeft ? 0f : 1f, 0.5f);
-        panelRectTransform.anchorMin = new Vector2(isButtonOnLeft ? 0f : 1f, 0.5f);
-        panelRectTransform.anchorMax = new Vector2(isButtonOnLeft ? 0f : 1f, 0.5f);
-
-        RectTransform canvasRect = canvas.transform as RectTransform;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, buttonCenterScreen, canvas.worldCamera, out Vector2 buttonLocalPos);
-
-        float xOffset = isButtonOnLeft ? (buttonRect.rect.width * 0.5f + panelMargin) : -(buttonRect.rect.width * 0.5f + panelMargin);
-        panelRectTransform.anchoredPosition = new Vector2(buttonLocalPos.x + xOffset, buttonLocalPos.y);
+        // Position panel relative to button's anchored position
+        panelRectTransform.anchoredPosition = new Vector2(buttonAnchoredPos.x + xOffset, buttonAnchoredPos.y);
+        
     }
 
     private IEnumerator AnimatePanel(bool slideIn)
@@ -877,23 +914,54 @@ public class EventPanelManager : MonoBehaviour
 
     private void OnConfirmClicked()
     {
-        if (isConfirmed)
+        if (isConfirmed || currentEventData == null)
         {
             return;
         }
 
         isConfirmed = true;
 
-        // TODO: send selection data to backend when available.
+        // Get selected team members
         List<string> selectedMembers = GetSelectedTeamMembers();
 
+        // Track this event confirmation with EventTracker
+        if (EventTracker.Instance != null && !string.IsNullOrEmpty(currentEventData.eventId))
+        {
+            EventTracker.Instance.ConfirmEvent(currentEventData.eventId, selectedMembers);
+        }
+
+        // Disable confirm button (visual feedback that event is confirmed)
         if (confirmButton != null)
         {
             confirmButton.interactable = false;
         }
 
+        // Make team area non-interactable but keep visible
         SetTeamAreaInteractable(false);
         ToggleSelectionPanel(false);
+
+        // Handle dialogue based on diceLimit
+        if (!string.IsNullOrEmpty(currentEventData.eventId))
+        {
+            if (currentEventData.diceLimit == 0)
+            {
+                // No team required - play dialogue immediately
+                DialogueManager.PlayDialogueEvent(currentEventData.eventId, "MapScene");
+            }
+            else
+            {
+                // Team required - queue dialogue for end of round
+                if (DialogueManager.Instance != null)
+                {
+                    DialogueManager.Instance.EnqueueDialogueEvent(currentEventData.eventId);
+                    LogController.Log($"Queued dialogue event '{currentEventData.eventId}' for end of round. Queue count: {DialogueManager.Instance.GetQueueCount()}");
+                }
+                
+                // Keep panel open to show confirmed selection
+                // Player can click close button or another event button to close
+                LogController.Log($"Event '{currentEventData.eventId}' confirmed with {selectedMembers.Count} team members. Panel remains open.");
+            }
+        }
     }
 
     private List<string> GetSelectedTeamMembers()
@@ -907,6 +975,41 @@ public class EventPanelManager : MonoBehaviour
             }
         }
         return ids;
+    }
+
+    private void RestoreTeamSelection(string eventId)
+    {
+        if (EventTracker.Instance == null || currentEventData == null)
+        {
+            return;
+        }
+
+        EventTeamData teamData = EventTracker.Instance.GetEventData(eventId);
+        if (teamData == null || teamData.assignedMemberIds == null)
+        {
+            return;
+        }
+
+        // Restore team member assignments to slots
+        for (int i = 0; i < teamSlots.Count && i < teamData.assignedMemberIds.Count; i++)
+        {
+            string personId = teamData.assignedMemberIds[i];
+            if (string.IsNullOrEmpty(personId))
+            {
+                continue;
+            }
+
+            // Find the person data
+            PersonData person = currentEventData.availablePeople.Find(p => p.id == personId);
+            if (person != null && teamSlots[i] != null)
+            {
+                teamSlots[i].assignedPersonId = person.id;
+                teamSlots[i].portraitImage.sprite = person.portrait;
+                teamSlots[i].portraitImage.color = slotFilledColor;
+            }
+        }
+
+        Debug.Log($"Restored team selection for event '{eventId}': {teamData.assignedMemberIds.Count} members");
     }
 
     private void SetTeamAreaInteractable(bool interactable)
@@ -967,22 +1070,5 @@ public class EventPanelManager : MonoBehaviour
         // Place it off-screen to the left initially
         float width = selectionPanelRect.rect.width;
         selectionPanelRect.anchoredPosition = new Vector2(-width, selectionPanelRect.anchoredPosition.y);
-    }
-
-    private void LoadDialogueScene(string eventId)
-    {
-        // Enqueue the dialogue event so it's ready when DialogScene loads
-        if (DialogueManager.Instance != null)
-        {
-            DialogueManager.Instance.EnqueueDialogueEvent(eventId);
-        }
-        else
-        {
-            Debug.LogError("DialogueManager.Instance is null. Cannot enqueue dialogue for event: " + eventId);
-            return;
-        }
-
-        // Load DialogScene
-        SceneManager.LoadScene("DialogScene");
     }
 }

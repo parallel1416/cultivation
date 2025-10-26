@@ -27,19 +27,45 @@ public partial class DialogueManager : MonoBehaviour
     /// </summary>
     public void StartDialoguePlayback()
     {
+        LogController.Log($"StartDialoguePlayback() called. Queue count: {dialogueQueue.Count}, isPlaying: {isPlaying}");
+        
         if (dialogueQueue.Count > 0 && !isPlaying)
         {
-            isPlaying = true;
-            currentEvent = dialogueQueue.Dequeue();
-            if (!string.IsNullOrEmpty(currentEvent.title))
+            // Check if we're already in DialogScene
+            string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            LogController.Log($"Current scene: {currentScene}");
+            
+            if (currentScene == "DialogScene")
             {
-                string titleText = $"=== {currentEvent.title} ===";
-                OutputTitle(titleText);
-                OutputTitleUI(titleText);
+                // Already in DialogScene, start playing immediately
+                isPlaying = true;
+                currentEvent = dialogueQueue.Dequeue();
+                LogController.Log($"Playing dialogue event: {currentEvent.id}");
+                
+                if (!string.IsNullOrEmpty(currentEvent.title))
+                {
+                    string titleText = $"=== {currentEvent.title} ===";
+                    OutputTitle(titleText);
+                    OutputTitleUI(titleText);
+                }
+                BuildIdIndexMap();
+                currentSentenceIndex = 0;
+                PlayCurrentSentence();
             }
-            BuildIdIndexMap();
-            currentSentenceIndex = 0;
-            PlayCurrentSentence();
+            else
+            {
+                // Not in DialogScene, load it first (dialogue will auto-start via DialogueUI)
+                LogController.Log("Loading DialogScene to play queued dialogues");
+                UnityEngine.SceneManagement.SceneManager.LoadScene("DialogScene");
+            }
+        }
+        else if (dialogueQueue.Count == 0)
+        {
+            LogController.Log("StartDialoguePlayback called but queue is empty");
+        }
+        else if (isPlaying)
+        {
+            LogController.Log("StartDialoguePlayback called but dialogue is already playing");
         }
     }
 

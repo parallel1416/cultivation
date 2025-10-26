@@ -208,20 +208,10 @@ MonoBehaviour:
 
     1
 
-    1
-
-    1
-
-    1
-
-    1
-
-    1
-
     1'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 34cd1e50854dced40b454242a0b6677b, type: 2}
-  m_sharedMaterial: {fileID: -6775364877237929759, guid: 34cd1e50854dced40b454242a0b6677b, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -549,7 +539,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 928318740}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999158
+  m_Size: 0.9999287
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1167,10 +1157,10 @@ RectTransform:
   - {fileID: 1805041416}
   m_Father: {fileID: 973256852}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.0005188, y: 0.000056267}
-  m_SizeDelta: {x: 968, y: 544}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &1708054379
 CanvasGroup:
@@ -1492,8 +1482,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f393a4e1af92274f87d90aa36174b65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialogueEventId: test_dialogue
-  autoStartOnEnable: 1
+  dialogueEventId: 
+  autoStartOnEnable: 0
   dialogContainer: {fileID: 2115839687}
   dialogPanel: {fileID: 876741340}
   dialogText: {fileID: 19980195}
@@ -1507,6 +1497,9 @@ MonoBehaviour:
   narratorName: 
   autoScrollToBottom: 1
   scrollDelay: 0.1
+  fadeOutOnDialogueEnd: 1
+  fadeOutDuration: 1
+  returnSceneName: MapScene
 --- !u!1 &1939165136
 GameObject:
   m_ObjectHideFlags: 0
@@ -1779,7 +1772,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00074279774}
+  m_AnchoredPosition: {x: 0, y: 0.00080065615}
   m_SizeDelta: {x: 0, y: 400}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &2081823810
