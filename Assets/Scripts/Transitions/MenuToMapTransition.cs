@@ -33,21 +33,13 @@ public class MenuToMapTransition : TransitionAnimator
     [SerializeField] private Vector3 outerRingScaleMultiplier = new Vector3(1.3f, 1.3f, 1f);
     [SerializeField] private Vector3 outerFlamesScaleMultiplier = new Vector3(1.3f, 1.3f, 1f);
 
-    [Header("Circular Menu Spin")]
-    [SerializeField] private RectTransform circularMenu;
-    [SerializeField] private float circularMenuInitialSpinSpeed = 90f;
-    [SerializeField] private float circularMenuFinalSpinSpeed = 900f;
-    [SerializeField] private float spinDuration = 2.5f;
-    [SerializeField] private bool spinClockwise = true;
-
     [Header("Timing")]
     [SerializeField] private float movementDuration = 1.4f;
     [SerializeField] private float scaleDuration = 1.6f;
     [SerializeField] private float fadeDelay = 0.3f;
     [SerializeField] private float fadeDuration = 1.2f;
 
-    [Header("Fade Overlay")]
-    [SerializeField] private CanvasGroup fadeCanvasGroup;
+    private CanvasGroup fadeCanvasGroup;
 
     private Vector2 titleStartPos;
     private Vector2 smokeStartPos;
@@ -58,11 +50,10 @@ public class MenuToMapTransition : TransitionAnimator
     private Vector3 outerRingStartScale;
     private Vector3 outerFlamesStartScale;
 
-    private Vector3 circularMenuStartEuler;
-
     protected override void Awake()
     {
         base.Awake();
+        CreateFadeOverlay();
         CacheStartStates();
     }
 
@@ -98,8 +89,6 @@ public class MenuToMapTransition : TransitionAnimator
         if (outerRing != null) outerRingStartScale = outerRing.localScale;
         if (outerFlames != null) outerFlamesStartScale = outerFlames.localScale;
 
-        if (circularMenu != null) circularMenuStartEuler = circularMenu.localEulerAngles;
-
         if (fadeCanvasGroup != null)
         {
             fadeCanvasGroup.alpha = 0f;
@@ -116,8 +105,6 @@ public class MenuToMapTransition : TransitionAnimator
         if (menuBackground != null) menuBackground.localScale = menuBackgroundStartScale;
         if (outerRing != null) outerRing.localScale = outerRingStartScale;
         if (outerFlames != null) outerFlames.localScale = outerFlamesStartScale;
-
-        if (circularMenu != null) circularMenu.localEulerAngles = circularMenuStartEuler;
 
         if (fadeCanvasGroup != null) fadeCanvasGroup.alpha = 0f;
 
@@ -166,8 +153,6 @@ public class MenuToMapTransition : TransitionAnimator
         Launch(AnimateScale(menuBackground, menuBackgroundStartScale, menuBackgroundScaleMultiplier, scaleDuration));
         Launch(AnimateScale(outerRing, outerRingStartScale, outerRingScaleMultiplier, scaleDuration));
         Launch(AnimateScale(outerFlames, outerFlamesStartScale, outerFlamesScaleMultiplier, scaleDuration));
-
-        Launch(SpinCircularMenuCoroutine());
 
         while (runningAnimations > 0)
         {
@@ -228,25 +213,45 @@ public class MenuToMapTransition : TransitionAnimator
         );
     }
 
-    private IEnumerator SpinCircularMenuCoroutine()
+    private void CreateFadeOverlay()
     {
-        if (circularMenu == null || spinDuration <= 0f)
+        // Find canvas
+        Canvas canvas = GetComponentInParent<Canvas>();
+        if (canvas == null)
         {
-            yield break;
+            canvas = FindObjectOfType<Canvas>();
         }
 
-        float elapsed = 0f;
-        float direction = spinClockwise ? -1f : 1f;
-
-        while (elapsed < spinDuration)
+        if (canvas == null)
         {
-            float t = Mathf.Clamp01(elapsed / spinDuration);
-            float speed = Mathf.Lerp(circularMenuInitialSpinSpeed, circularMenuFinalSpinSpeed, easeCurve.Evaluate(t));
-            circularMenu.Rotate(0f, 0f, speed * Time.deltaTime * direction);
-
-            elapsed += Time.deltaTime;
-            yield return null;
+            Debug.LogError("MenuToMapTransition: No Canvas found in scene");
+            return;
         }
+
+        // Create fade overlay GameObject
+        GameObject fadeObject = new GameObject("FadeOverlay_MenuToMap");
+        fadeObject.transform.SetParent(canvas.transform, false);
+
+        // Setup RectTransform to cover entire screen
+        RectTransform rectTransform = fadeObject.AddComponent<RectTransform>();
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.sizeDelta = Vector2.zero;
+        rectTransform.anchoredPosition = Vector2.zero;
+
+        // Add Image component for black color
+        Image image = fadeObject.AddComponent<Image>();
+        image.color = Color.black;
+
+        // Add CanvasGroup for fading
+        fadeCanvasGroup = fadeObject.AddComponent<CanvasGroup>();
+        fadeCanvasGroup.alpha = 0f;
+        fadeCanvasGroup.blocksRaycasts = false;
+
+        // Set as last sibling to be on top
+        rectTransform.SetAsLastSibling();
+
+        Debug.Log("MenuToMapTransition: Fade overlay created");
     }
 
 #if UNITY_EDITOR
