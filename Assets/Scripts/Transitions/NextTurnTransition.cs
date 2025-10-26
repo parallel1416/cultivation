@@ -12,7 +12,6 @@ public class NextTurnTransition : MonoBehaviour
     [Header("References")]
     [SerializeField] private Button nextTurnButton;
     [SerializeField] private RectTransform containerTransform;
-    [SerializeField] private CanvasGroup fadeCanvasGroup;
 
     [Header("Spin Settings")]
     [SerializeField] private float spinAngle = 90f;
@@ -27,6 +26,7 @@ public class NextTurnTransition : MonoBehaviour
     [SerializeField] private string targetSceneName = "MapScene";
 
     private bool isTransitioning = false;
+    private CanvasGroup fadeCanvasGroup;
 
     private void Awake()
     {
@@ -36,12 +36,8 @@ public class NextTurnTransition : MonoBehaviour
             nextTurnButton = GetComponent<Button>();
         }
 
-        // Setup fade canvas if assigned
-        if (fadeCanvasGroup != null)
-        {
-            fadeCanvasGroup.alpha = 0f;
-            fadeCanvasGroup.blocksRaycasts = false;
-        }
+        // Create fade overlay
+        CreateFadeOverlay();
     }
 
     private void OnEnable()
@@ -119,10 +115,52 @@ public class NextTurnTransition : MonoBehaviour
                 fadeCurve
             );
         }
+        else
+        {
+            Debug.LogWarning("NextTurnTransition: Fade canvas group not created, skipping fade");
+            // Wait a brief moment to simulate fade duration
+            yield return new WaitForSeconds(fadeDuration);
+        }
 
         // Step 4: Load map scene
         Debug.Log($"NextTurnTransition: Loading scene '{targetSceneName}'");
         SceneManager.LoadScene(targetSceneName);
+    }
+
+    private void CreateFadeOverlay()
+    {
+        // Find or create canvas
+        Canvas canvas = GetComponentInParent<Canvas>();
+        if (canvas == null)
+        {
+            Debug.LogError("NextTurnTransition: No Canvas found in parent hierarchy");
+            return;
+        }
+
+        // Create fade overlay GameObject
+        GameObject fadeObject = new GameObject("FadeOverlay");
+        fadeObject.transform.SetParent(canvas.transform, false);
+
+        // Setup RectTransform to cover entire screen
+        RectTransform rectTransform = fadeObject.AddComponent<RectTransform>();
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.sizeDelta = Vector2.zero;
+        rectTransform.anchoredPosition = Vector2.zero;
+
+        // Add Image component for black color
+        UnityEngine.UI.Image image = fadeObject.AddComponent<UnityEngine.UI.Image>();
+        image.color = Color.black;
+
+        // Add CanvasGroup for fading
+        fadeCanvasGroup = fadeObject.AddComponent<CanvasGroup>();
+        fadeCanvasGroup.alpha = 0f;
+        fadeCanvasGroup.blocksRaycasts = false;
+
+        // Set as last sibling to be on top
+        rectTransform.SetAsLastSibling();
+
+        Debug.Log("NextTurnTransition: Fade overlay created");
     }
 
     private IEnumerator AnimateSpin(RectTransform target, float angle, float duration, AnimationCurve curve)

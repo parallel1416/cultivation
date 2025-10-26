@@ -31,13 +31,29 @@ public class TurnSceneIntro : MonoBehaviour
     [SerializeField] private float spinDelay = 0.4f; // Delay after front zoom completes
     [SerializeField] private AnimationCurve spinCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Container Fade Settings")]
+    [SerializeField] private float containerFadeDuration = 0.5f;
+    [SerializeField] private AnimationCurve containerFadeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
     [Header("Auto Play")]
     [SerializeField] private bool playOnStart = true;
+
+    private CanvasGroup containerCanvasGroup;
 
     private void Start()
     {
         if (playOnStart)
         {
+            // Setup container CanvasGroup for fade-in
+            if (containerTransform != null)
+            {
+                containerCanvasGroup = containerTransform.GetComponent<CanvasGroup>();
+                if (containerCanvasGroup == null)
+                {
+                    containerCanvasGroup = containerTransform.gameObject.AddComponent<CanvasGroup>();
+                }
+            }
+
             PlayIntroAnimation();
         }
     }
@@ -53,6 +69,12 @@ public class TurnSceneIntro : MonoBehaviour
 
     private IEnumerator IntroSequence()
     {
+        // Initialize container fade (start invisible)
+        if (containerCanvasGroup != null)
+        {
+            containerCanvasGroup.alpha = 0f;
+        }
+
         // Initialize scales
         if (backgroundTransform != null)
         {
@@ -67,6 +89,19 @@ public class TurnSceneIntro : MonoBehaviour
         if (containerTransform != null)
         {
             containerTransform.localRotation = Quaternion.identity;
+        }
+
+        // Start container fade-in immediately
+        Coroutine containerFade = null;
+        if (containerCanvasGroup != null)
+        {
+            containerFade = StartCoroutine(AnimateFade(
+                containerCanvasGroup,
+                0f,
+                1f,
+                containerFadeDuration,
+                containerFadeCurve
+            ));
         }
 
         // Start background zoom
@@ -164,5 +199,23 @@ public class TurnSceneIntro : MonoBehaviour
         }
 
         target.localRotation = endRotation;
+    }
+
+    private IEnumerator AnimateFade(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration, AnimationCurve curve)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float curved = curve.Evaluate(t);
+
+            canvasGroup.alpha = Mathf.Lerp(startAlpha, endAlpha, curved);
+
+            yield return null;
+        }
+
+        canvasGroup.alpha = endAlpha;
     }
 }

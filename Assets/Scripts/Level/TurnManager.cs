@@ -50,6 +50,8 @@ public class TurnManager : MonoBehaviour
             
             if (queueCount > 0)
             {
+                // Set return scene to TurnScene after all dialogues complete
+                DialogueManager.Instance.SetReturnSceneName("TurnScene");
                 DialogueManager.Instance.StartDialoguePlayback();
             }
             else

@@ -253,6 +253,15 @@ public partial class DialogueManager : MonoBehaviour
         return returnSceneName;
     }
 
+    public void SetReturnSceneName(string sceneName)
+    {
+        if (!string.IsNullOrEmpty(sceneName))
+        {
+            returnSceneName = sceneName;
+            LogController.Log($"DialogueManager: Return scene set to '{sceneName}'");
+        }
+    }
+
     public int GetQueueCount()
     {
         return dialogueQueue.Count;
