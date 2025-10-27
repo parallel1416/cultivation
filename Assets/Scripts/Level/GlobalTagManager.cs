@@ -22,6 +22,7 @@ public class GlobalTagManager : MonoBehaviour
     public static GlobalTagManager Instance => _instance;
 
     private Dictionary<string, GlobalTag> tagMap = new Dictionary<string, GlobalTag>();
+    public Dictionary<string, GlobalTag> TagMap => tagMap;
 
     private void Awake()
     {
@@ -195,6 +196,8 @@ public class GlobalTagManager : MonoBehaviour
 
         return states;
     }
+
+    public void ApplySaveData(SaveData saveData) => tagMap = saveData.tagMap;
 
     /// <summary>
     /// print all tag state for debugging

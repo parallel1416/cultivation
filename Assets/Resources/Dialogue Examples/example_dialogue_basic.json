@@ -166,6 +166,7 @@
                 // tech - 科技检定，需要指定科技ID（见下一个语句示例），并检查其是否解锁。
                 // globalTag - 全局标签检定，需要指定标签ID（见下下一个语句示例），并检查其激活状态。
                 // specialDice - 特殊弟子骰子分配情况检定，需要指定特殊弟子骰子的ID（见Assets\Resources\Dialogue Examples\example_dialogue_3.json），并检查其是否被分配到该事件上。
+                // dismantledTechs - 已拆解科技检定，需要指定科技ID，并检查其是否被拆解。
                 // 写成其它单词会报错并使得检定结果默认为0。
                 // 需要其它检定条件请联系我。
                 "checkWhat": "diceRoll"
@@ -260,7 +261,7 @@
                     "stringId": "story_2"
                 },
                 { // 这是检定4
-                    "checkWhat": "globaltag",
+                    "checkWhat": "globalTag",
                     "stringId": "did_bad_things"
                 }
             ],
@@ -287,7 +288,7 @@
 
                     // 当该结果被选择——即，在满足条件的所有结果中优先级最高,则会跳转到该ID所对应的语句。
                     // 留空、删除或填写错误会报错，并以顺序播放替代。
-                    "targetID": "good_end"
+                    "target": "good_end"
                 },
                 {
                     // 这是结果优先级的一个使用案例：
@@ -295,7 +296,7 @@
                     // 也许还有其他有趣用法。
                     "priority": 2,
                     "requiredConditionIndices": [4],
-                    "targetID": "bad_end"
+                    "target": "bad_end"
                 },
                 {
                     // "requiredConditionIndices" 字段可以被留空或删除。
@@ -303,7 +304,7 @@
                     // 为了安全性，请尽量设置一个低优先级、且无条件的结果，作为默认结果。（普通结局之类的）
                     // 如果不如此做，且检定遇到了没有符合条件结果的情况，则会报错并进行顺序播放以代替。
                     "priority": 0,
-                    "targetID": "normal_end"
+                    "target": "normal_end"
                 }
             ]
         },

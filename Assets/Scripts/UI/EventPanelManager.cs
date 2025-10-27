@@ -129,7 +129,7 @@ public class EventPanelManager : MonoBehaviour
         
         if (canvas == null)
         {
-            Debug.LogError("EventPanelManager: No Canvas found in scene!");
+            LogController.LogError("EventPanelManager: No Canvas found in scene!");
         }
 
         if (panelRoot != null && panelRectTransform == null)
@@ -311,7 +311,7 @@ public class EventPanelManager : MonoBehaviour
             {
                 confirmButton.interactable = false;
             }
-            Debug.Log($"Opening panel for already-confirmed event: {mapping.eventId}");
+            LogController.Log($"Opening panel for already-confirmed event: {mapping.eventId}");
         }
         else
         {
@@ -833,7 +833,7 @@ public class EventPanelManager : MonoBehaviour
     {
         if (panelRectTransform == null || canvas == null || buttonRect == null)
         {
-            Debug.LogWarning($"PositionPanel failed: panelRect={panelRectTransform != null}, canvas={canvas != null}, buttonRect={buttonRect != null}");
+            LogController.LogWarning($"PositionPanel failed: panelRect={panelRectTransform != null}, canvas={canvas != null}, buttonRect={buttonRect != null}");
             return;
         }
 
@@ -1009,7 +1009,7 @@ public class EventPanelManager : MonoBehaviour
             }
         }
 
-        Debug.Log($"Restored team selection for event '{eventId}': {teamData.assignedMemberIds.Count} members");
+        LogController.Log($"Restored team selection for event '{eventId}': {teamData.assignedMemberIds.Count} members");
     }
 
     private void SetTeamAreaInteractable(bool interactable)

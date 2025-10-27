@@ -34,6 +34,7 @@ public class TechManager : MonoBehaviour
 
     // Dictionary to store all technology nodes, with their IDs as keys for quick access.
     private Dictionary<string, TechNode> techNodes = new Dictionary<string, TechNode>();
+    public Dictionary<string, TechNode> TechNodes => techNodes;
 
     private void Awake()
     {
@@ -104,8 +105,7 @@ public class TechManager : MonoBehaviour
         }
 
         tech.isUnlocked = true;
-        LogController.Log($"Tech unlocked!: {tech.name}");
-        Debug.Log($"[TechManager] Tech activated: {tech.name} ({tech.id}) | Remaining money: {LevelManager.Instance.Money}");
+        LogController.Log($"Tech unlocked!: {tech.name} ({tech.id})");
 
         return true;
     }
@@ -158,7 +158,7 @@ public class TechManager : MonoBehaviour
     // Only for debugging
     public void DebugTechTreeStatus()
     {
-        Debug.Log("=== Techtree Status ===");
+        LogController.Log("=== Techtree Status ===");
 
         foreach (var kvp in techNodes)
         {
@@ -169,6 +169,8 @@ public class TechManager : MonoBehaviour
 
         LogController.Log("========================");
     }
+
+    public void ApplySaveData(SaveData saveData) => techNodes = saveData.techNodes;
 
     // check if a technology is unlocked
     public bool IsTechUnlocked(string techId) =>

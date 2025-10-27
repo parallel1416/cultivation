@@ -61,7 +61,7 @@ public class TurnManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("DialogueManager.Instance is null!");
+            LogController.LogError("DialogueManager.Instance is null!");
         }
         
         // Advance turn
@@ -69,6 +69,9 @@ public class TurnManager : MonoBehaviour
         resetActionPoints();
         
         LogController.Log($"Turn incremented to: {currentTurn}");
+
+        // Create a save at new turn starts
+        SaveManager.Instance.CreateSave();
         
         // Setup new turn's dialogue events
         if (DialogueListManager.Instance != null)
@@ -78,7 +81,7 @@ public class TurnManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("DialogueListManager.Instance is null!");
+            LogController.LogError("DialogueListManager.Instance is null!");
         }
         
         // LevelManager.Instance.GenerateResourcesPerTurn();
@@ -107,4 +110,6 @@ public class TurnManager : MonoBehaviour
     {
         actionPoint = actionPointPerTurn;
     }
+
+    public void ApplySaveData(SaveData saveData) => ResetTurns(saveData.turn);
 }

@@ -1,0 +1,14 @@
+{
+    "nodes": [
+        {
+            "id": "recruit_normal_3",
+            "name": "广纳门徒",
+            "description": "延揽更多的弟子。",
+            "cost": 3,
+            "prerequisites": ["recruit_normal_2"],
+            "isUnlocked": false,
+            "canDismantle": true,
+            "dismantleCost": 10
+        }        
+    ]    
+} 
