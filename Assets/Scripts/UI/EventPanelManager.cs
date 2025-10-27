@@ -9,7 +9,8 @@ using UnityEngine.SceneManagement;
 using TMPro;
 
 /// <summary>
-/// Central manager for event buttons, the detail panel, and team member assignment UI in the Map scene.
+/// Central manager for event buttons and the detail panel in the Map scene.
+/// Uses TeamSelectionPanel for team assignment when diceLimit > 0.
 /// </summary>
 public class EventPanelManager : MonoBehaviour
 {
@@ -25,36 +26,11 @@ public class EventPanelManager : MonoBehaviour
         [HideInInspector] public Vector3 originalScale;
     }
 
-    private class TeamSlot
-    {
-        public GameObject root;
-        public Button button;
-        public Image portraitImage;
-        public string assignedPersonId;
-        public Color originalColor;
-    }
-
-    private class PortraitButtonData
-    {
-        public Button button;
-        public Image image;
-        public Color originalColor;
-        public string personId;
-    }
-
-    private class PersonData
-    {
-        public string id;
-        public string displayName;
-        public Sprite portrait;
-    }
-
     private class EventData
     {
         public string eventId;
         public string description;
         public int diceLimit;
-        public List<PersonData> availablePeople;
         public bool RequiresTeam => diceLimit > 0;
     }
 
@@ -72,25 +48,11 @@ public class EventPanelManager : MonoBehaviour
 
     [Header("Content References")]
     [SerializeField] private TextMeshProUGUI descriptionText;
-    [SerializeField] private GameObject teamMemberArea;
-    [SerializeField] private Transform teamSlotContainer;
     [SerializeField] private Button confirmButton;
-    [SerializeField] private GameObject teamSlotPrefab;
 
-    [Header("Team Slot Styling")]
-    [SerializeField] private Color slotEmptyColor = new Color(1f, 1f, 1f, 0.2f);
-    [SerializeField] private Color slotFilledColor = Color.white;
-
-    [Header("Selection Panel")] 
-    [SerializeField] private GameObject selectionPanelRoot;
-    [SerializeField] private RectTransform selectionPanelRect;
-    [SerializeField] private CanvasGroup selectionPanelCanvasGroup;
-    [SerializeField] private Transform selectionGrid;
-    [SerializeField] private GameObject portraitButtonPrefab;
-    [SerializeField] private float selectionSlideDuration = 0.25f;
-    [SerializeField] private AnimationCurve selectionSlideCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-    [SerializeField] private Color selectionAvailableColor = Color.white;
-    [SerializeField] private Color selectionTakenColor = new Color(1f, 1f, 1f, 0.35f);
+    [Header("Team Selection")]
+    [SerializeField] private Button assignButton; // Button to open team selection
+    [SerializeField] private TeamSelectionPanel teamSelectionPanel; // Reference to team selection panel
 
     [Header("Panel Animation")] 
     [SerializeField] private float panelSlideDuration = 0.3f;
@@ -103,23 +65,15 @@ public class EventPanelManager : MonoBehaviour
 
     private EventButtonMapping activeButton;
     private EventData currentEventData;
-    private readonly List<TeamSlot> teamSlots = new List<TeamSlot>();
-    private readonly Dictionary<string, PortraitButtonData> portraitButtons = new Dictionary<string, PortraitButtonData>();
 
     private bool isPanelOpen;
     private bool isPanelAnimating;
     private Coroutine panelAnimationCoroutine;
 
-    private bool isSelectionAnimating;
-    private Coroutine selectionAnimationCoroutine;
-    private TeamSlot activeSelectionSlot;
-
     private bool isConfirmed;
 
     private void Awake()
     {
-        // selection panel anchoring will be ensured after rect is resolved
-
         // Find the root canvas in the scene
         canvas = GetComponentInParent<Canvas>();
         if (canvas == null)
@@ -148,27 +102,11 @@ public class EventPanelManager : MonoBehaviour
             panelCanvasGroup.alpha = 0f;
         }
 
-        if (selectionPanelRoot != null && selectionPanelRect == null)
+        // Auto-find TeamSelectionPanel if not assigned
+        if (teamSelectionPanel == null)
         {
-            selectionPanelRect = selectionPanelRoot.GetComponent<RectTransform>();
+            teamSelectionPanel = FindObjectOfType<TeamSelectionPanel>();
         }
-
-        if (selectionPanelRoot != null)
-        {
-            if (selectionPanelCanvasGroup == null)
-            {
-                selectionPanelCanvasGroup = selectionPanelRoot.GetComponent<CanvasGroup>();
-                if (selectionPanelCanvasGroup == null)
-                {
-                    selectionPanelCanvasGroup = selectionPanelRoot.AddComponent<CanvasGroup>();
-                }
-            }
-            selectionPanelRoot.SetActive(false);
-            selectionPanelCanvasGroup.alpha = 0f;
-        }
-
-        // Now that selectionPanelRect is available, ensure it's anchored to the left
-        EnsureSelectionPanelAnchoredLeft();
 
         InitializeButtonMappings();
 
@@ -214,11 +152,7 @@ public class EventPanelManager : MonoBehaviour
                 buttonMappings = new List<EventButtonMapping>();
                 foreach (var btn in buttons)
                 {
-                    buttonMappings.Add(new EventButtonMapping
-                    {
-                        button = btn,
-                        eventId = btn.name
-                    });
+                    buttonMappings.Add(new EventButtonMapping { button = btn });
                 }
             }
         }
@@ -230,6 +164,7 @@ public class EventPanelManager : MonoBehaviour
                 continue;
             }
 
+            mapping.originalScale = mapping.button.transform.localScale;
             mapping.image = mapping.button.GetComponent<Image>();
             if (mapping.image == null)
             {
@@ -239,24 +174,14 @@ public class EventPanelManager : MonoBehaviour
             {
                 mapping.originalSprite = mapping.image.sprite;
             }
-
-            mapping.originalScale = mapping.button.transform.localScale;
-
-            EventButtonMapping capturedMapping = mapping;
-            mapping.clickAction = () => OnEventButtonClicked(capturedMapping);
+            mapping.clickAction = () => OnEventButtonClicked(mapping);
+            mapping.button.onClick.RemoveListener(mapping.clickAction);
             mapping.button.onClick.AddListener(mapping.clickAction);
-
-            SetButtonState(mapping, false);
         }
     }
 
     private void OnValidate()
     {
-        if (selectionPanelRoot != null && selectionPanelCanvasGroup == null)
-        {
-            selectionPanelCanvasGroup = selectionPanelRoot.GetComponent<CanvasGroup>();
-        }
-
         if (panelRoot != null && panelRectTransform == null)
         {
             panelRectTransform = panelRoot.GetComponent<RectTransform>();
@@ -306,7 +231,10 @@ public class EventPanelManager : MonoBehaviour
         if (wasConfirmed)
         {
             // Event was previously confirmed, restore that state
-            SetTeamAreaInteractable(false);
+            if (assignButton != null)
+            {
+                assignButton.interactable = false;
+            }
             if (confirmButton != null)
             {
                 confirmButton.interactable = false;
@@ -316,7 +244,10 @@ public class EventPanelManager : MonoBehaviour
         else
         {
             // Event not yet confirmed, allow interaction
-            SetTeamAreaInteractable(true);
+            if (assignButton != null)
+            {
+                assignButton.interactable = true;
+            }
             if (confirmButton != null)
             {
                 confirmButton.interactable = true;
@@ -324,12 +255,6 @@ public class EventPanelManager : MonoBehaviour
         }
         
         ApplyEventDataToUI();
-        
-        // Restore team selection if event was confirmed
-        if (wasConfirmed && EventTracker.Instance != null)
-        {
-            RestoreTeamSelection(mapping.eventId);
-        }
         
         PositionPanel(mapping.button.GetComponent<RectTransform>());
 
@@ -355,7 +280,6 @@ public class EventPanelManager : MonoBehaviour
         }
         panelAnimationCoroutine = StartCoroutine(AnimatePanel(false));
 
-        ToggleSelectionPanel(false);
         SetAllButtonsInactive();
         activeButton = null;
         currentEventData = null;
@@ -412,8 +336,7 @@ public class EventPanelManager : MonoBehaviour
         {
             eventId = eventId,
             description = $"No description found for {eventId}.",
-            diceLimit = 0,
-            availablePeople = new List<PersonData>()
+            diceLimit = 0
         };
 
         DialogueEvent dialogueDefinition = DialogueManager.Instance != null
@@ -426,9 +349,6 @@ public class EventPanelManager : MonoBehaviour
             data.diceLimit = Mathf.Max(0, dialogueDefinition.diceLimit);
         }
 
-        data.availablePeople = RequestAvailablePeople(eventId);
-
-        // event data loaded
         return data;
     }
 
@@ -439,7 +359,6 @@ public class EventPanelManager : MonoBehaviour
             return fallback;
         }
 
-        // Attempt to read a public field/property named "desc" using reflection.
         const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         FieldInfo descField = dialogue.GetType().GetField("desc", flags);
         if (descField != null && descField.FieldType == typeof(string))
@@ -469,23 +388,6 @@ public class EventPanelManager : MonoBehaviour
         return fallback;
     }
 
-    private List<PersonData> RequestAvailablePeople(string eventId)
-    {
-        // TODO: replace with the actual backend call (e.g., EventBackend.GetPeopleList(eventId)).
-        // Placeholder implementation returns three empty slots.
-        var people = new List<PersonData>();
-        for (int i = 0; i < 6; i++)
-        {
-            people.Add(new PersonData
-            {
-                id = $"person_{i}",
-                displayName = $"Member {i + 1}",
-                portrait = null
-            });
-        }
-        return people;
-    }
-
     private void ApplyEventDataToUI()
     {
         if (currentEventData == null)
@@ -499,334 +401,19 @@ public class EventPanelManager : MonoBehaviour
         }
 
         bool requiresTeam = currentEventData.RequiresTeam;
-        if (teamMemberArea != null)
+        
+        // Show/hide assign button based on diceLimit
+        if (assignButton != null)
         {
-            teamMemberArea.SetActive(requiresTeam);
+            assignButton.gameObject.SetActive(requiresTeam);
+        }
+        
+        // Configure team selection panel if team is required
+        if (requiresTeam && teamSelectionPanel != null)
+        {
+            teamSelectionPanel.SetCurrentEvent(currentEventData.eventId, currentEventData.diceLimit, assignButton);
         }
 
-        ClearTeamSlots();
-
-        if (requiresTeam)
-        {
-            PopulateTeamSlots(currentEventData.diceLimit);
-        }
-
-        ToggleSelectionPanel(false);
-    }
-
-    private void PopulateTeamSlots(int slotCount)
-    {
-        if (teamSlotPrefab == null || teamSlotContainer == null)
-        {
-            return;
-        }
-
-        slotCount = Mathf.Max(0, slotCount);
-
-        for (int i = 0; i < slotCount; i++)
-        {
-            GameObject slotObj = Instantiate(teamSlotPrefab, teamSlotContainer);
-            Button slotButton = slotObj.GetComponent<Button>();
-            if (slotButton == null)
-            {
-                slotButton = slotObj.AddComponent<Button>();
-            }
-
-            Image portraitImage = slotObj.GetComponent<Image>();
-            if (portraitImage == null)
-            {
-                portraitImage = slotObj.AddComponent<Image>();
-            }
-
-            portraitImage.sprite = null;
-            portraitImage.color = slotEmptyColor;
-
-            TeamSlot slot = new TeamSlot
-            {
-                root = slotObj,
-                button = slotButton,
-                portraitImage = portraitImage,
-                assignedPersonId = string.Empty,
-                originalColor = portraitImage.color
-            };
-
-            TeamSlot capturedSlot = slot;
-            slotButton.onClick.AddListener(() => OnSlotClicked(capturedSlot));
-            teamSlots.Add(slot);
-        }
-
-        // Force layout rebuild to evenly space slots
-        if (teamSlotContainer != null)
-        {
-            LayoutRebuilder.ForceRebuildLayoutImmediate(teamSlotContainer as RectTransform);
-        }
-
-        // created team slots
-    }
-
-    private void ClearTeamSlots()
-    {
-        foreach (var slot in teamSlots)
-        {
-            if (slot?.button != null)
-            {
-                slot.button.onClick.RemoveAllListeners();
-            }
-
-            if (slot?.root != null)
-            {
-                Destroy(slot.root);
-            }
-
-            if (slot != null)
-            {
-                slot.button = null;
-                slot.portraitImage = null;
-                slot.root = null;
-            }
-        }
-
-        teamSlots.Clear();
-        activeSelectionSlot = null;
-    }
-
-    private void OnSlotClicked(TeamSlot slot)
-    {
-        if (slot == null || isConfirmed)
-        {
-            return;
-        }
-
-        // Check if slot object still exists
-        if (slot.root == null || slot.button == null)
-        {
-            return;
-        }
-
-        if (!string.IsNullOrEmpty(slot.assignedPersonId))
-        {
-            ClearSlot(slot);
-            return;
-        }
-
-        activeSelectionSlot = slot;
-        PopulateSelectionPanel();
-        ToggleSelectionPanel(true);
-    }
-
-    private void ClearSlot(TeamSlot slot)
-    {
-        if (slot == null)
-        {
-            return;
-        }
-
-        string personId = slot.assignedPersonId;
-        slot.assignedPersonId = string.Empty;
-        slot.portraitImage.sprite = null;
-        slot.portraitImage.color = slotEmptyColor;
-
-    // cleared slot assignment
-
-        activeSelectionSlot = null;
-        ToggleSelectionPanel(false);
-        UpdateSelectionButtonStates();
-
-        if (!string.IsNullOrEmpty(personId) && portraitButtons.TryGetValue(personId, out PortraitButtonData portraitButton))
-        {
-            portraitButton.button.interactable = true;
-            portraitButton.image.color = portraitButton.originalColor;
-        }
-    }
-
-    private void PopulateSelectionPanel()
-    {
-    // Ensure selection grid layout is present and configured
-    EnsureSelectionGridLayout();
-
-        if (selectionGrid == null || currentEventData == null)
-        {
-            return;
-        }
-
-        if (portraitButtonPrefab == null)
-        {
-            return;
-        }
-
-        ClearSelectionPanelContent();
-
-        foreach (var person in currentEventData.availablePeople)
-        {
-            GameObject portraitObj = Instantiate(portraitButtonPrefab, selectionGrid);
-            Button portraitButton = portraitObj.GetComponent<Button>();
-            if (portraitButton == null)
-            {
-                portraitButton = portraitObj.AddComponent<Button>();
-            }
-
-            Image portraitImage = portraitObj.GetComponent<Image>();
-            if (portraitImage == null)
-            {
-                portraitImage = portraitObj.AddComponent<Image>();
-            }
-
-            portraitImage.sprite = person.portrait;
-            portraitImage.color = selectionAvailableColor;
-
-            PortraitButtonData data = new PortraitButtonData
-            {
-                button = portraitButton,
-                image = portraitImage,
-                originalColor = portraitImage.color,
-                personId = person.id
-            };
-
-            string capturedId = person.id;
-            portraitButton.onClick.AddListener(() => OnPortraitSelected(capturedId));
-
-            portraitButtons[capturedId] = data;
-        }
-        UpdateSelectionButtonStates();
-
-        // Rebuild layout to ensure even spacing
-        if (selectionGrid != null)
-        {
-            LayoutRebuilder.ForceRebuildLayoutImmediate(selectionGrid as RectTransform);
-        }
-    }
-
-    private void ClearSelectionPanelContent()
-    {
-        // Clear existing children
-        foreach (Transform child in selectionGrid)
-        {
-            Destroy(child.gameObject);
-        }
-        portraitButtons.Clear();
-    }
-
-    private void OnPortraitSelected(string personId)
-    {
-        if (activeSelectionSlot == null || string.IsNullOrEmpty(personId))
-        {
-            return;
-        }
-
-        PersonData person = currentEventData.availablePeople.Find(p => p.id == personId);
-        if (person == null)
-        {
-            return;
-        }
-
-        AssignPersonToSlot(activeSelectionSlot, person);
-        ToggleSelectionPanel(false);
-    }
-
-    private void AssignPersonToSlot(TeamSlot slot, PersonData person)
-    {
-        if (slot == null || person == null)
-        {
-            return;
-        }
-
-        slot.assignedPersonId = person.id;
-        slot.portraitImage.sprite = person.portrait;
-        slot.portraitImage.color = slotFilledColor;
-
-        if (portraitButtons.TryGetValue(person.id, out PortraitButtonData portraitButton))
-        {
-            portraitButton.button.interactable = false;
-            portraitButton.image.color = selectionTakenColor;
-        }
-
-        UpdateSelectionButtonStates();
-    }
-
-    private void UpdateSelectionButtonStates()
-    {
-        foreach (var pair in portraitButtons)
-        {
-            bool assigned = IsPersonAssigned(pair.Key);
-            pair.Value.button.interactable = !assigned;
-            pair.Value.image.color = assigned ? selectionTakenColor : pair.Value.originalColor;
-        }
-    }
-
-    private bool IsPersonAssigned(string personId)
-    {
-        foreach (var slot in teamSlots)
-        {
-            if (slot != null && slot.assignedPersonId == personId)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void ToggleSelectionPanel(bool show)
-    {
-        if (selectionPanelRoot == null || selectionPanelRect == null || selectionPanelCanvasGroup == null)
-        {
-            return;
-        }
-
-        if (selectionAnimationCoroutine != null)
-        {
-            StopCoroutine(selectionAnimationCoroutine);
-        }
-        selectionAnimationCoroutine = StartCoroutine(AnimateSelectionPanel(show));
-    }
-
-    private IEnumerator AnimateSelectionPanel(bool show)
-    {
-
-    isSelectionAnimating = true;
-
-        if (show)
-        {
-            selectionPanelRoot.SetActive(true);
-        }
-
-        float width = selectionPanelRect.rect.width;
-        Vector2 start = selectionPanelRect.anchoredPosition;
-        Vector2 end = start;
-
-        if (show)
-        {
-            start = new Vector2(-width, selectionPanelRect.anchoredPosition.y);
-            end = new Vector2(0f, selectionPanelRect.anchoredPosition.y);
-        }
-        else
-        {
-            start = selectionPanelRect.anchoredPosition;
-            end = new Vector2(-width, selectionPanelRect.anchoredPosition.y);
-        }
-
-        float elapsed = 0f;
-        while (elapsed < selectionSlideDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / selectionSlideDuration);
-            float eased = selectionSlideCurve.Evaluate(t);
-
-            selectionPanelRect.anchoredPosition = Vector2.Lerp(start, end, eased);
-            selectionPanelCanvasGroup.alpha = show ? eased : 1f - eased;
-            yield return null;
-        }
-
-        selectionPanelRect.anchoredPosition = end;
-        selectionPanelCanvasGroup.alpha = show ? 1f : 0f;
-
-        if (!show)
-        {
-            selectionPanelRoot.SetActive(false);
-            ClearSelectionPanelContent();
-            activeSelectionSlot = null;
-        }
-
-        isSelectionAnimating = false;
     }
 
     private void PositionPanel(RectTransform buttonRect)
@@ -837,34 +424,23 @@ public class EventPanelManager : MonoBehaviour
             return;
         }
 
-        // Get button's RectTransform and its anchored position
         Vector2 buttonAnchoredPos = buttonRect.anchoredPosition;
-        
-        // Determine if button is on left or right side based on its anchored position
-        // Since buttons are anchored at center (0.5, 0.5), negative X = left, positive X = right
         bool isButtonOnLeft = buttonAnchoredPos.x < 0;
 
-        // Set pivot based on which side the panel should appear
-        // If button is on left, panel appears on right (pivot = 0 = left edge of panel)
-        // If button is on right, panel appears on left (pivot = 1 = right edge of panel)
         panelRectTransform.pivot = new Vector2(isButtonOnLeft ? 0f : 1f, 0.5f);
         panelRectTransform.anchorMin = new Vector2(0.5f, 0.5f);
         panelRectTransform.anchorMax = new Vector2(0.5f, 0.5f);
 
-        // Set panel width using sizeDelta (when anchors are at same point, use sizeDelta)
         float canvasWidth = (canvas.transform as RectTransform).rect.width;
         float panelWidth = canvasWidth * panelWidthRatio;
         panelRectTransform.sizeDelta = new Vector2(panelWidth, panelRectTransform.sizeDelta.y);
 
-        // Calculate offset: place panel next to button with margin
         float buttonHalfWidth = buttonRect.rect.width * 0.5f;
         float xOffset = isButtonOnLeft 
-            ? buttonHalfWidth + panelMargin  // Button on left, panel to the right
-            : -(buttonHalfWidth + panelMargin); // Button on right, panel to the left
+            ? buttonHalfWidth + panelMargin
+            : -(buttonHalfWidth + panelMargin);
 
-        // Position panel relative to button's anchored position
         panelRectTransform.anchoredPosition = new Vector2(buttonAnchoredPos.x + xOffset, buttonAnchoredPos.y);
-        
     }
 
     private IEnumerator AnimatePanel(bool slideIn)
@@ -874,8 +450,7 @@ public class EventPanelManager : MonoBehaviour
             yield break;
         }
 
-
-    isPanelAnimating = true;
+        isPanelAnimating = true;
 
         if (slideIn)
         {
@@ -905,8 +480,6 @@ public class EventPanelManager : MonoBehaviour
         if (!slideIn)
         {
             panelRoot.SetActive(false);
-            ClearTeamSlots();
-            ToggleSelectionPanel(false);
         }
 
         isPanelAnimating = false;
@@ -921,24 +494,11 @@ public class EventPanelManager : MonoBehaviour
 
         isConfirmed = true;
 
-        // Get selected team members
-        List<string> selectedMembers = GetSelectedTeamMembers();
-
-        // Track this event confirmation with EventTracker
-        if (EventTracker.Instance != null && !string.IsNullOrEmpty(currentEventData.eventId))
-        {
-            EventTracker.Instance.ConfirmEvent(currentEventData.eventId, selectedMembers);
-        }
-
         // Disable confirm button (visual feedback that event is confirmed)
         if (confirmButton != null)
         {
             confirmButton.interactable = false;
         }
-
-        // Make team area non-interactable but keep visible
-        SetTeamAreaInteractable(false);
-        ToggleSelectionPanel(false);
 
         // Handle dialogue based on diceLimit
         if (!string.IsNullOrEmpty(currentEventData.eventId))
@@ -950,125 +510,63 @@ public class EventPanelManager : MonoBehaviour
             }
             else
             {
-                // Team required - queue dialogue for end of round
-                if (DialogueManager.Instance != null)
+                // Team required - get selection from TeamSelectionPanel
+                if (teamSelectionPanel != null && teamSelectionPanel.IsDiceLimitFulfilled())
                 {
-                    DialogueManager.Instance.EnqueueDialogueEvent(currentEventData.eventId);
-                    LogController.Log($"Queued dialogue event '{currentEventData.eventId}' for end of round. Queue count: {DialogueManager.Instance.GetQueueCount()}");
+                    // Get dice assignment
+                    Dictionary<string, int> assignedDices = teamSelectionPanel.GetAssignedDices();
+                    
+                    // Queue dialogue for end of round
+                    if (DialogueManager.Instance != null)
+                    {
+                        DialogueManager.Instance.EnqueueDialogueEvent(currentEventData.eventId);
+                        LogController.Log($"Queued dialogue event '{currentEventData.eventId}' for end of round. Queue count: {DialogueManager.Instance.GetQueueCount()}");
+                    }
+
+                    // Track event confirmation with dice assignment, pet, and item
+                    if (EventTracker.Instance != null)
+                    {
+                        // Store dice assignment, pet and item indices
+                        List<string> teamData = new List<string>();
+                        
+                        // Add dice data
+                        foreach (var kvp in assignedDices)
+                        {
+                            if (kvp.Value > 0)
+                            {
+                                teamData.Add($"dice:{kvp.Key}:{kvp.Value}");
+                            }
+                        }
+                        
+                        // Add pet index
+                        int petIndex = teamSelectionPanel.GetSelectedPetIndex();
+                        if (petIndex >= 0)
+                        {
+                            teamData.Add($"pet:{petIndex}");
+                        }
+                        
+                        // Add item index
+                        int itemIndex = teamSelectionPanel.GetSelectedItemIndex();
+                        if (itemIndex >= 0)
+                        {
+                            teamData.Add($"item:{itemIndex}");
+                        }
+                        
+                        EventTracker.Instance.ConfirmEvent(currentEventData.eventId, teamData);
+                    }
+                    
+                    LogController.Log($"Event '{currentEventData.eventId}' confirmed with team selection. Panel remains open.");
                 }
-                
-                // Keep panel open to show confirmed selection
-                // Player can click close button or another event button to close
-                LogController.Log($"Event '{currentEventData.eventId}' confirmed with {selectedMembers.Count} team members. Panel remains open.");
+                else
+                {
+                    Debug.LogWarning($"EventPanelManager: Cannot confirm - dice limit not fulfilled (need {currentEventData.diceLimit})");
+                    isConfirmed = false;
+                    if (confirmButton != null)
+                    {
+                        confirmButton.interactable = true;
+                    }
+                }
             }
         }
-    }
-
-    private List<string> GetSelectedTeamMembers()
-    {
-        List<string> ids = new List<string>();
-        foreach (var slot in teamSlots)
-        {
-            if (!string.IsNullOrEmpty(slot.assignedPersonId))
-            {
-                ids.Add(slot.assignedPersonId);
-            }
-        }
-        return ids;
-    }
-
-    private void RestoreTeamSelection(string eventId)
-    {
-        if (EventTracker.Instance == null || currentEventData == null)
-        {
-            return;
-        }
-
-        EventTeamData teamData = EventTracker.Instance.GetEventData(eventId);
-        if (teamData == null || teamData.assignedMemberIds == null)
-        {
-            return;
-        }
-
-        // Restore team member assignments to slots
-        for (int i = 0; i < teamSlots.Count && i < teamData.assignedMemberIds.Count; i++)
-        {
-            string personId = teamData.assignedMemberIds[i];
-            if (string.IsNullOrEmpty(personId))
-            {
-                continue;
-            }
-
-            // Find the person data
-            PersonData person = currentEventData.availablePeople.Find(p => p.id == personId);
-            if (person != null && teamSlots[i] != null)
-            {
-                teamSlots[i].assignedPersonId = person.id;
-                teamSlots[i].portraitImage.sprite = person.portrait;
-                teamSlots[i].portraitImage.color = slotFilledColor;
-            }
-        }
-
-        Debug.Log($"Restored team selection for event '{eventId}': {teamData.assignedMemberIds.Count} members");
-    }
-
-    private void SetTeamAreaInteractable(bool interactable)
-    {
-        foreach (var slot in teamSlots)
-        {
-            if (slot?.button != null)
-            {
-                slot.button.interactable = interactable;
-            }
-        }
-
-        if (teamMemberArea != null)
-        {
-            CanvasGroup cg = teamMemberArea.GetComponent<CanvasGroup>();
-            if (cg == null)
-            {
-                cg = teamMemberArea.AddComponent<CanvasGroup>();
-            }
-            cg.interactable = interactable;
-            cg.blocksRaycasts = interactable;
-            cg.alpha = interactable ? 1f : 0.5f;
-        }
-    }
-
-    private void EnsureSelectionGridLayout()
-    {
-        if (selectionGrid == null)
-        {
-            return;
-        }
-
-        var rect = selectionGrid as RectTransform;
-        if (rect == null) return;
-
-        GridLayoutGroup grid = selectionGrid.GetComponent<GridLayoutGroup>();
-        if (grid == null)
-        {
-            grid = selectionGrid.gameObject.AddComponent<GridLayoutGroup>();
-            grid.cellSize = new Vector2(64f, 64f);
-            grid.spacing = new Vector2(8f, 8f);
-            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            grid.constraintCount = 3;
-        }
-    }
-
-    private void EnsureSelectionPanelAnchoredLeft()
-    {
-        if (selectionPanelRect == null)
-        {
-            return;
-        }
-
-        // Anchor to left center and set pivot so sliding from -width -> 0 works
-        selectionPanelRect.pivot = new Vector2(0f, 0.5f);
-        selectionPanelRect.anchorMin = new Vector2(0f, 0.5f);
-        selectionPanelRect.anchorMax = new Vector2(0f, 0.5f);
-        // Place it off-screen to the left initially
-        float width = selectionPanelRect.rect.width;
-        selectionPanelRect.anchoredPosition = new Vector2(-width, selectionPanelRect.anchoredPosition.y);
     }
 }
