@@ -32,7 +32,11 @@ public class GameManager : MonoBehaviour
 
         GameObject diceRollManagerObj = new GameObject("DiceRollManager");
         diceRollManagerObj.AddComponent<DiceRollManager>();
-    }
 
-    
+        GameObject saveManagerObj = new GameObject("SaveManager");
+        saveManagerObj.AddComponent<SaveManager>();
+
+        GameObject itemManagerObj = new GameObject("ItemManager");
+        itemManagerObj.AddComponent<ItemManager>();
+    }    
 }

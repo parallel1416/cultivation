@@ -221,6 +221,23 @@ public class LevelManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Apply data from SavaManager to game state
+    /// </summary>
+    public void ApplySaveData(SaveData saveData)
+    {
+        money = saveData.money;
+        disciples = saveData.disciples;
+
+        statusChicken = saveData.statusChicken;
+        statusMouse = saveData.statusMouse;
+        statusSheep = saveData.statusSheep;
+
+        statusJianjun = saveData.statusJianjun;
+        statusJingshi = saveData.statusJingshi;
+        statusYuezheng = saveData.statusYuezheng;
+    }
+
+    /// <summary>
     /// Turn-based resource generation
     /// temporarily deprecated
     /// </summary>

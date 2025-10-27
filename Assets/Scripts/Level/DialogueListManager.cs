@@ -126,7 +126,7 @@ public class DialogueListManager : MonoBehaviour
         
         if (TurnManager.Instance == null)
         {
-            Debug.LogError("SetUpTurnDialogues: TurnManager.Instance is null!");
+            LogController.LogError("SetUpTurnDialogues: TurnManager.Instance is null!");
             return;
         }
         

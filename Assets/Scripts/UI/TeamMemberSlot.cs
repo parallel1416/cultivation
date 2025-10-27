@@ -9,7 +9,7 @@ public sealed class TeamMemberSlot : MonoBehaviour
 {
     private void Awake()
     {
-        Debug.LogWarning("TeamMemberSlot is obsolete. Please delete this component and use the new slot prefab managed by EventPanelManager.", this);
+        LogController.LogWarning("TeamMemberSlot is obsolete. Please delete this component and use the new slot prefab managed by EventPanelManager.", this);
         enabled = false;
     }
 }
