@@ -1,25 +1,164 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+
+[System.Serializable]
+public class CheckCondition
+{
+    public int difficultyClass = 0;
+    public string checkWhat = "";
+    public string stringId = ""; // techID or tagID, special disciple dice id
+}
+
+/// <summary>
+/// CheckResult class for generating and storing check results.
+/// Used in both check and multicheck sentences.
+/// </summary>
+public class CheckResult
+{
+    public bool isSuccess;
+    public string description;
+
+    public CheckResult(bool isSuccess, string description)
+    {
+        this.isSuccess = isSuccess;
+        this.description = description;
+    }
+
+    public CheckResult()
+    {
+        this.isSuccess = false;
+        this.description = "";
+    }
+}
 
 /// <summary>
 /// Part of DialogueManager handling check sentences
 /// </summary>
 public partial class DialogueManager : MonoBehaviour
 {
+    [SerializeField] private string currentMoneyDesc = "当前灵石：";
+    [SerializeField] private string TechDesc = "科技：";
+    [SerializeField] private string UnlockedDesc = "已解锁";
+    [SerializeField] private string lockedDesc = "未解锁";
+    [SerializeField] private string reportBug = "请向开发者报告BUG！";
+
+    [SerializeField] private string checkSuccessDesc = "检定成功！";
+    [SerializeField] private string checkFailureDesc = "检定失败！";
+    [SerializeField] private string diceCheckDesc = "掷骰";
+    [SerializeField] private string moneyCheckDesc = "灵石";
+    [SerializeField] private string techCheckDesc = "科技";
+    [SerializeField] private string globalTagCheckDesc = "全局标签";
+    [SerializeField]
+    private IReadOnlyList<string> strCheckWhats = new List<string>()
+    {
+        "tech",
+        "globalTag",
+        "SpecialDice"
+    };
+
+    private CheckResult HandleCheck(CheckCondition condition)
+    {
+        // UNFINISHED!!!!!!!!!!
+        // local methods to get assigning situation of current event, only used for diceroll checks
+        Dictionary<string, int> GetAssignedDices()
+        {
+            return new Dictionary<string, int>();
+        }
+        string GetAssignedAnimal()
+        {
+            return "";
+        }
+        string GetAssignedItem()
+        {
+            return "";
+        }
+        string GetComparison(bool isTrue) => isTrue ? ">=" : "<";
+        string GetSuccessFailureDesc(bool isTrue) => isTrue ? checkSuccessDesc : checkFailureDesc;
+        string GetTechUnlockDesc(bool isTrue) => isTrue ? UnlockedDesc : lockedDesc;
+
+
+        string checkWhat = condition.checkWhat;
+
+        // for some checkWhat values(yes or no check), lock dc to 1
+        int dc = strCheckWhats.Contains(condition.checkWhat) ? 1 : condition.difficultyClass;
+        string stringId = condition.stringId;
+
+        // check results
+        bool isSuccess = false;
+        string resultDesc = "";
+
+        CheckResult checkResult = new CheckResult();
+
+        switch (checkWhat)
+        {
+            case "diceroll":
+            case "dice":
+            case "diceRoll":
+                Dictionary<string, int> assignedDices = GetAssignedDices();
+                string assignedAnimal = GetAssignedAnimal();
+                string assignedItem = GetAssignedItem();
+
+                // Throw the dice!
+                DiceResult diceResult = DiceRollManager.Instance.GetDiceResult(assignedDices, assignedAnimal, assignedItem);
+
+                int totalResult = diceResult.result;
+                isSuccess = totalResult >= dc;
+                resultDesc = diceResult.checkDescription;
+
+                checkResult.isSuccess = isSuccess;
+                checkResult.description = $"{resultDesc} {GetComparison(isSuccess)} {dc}\n{diceCheckDesc}{GetSuccessFailureDesc(isSuccess)}";
+                break;
+
+
+            case "money":
+                int money = LevelManager.Instance.Money;
+                isSuccess = money >= dc;
+                resultDesc = $"{currentMoneyDesc}{money}";
+
+                checkResult.isSuccess = isSuccess;
+                checkResult.description = $"{resultDesc} {GetComparison(isSuccess)} {dc}\n{diceCheckDesc}{GetSuccessFailureDesc(isSuccess)}";
+                break;
+
+            case "tech": 
+                isSuccess = TechManager.Instance.IsTechUnlocked(stringId);
+                string techName = TechManager.Instance.GetTechName(stringId);
+
+                checkResult.isSuccess = isSuccess;
+                checkResult.description = $"{TechDesc} [{techName}] {GetTechUnlockDesc(isSuccess)}\n{techCheckDesc}{GetSuccessFailureDesc(isSuccess)}";
+                break;
+
+            case "globaltag":
+            case "globalTag":
+                isSuccess = GlobalTagManager.Instance.GetTagValue(stringId);
+                string tagStatus = GlobalTagManager.Instance.GetTagDescription(stringId);
+
+                checkResult.isSuccess = isSuccess;
+                checkResult.description = $"{GetSuccessFailureDesc(isSuccess)} {tagStatus}";
+                break;
+
+            default:
+                LogController.LogError($"Invalid checkWhat: {checkWhat}, check fails by default");
+                break;
+        }
+        return checkResult;
+    }
+
     private void PlayCheckSentence(DialogueSentence sentence)
     {
         CheckCondition condition = sentence.checkCondition;
-        // for these checkWhat values(yes or no check), lock dc to 1
-        int dc = condition.checkWhat switch { string str when str == "tech" || str == "globalTag" || str == "specialDice" => 1, _ => condition.difficultyClass};
-        int checkResult = GetCheckResult(condition.checkWhat, condition.stringId);
-        string resultDescription = GenerateCheckResultDescription(condition, dc, checkResult);
+
+        
+        CheckResult checkResult = HandleCheck(condition);
+        bool isSuccess = checkResult.isSuccess;
+        string resultDescription = checkResult.description;
 
         // set this value to false to create a hidden check
         if (sentence.showCheckResult) OutputDialogue(resultDescription);
 
         // decide jump target: success or failure
-        bool isSuccess = checkResult >= dc;
         string targetID = isSuccess ? sentence.successTarget : sentence.failureTarget;
 
         StartCooldown();
@@ -35,72 +174,4 @@ public partial class DialogueManager : MonoBehaviour
             PlayNextEvent();
         }
     }
-
-    private int GetCheckResult(string checkWhat, string stringId)
-    {
-        switch (checkWhat)
-        {
-            case "diceroll":
-                return DiceRollManager.Instance.GetDiceResult().result;
-
-            case "money":
-                return LevelManager.Instance.Money;
-
-            case "tech":
-                // For tech check, return 1 if unlocked, 0 if not
-                bool isUnlocked = TechManager.Instance.IsTechUnlocked(stringId);
-                return isUnlocked ? 1 : 0;
-
-            case "globaltag":
-                bool tagStatus = GlobalTagManager.Instance.GetTagValue(stringId);
-                return tagStatus ? 1 : 0;
-
-            default:
-                LogController.LogError($"Invalid checkWhat: {checkWhat}, result set to 0 by default");
-                return 0;
-        }
-    }
-
-    /// <summary>
-    /// Generate dialogue output describing check result, instead of sentence text
-    /// </summary>
-    private string GenerateCheckResultDescription(CheckCondition condition, int dc, int checkResult)
-    {
-        string checkWhat = condition.checkWhat;
-        bool isSuccess = checkResult >= dc;
-        string successText = isSuccess ? "�ɹ���" : "ʧ�ܣ�"; // Full-width exclamation mark for better compatibility with Chinese fonts
-        string comparison = isSuccess ? ">=" : "<";
-
-        string checkDescription = "";
-        switch (checkWhat)
-        {
-            case "diceroll":
-                checkDescription = $"DC = {dc}, 1d6 = {checkResult}";
-                break;
-
-            case "money":
-                checkDescription = $"������Ҫ{dc}����ʯ����ǰ��ʯ���� = {checkResult} {comparison} {dc}";
-                break;
-
-            case "tech":
-                string techName = TechManager.Instance.GetTechName(condition.stringId);
-                string techStatus = isSuccess ? "�ѽ���" : "δ����";
-                checkDescription = $"�Ƽ� [{techName}] {techStatus}";
-                break;
-
-            case "globaltag":
-                string tagId = condition.stringId;
-                string tagStatus = GlobalTagManager.Instance.GetTagDescription(tagId);
-                checkDescription = $"{tagStatus}"; // example:"�������xxx��"
-                break;
-
-            default:
-                checkDescription = $"��Ч���Ŀ��({checkWhat})�����鵱ǰ�¼�JSON�ļ���{currentEvent.id}";
-                break;
-        }
-
-        // Sample Style: [ �ɹ���] ( DC = 5, 1d6 = 6 >= 5 )
-        return $"[ {successText}] ( {checkDescription} )";
-    }
-
 }

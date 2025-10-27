@@ -3,8 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[System.Serializable]
+public class MultiCheckTarget
+{
+    public int priority = 0; // high priority targets are checked first
+    public List<int> requiredConditionIndices = new List<int>(); // start from 1 instead of 0
+    public string targetID = "";
+    public string description = "";
+}
+
 public partial class DialogueManager: MonoBehaviour
 {
+    [SerializeField] private string multiCheckResultDesc = "所有检定结果:";
+    [SerializeField] private string conditionDesc = "条件";
     private void PlayMultiCheckSentence(DialogueSentence sentence)
     {
         if (sentence.multiCheckConditions == null || sentence.multiCheckConditions.Count == 0)
@@ -16,17 +27,15 @@ public partial class DialogueManager: MonoBehaviour
 
         // check all conditions
         List<bool> conditionResults = new List<bool>();
-        string resultDescription = "所有检定结果:\n";
+        string resultDescription = $"{multiCheckResultDesc}\n\n";
 
         for (int i = 0; i < sentence.multiCheckConditions.Count; i++)
         {
-            var condition = sentence.multiCheckConditions[i];
-            int dc = condition.checkWhat == "tech" ? 1 : condition.difficultyClass;
-            int checkResult = GetCheckResult(condition.checkWhat, condition.stringId);
-            bool isSuccess = checkResult >= dc;
-            conditionResults.Add(isSuccess);
+            CheckCondition condition = sentence.multiCheckConditions[i];
+            CheckResult checkResult = HandleCheck(condition);
+            conditionResults.Add(checkResult.isSuccess);
 
-            resultDescription += $" - 条件{i + 1}: {GenerateCheckResultDescription(condition, dc, checkResult)}\n";
+            resultDescription += $" - {conditionDesc}{i + 1}:\n{checkResult.description}\n\n";
         }
 
         // set this value to false to create a hidden check

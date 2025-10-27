@@ -34,10 +34,10 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private int statusYuezheng = -1;
 
     // dice control
-    [SerializeField] private int normalDiscipleDiceScale = 6;
-    [SerializeField] private int jingshiDiceScale = 8;
-    [SerializeField] private int jianjunDiceScale = 8;
-    [SerializeField] private int yuezhengDiceScale = 8;
+    [SerializeField] private int normalDiscipleDiceSize = 4;
+    [SerializeField] private int jingshiDiceSize = 8;
+    [SerializeField] private int jianjunDiceSize = 8;
+    [SerializeField] private int yuezhengDiceSize = 8;
 
     public int Money => money;
     // public int MoneyPerTurn => moneyPerTurn;
@@ -80,10 +80,10 @@ public class LevelManager : MonoBehaviour
     public int StatusYuezheng
     { get => statusYuezheng; set => statusYuezheng = Math.Sign(value); }
 
-    public int NormalDiscipleDiceScale => normalDiscipleDiceScale;
-    public int JingshiDiceScale => jingshiDiceScale;
-    public int JianjunDiceScale => jianjunDiceScale;
-    public int YuezhengDiceScale => yuezhengDiceScale;
+    public int NormalDiscipleDiceSize => normalDiscipleDiceSize;
+    public int JingshiDiceSize => jingshiDiceSize;
+    public int JianjunDiceSize => jianjunDiceSize;
+    public int YuezhengDiceSize => yuezhengDiceSize;
 
     private void Awake()
     {
@@ -97,6 +97,12 @@ public class LevelManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    public void StartNewGame()
+    {
+
+    }
+
 
     /// <summary>
     /// Resource management methods: AddMoney/AddDisciples increase resources, SpendMoney/SpendDisciples decrease them if sufficient.

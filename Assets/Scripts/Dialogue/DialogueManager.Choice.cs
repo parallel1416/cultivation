@@ -2,6 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class ChoiceOption
+{
+    public string text = "";
+    public string target = "";
+}
+
 public partial class DialogueManager : MonoBehaviour
 {
     private void PlayChoiceSentence(DialogueSentence sentence)

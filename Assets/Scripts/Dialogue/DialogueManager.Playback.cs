@@ -203,14 +203,10 @@ public partial class DialogueManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(sentence.speaker))
         {
-            // Narration by default (no speaker, no quotation marks)
-            // Sample Style: �����ˣ�����֪���Լ����ںδ���
             return sentence.text;
         }
         else
         {
-            // Character dialogue: ��speaker: ��text���� (Full-width quotation marks)
-            // Sample Style: ���ǣ�������ζ����
             return $"{sentence.speaker}����{sentence.text}��";
         }
     }

@@ -2,6 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+[System.Serializable]
+public class DialogueEffect
+{
+    public bool showOutput = true;
+    public string type = ""; // "money", "disciple", "globalTag", "item"
+    public int intValue = 0; // int value for money, item and disciple, tagID for globalTag
+    public string stringValue = ""; // tagID for globalTag and itemID for item
+    public string operation = ""; // "+"(also works for activate a tag), "-"(also works for deactivate a tag)
+}
+
 public partial class DialogueManager : MonoBehaviour
 {
     private void ExecuteSentenceEffects(DialogueSentence sentence)

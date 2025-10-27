@@ -42,40 +42,6 @@ public class DialogueSentence
     public List<DialogueEffect> effects = new List<DialogueEffect>();
 }
 
-[System.Serializable]
-public class ChoiceOption
-{
-    public string text = "";
-    public string target = "";
-}
-
-[System.Serializable]
-public class CheckCondition
-{
-    public int difficultyClass = 0;
-    public string checkWhat = "";
-    public string stringId = ""; // techID or tagID, special disciple dice id
-}
-
-[System.Serializable]
-public class DialogueEffect
-{
-    public bool showOutput = true;
-    public string type = ""; // "money", "disciple", "globalTag", "item"
-    public int intValue = 0; // int value for money, item and disciple, tagID for globalTag
-    public string stringValue = ""; // tagID for globalTag and itemID for item
-    public string operation = ""; // "+"(also works for activate a tag), "-"(also works for deactivate a tag)
-}
-
-[System.Serializable]
-public class MultiCheckTarget
-{
-    public int priority = 0; // high priority targets are checked first
-    public List<int> requiredConditionIndices = new List<int>(); // start from 1 instead of 0
-    public string targetID = "";
-    public string description = "";
-}
-
 
 /// <summary>
 /// Core part of DialogueManager class

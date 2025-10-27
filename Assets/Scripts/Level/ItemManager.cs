@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,6 +5,22 @@ public class ItemManager : MonoBehaviour
 {
     private static ItemManager _instance;
     public static ItemManager Instance => _instance;
+
+    [SerializeField] private static IReadOnlyList<string> itemRegisterList = new List<string>
+    {
+        "zhi_kui_lei",
+        "yu_chan_tui",
+        "dian_fan_tie",
+        "wu_que_jing",
+        "cheng_fu_fu"
+    };
+
+    [SerializeField] private int paperPuppetDiceSize = 4;
+
+    private Dictionary<string, int> items = new Dictionary<string, int>();
+
+    public int PaperPuppetDiceSize => paperPuppetDiceSize;
+    public Dictionary<string, int> Items => items;
 
     private void Awake()
     {
@@ -17,11 +32,10 @@ public class ItemManager : MonoBehaviour
         {
             _instance = this;
             DontDestroyOnLoad(this.gameObject);
+
+            RegisterAllItems();
         }
     }
-
-    private Dictionary<string, int> items = new Dictionary<string, int>();
-    public Dictionary<string, int> Items => items;
 
     private void RegisterItem(string itemId)
     {
@@ -31,6 +45,14 @@ public class ItemManager : MonoBehaviour
             return;
         }
         items[itemId] = 0;
+    }
+
+    public void RegisterAllItems()
+    {
+        foreach (string id in itemRegisterList)
+        {
+            RegisterItem(id);
+        }
     }
 
     public void AddItem(string itemId, int quantity)

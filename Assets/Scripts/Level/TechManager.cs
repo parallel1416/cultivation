@@ -180,5 +180,5 @@ public class TechManager : MonoBehaviour
         techNodes.ContainsKey(techId) ? techNodes[techId] : null;
 
     public string GetTechName(string techId) =>
-        techNodes.ContainsKey(techId) ? techNodes[techId].name : "WARNING: No such tech";
+        techNodes.ContainsKey(techId) ? techNodes[techId].name : "UnknownTech";
 }
