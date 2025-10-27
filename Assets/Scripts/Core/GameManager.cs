@@ -35,7 +35,8 @@ public class GameManager : MonoBehaviour
 
         GameObject saveManagerObj = new GameObject("SaveManager");
         saveManagerObj.AddComponent<SaveManager>();
-    }
 
-    
+        GameObject itemManagerObj = new GameObject("ItemManager");
+        itemManagerObj.AddComponent<ItemManager>();
+    }    
 }

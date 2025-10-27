@@ -137,6 +137,8 @@ public class SaveManager : MonoBehaviour
         saveData.tagMap = GlobalTagManager.Instance.TagMap;
         saveData.techNodes = TechManager.Instance.TechNodes;
 
+        saveData.items = ItemManager.Instance.Items;
+
         return saveData;
     }
 
@@ -156,6 +158,7 @@ public class SaveManager : MonoBehaviour
         LevelManager.Instance.ApplySaveData(saveData);
         GlobalTagManager.Instance.ApplySaveData(saveData);
         TechManager.Instance.ApplySaveData(saveData);
+        ItemManager.Instance.ApplySaveData(saveData);
     }
 
     private string GenerateSaveName_Single()

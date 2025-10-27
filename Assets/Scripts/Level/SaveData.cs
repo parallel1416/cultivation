@@ -31,4 +31,5 @@ public class SaveData : MonoBehaviour
     public Dictionary<string, TechNode> techNodes;
 
     // Item info
+    public Dictionary<string, int> items;
 }
