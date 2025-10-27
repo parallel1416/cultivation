@@ -5,12 +5,14 @@ using UnityEngine;
 [System.Serializable]
 public class TechNode
 {
-    public string id;
-    public string name;
-    public string description;
-    public int cost;
-    public List<string> prerequisites;
-    public bool isUnlocked;
+    public string id = "";
+    public string name = "";
+    public string description = "";
+    public int cost = 0;
+    public List<string> prerequisites = new List<string>();
+    public int unlockState = 0;
+    public bool canDismantle = false;
+    public int dismantleCost = 0;
 }
 
 [System.Serializable]
@@ -27,7 +29,7 @@ public class TechTreeData
     }
 }
 
-public class TechManager : MonoBehaviour
+public partial class TechManager : MonoBehaviour
 {
     private static TechManager _instance;
     public static TechManager Instance => _instance;
@@ -72,69 +74,118 @@ public class TechManager : MonoBehaviour
         }
     }
 
+
+    // tech operations
+
     public bool UnlockTech(string techId)
     {
-        if (!techNodes.TryGetValue(techId, out TechNode tech))
-        {
-            LogController.LogError($"Tech ID not exist: {techId}");
-            return false;
-        }
-
-        if (tech.isUnlocked)
-        {
-            LogController.LogError($"Tech already unlocked: {tech.name}");
-            return false;
-        }
-
-        if (!ArePrerequisitesUnlocked(tech))
-        {
-            LogController.LogError($"Prerequisites not unlocked for tech: {tech.name}");
-            return false;
-        }
-
-        if (LevelManager.Instance == null)
-        {
-            LogController.LogError("LevelManager instance not found while unlocking tech.");
-            return false;
-        }
+        // subscribe tech tree UI refresh later
+        if (!CanUnlockTech(techId)) return false;
+        TechNode tech = techNodes[techId];
 
         if (!LevelManager.Instance.SpendMoney(tech.cost))
         {
-            LogController.LogError($"Insufficient money: {tech.name}");
+            LogController.LogError($"TechManager: Insufficient money for unlocking: {tech.name}, how can this happen??");
             return false;
         }
 
-        tech.isUnlocked = true;
-        LogController.Log($"Tech unlocked!: {tech.name} ({tech.id})");
+        tech.unlockState = 1;
+        ApplyUnlockTechEffect(techId);
+        LogController.Log($"TechManager: Tech unlocked!: {tech.name} ({tech.id})");
 
         return true;
     }
+
+    public bool DismantleTech(string techId)
+    {
+        // subscribe tech tree UI refresh later
+        if (!canDismatleTech(techId)) return false;
+        TechNode tech = techNodes[techId];
+
+        if (!LevelManager.Instance.SpendMoney(tech.cost))
+        {
+            LogController.LogError($"TechManager: Insufficient money for dismantling: {tech.name}, how can this happen??");
+            return false;
+        }
+
+        tech.unlockState = -1; // -1 or <0 for dismantled
+        ApplyDismantleTechEffect(techId);
+        LogController.Log($"TechManager: Tech dismantled: {tech.name} ({tech.id})");
+
+        return true;
+    }
+
+
+    // bool checks 
 
     public bool CanUnlockTech(string techId)
     {
         if (!techNodes.TryGetValue(techId, out TechNode tech))
         {
-            LogController.LogError($"Tech ID not exist: {techId}");
+            LogController.LogError($"TechManager: Tech ID not exist: {techId}");
             return false;
         }
 
-        if (tech.isUnlocked)
+        if (IsTechUnlocked(tech))
         {
+            LogController.LogError($"TechManager: Tech is already unlocked: {tech.name} ({techId})");
+            return false;
+        }
+
+        if (IsTechDismantled(tech))
+        {
+            LogController.LogError($"TechManager: Tech is regrettably dismantled, cannot unlock: {tech.name} ({techId})");
             return false;
         }
 
         if (!ArePrerequisitesUnlocked(tech))
         {
+            LogController.LogError($"TechManager: Prerequisites not met for tech: {tech.name} ({techId})");
             return false;
         }
 
-        if (LevelManager.Instance == null)
+        if (LevelManager.Instance.Money < tech.cost)
         {
-            LogController.LogError("LevelManager instance not found while checking tech availability.");
+            LogController.LogError($"TechManager: Not enough money to unlock tech: {tech.name} ({techId})");
             return false;
         }
 
-        return LevelManager.Instance.Money >= tech.cost;
+        return true;
+    }
+
+    public bool canDismatleTech(string techId)
+    {
+        if (!techNodes.TryGetValue(techId, out TechNode tech))
+        {
+            LogController.LogError($"TechManager: Tech ID not exist: {techId}");
+            return false;
+        }
+
+        if (!tech.canDismantle)
+        {
+            LogController.LogError($"TechManager: Tech is not a dismantle-able one: {tech.name} ({techId})");
+            return false;
+        }
+
+        if (IsTechDismantled(tech))
+        {
+            LogController.LogError($"TechManager: Tech is already dismantled: {tech.name} ({techId})");
+            return false;
+        }
+
+        if (!IsTechUnlocked(tech))
+        {
+            LogController.LogError($"TechManager: Tech is not even unlocked, cannot dismantle: {tech.name} ({techId})");
+            return false;
+        }
+
+        if (LevelManager.Instance.Money < tech.dismantleCost)
+        {
+            LogController.LogError($"TechManager: Not enough money to dismantle tech: {tech.name} ({techId})");
+            return false;
+        }
+
+        return true;
     }
 
     private bool ArePrerequisitesUnlocked(TechNode tech)
@@ -146,7 +197,7 @@ public class TechManager : MonoBehaviour
 
         foreach (string prereqId in tech.prerequisites)
         {
-            if (!techNodes.TryGetValue(prereqId, out TechNode prereq) || !prereq.isUnlocked)
+            if (!techNodes.TryGetValue(prereqId, out TechNode prereq) || !IsTechUnlocked(prereq))
             {
                 return false;
             }
@@ -163,7 +214,7 @@ public class TechManager : MonoBehaviour
         foreach (var kvp in techNodes)
         {
             TechNode node = kvp.Value;
-            string status = node.isUnlocked ? "✓ Unlock" : "✗ Locked"; // Alignment
+            string status = IsTechUnlocked(node) ? "✓ Unlock" : "✗ Locked"; // Alignment
             LogController.Log($"{status} | {node.name} ({node.id})");
         }
 
@@ -172,9 +223,15 @@ public class TechManager : MonoBehaviour
 
     public void ApplySaveData(SaveData saveData) => techNodes = saveData.techNodes;
 
-    // check if a technology is unlocked
+    public bool IsTechUnlocked(TechNode node) => 
+        node != null && node.unlockState > 0;
     public bool IsTechUnlocked(string techId) =>
-        techNodes.ContainsKey(techId) && techNodes[techId].isUnlocked;
+        techNodes.ContainsKey(techId) && techNodes[techId].unlockState > 0;
+
+    public bool IsTechDismantled(TechNode node) =>
+        node != null && node.unlockState < 0;
+    public bool IsTechDismantled(string techId) =>
+        techNodes.ContainsKey(techId) && techNodes[techId].unlockState < 0;
 
     public TechNode GetTechNode(string techId) =>
         techNodes.ContainsKey(techId) ? techNodes[techId] : null;

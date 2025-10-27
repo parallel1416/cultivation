@@ -29,7 +29,9 @@
             "description": "延揽更多的弟子。",
             "cost": 3,
             "prerequisites": ["recruit"],
-            "isUnlocked": false
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 5
         },
         {
             "id": "recruit_normal_2",

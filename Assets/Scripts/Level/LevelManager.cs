@@ -168,6 +168,7 @@ public class LevelManager : MonoBehaviour
 
     /// <summary>
     /// This will reduce the upper limit of available disciples per turn!
+    /// Will force kill to zero if an overkill happens.
     /// </summary>
     public bool KillDisciples(int amount)
     {
@@ -182,7 +183,8 @@ public class LevelManager : MonoBehaviour
             LogController.Log($"LevelManager: {amount} disciples killed!");
             return true;
         }
-        LogController.LogError("LevelManager: Not enough disciples to kill.");
+        disciples = 0;
+        LogController.LogError("LevelManager: Not enough disciples to kill, set to 0.");
         return false;
     }
 
