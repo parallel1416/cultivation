@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -39,6 +40,18 @@ public class TechToggleBinder : MonoBehaviour
     [Header("Height Mapping")]
     [SerializeField] private float heightInterval = 1000f;
 
+    [Header("Description Panel")]
+    [SerializeField] private GameObject descriptionPanelRoot;
+    [SerializeField] private RectTransform descriptionPanelRect;
+    [SerializeField] private Image descriptionPanelImage; // Background image for sprite switching
+    [SerializeField] private TMPro.TextMeshProUGUI descriptionText;
+    [SerializeField] private float descPanelWidth = 300f;
+    [SerializeField] private float descPanelMargin = 20f;
+    [SerializeField] private float hoverDelay = 0.2f;
+    [SerializeField] private float descPanelYThreshold = 0f; // Y position threshold
+    [SerializeField] private Sprite descPanelSpriteAbove; // Image when Y > threshold
+    [SerializeField] private Sprite descPanelSpriteBelow; // Image when Y <= threshold
+
     [Header("Events")]
     [SerializeField] private UnityEvent onTechUnlocked;
 
@@ -46,9 +59,53 @@ public class TechToggleBinder : MonoBehaviour
     private readonly Dictionary<Toggle, float> toggleYPositions = new Dictionary<Toggle, float>();
 
     private bool isSyncingState;
+    private Canvas canvas;
+    private CanvasGroup descPanelCanvasGroup;
+    private Image descPanelBackgroundImage;
+    private Toggle currentHoveredToggle;
+    private Coroutine hoverDelayCoroutine;
 
     private void Awake()
     {
+        // Find canvas
+        canvas = GetComponentInParent<Canvas>();
+        if (canvas == null)
+        {
+            canvas = FindObjectOfType<Canvas>();
+        }
+
+        // Setup description panel
+        if (descriptionPanelRoot != null)
+        {
+            if (descriptionPanelRect == null)
+            {
+                descriptionPanelRect = descriptionPanelRoot.GetComponent<RectTransform>();
+            }
+
+            descPanelCanvasGroup = descriptionPanelRoot.GetComponent<CanvasGroup>();
+            if (descPanelCanvasGroup == null)
+            {
+                descPanelCanvasGroup = descriptionPanelRoot.AddComponent<CanvasGroup>();
+            }
+
+            // Get background image component - use serialized field if assigned, otherwise auto-find
+            if (descriptionPanelImage != null)
+            {
+                descPanelBackgroundImage = descriptionPanelImage;
+            }
+            else
+            {
+                descPanelBackgroundImage = descriptionPanelRoot.GetComponent<Image>();
+                if (descPanelBackgroundImage == null)
+                {
+                    Debug.LogWarning("TechToggleBinder: No Image component assigned or found on descriptionPanelRoot. Assign 'Description Panel Image' field or add an Image component to enable sprite switching.");
+                }
+            }
+
+            descriptionPanelRoot.SetActive(false);
+            descPanelCanvasGroup.alpha = 0f;
+        }
+
         InitializeMappings();
     }
 
@@ -65,6 +122,11 @@ public class TechToggleBinder : MonoBehaviour
             {
                 binding.Toggle.onValueChanged.RemoveListener(binding.Listener);
             }
+        }
+
+        if (hoverDelayCoroutine != null)
+        {
+            StopCoroutine(hoverDelayCoroutine);
         }
 
         bindings.Clear();
@@ -119,6 +181,9 @@ public class TechToggleBinder : MonoBehaviour
 
             bindings.Add(toggle, binding);
             toggle.onValueChanged.AddListener(binding.Listener);
+
+            // Add hover event triggers
+            AddHoverListeners(toggle);
         }
     }
 
@@ -384,5 +449,216 @@ public class TechToggleBinder : MonoBehaviour
         // Update the text to the tech name
         string techName = !string.IsNullOrEmpty(node.name) ? node.name : binding.TechId;
         binding.TextComponent.text = techName;
+    }
+
+    private void AddHoverListeners(Toggle toggle)
+    {
+        if (toggle == null)
+        {
+            return;
+        }
+
+        // Add EventTrigger component if it doesn't exist
+        UnityEngine.EventSystems.EventTrigger eventTrigger = toggle.GetComponent<UnityEngine.EventSystems.EventTrigger>();
+        if (eventTrigger == null)
+        {
+            eventTrigger = toggle.gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+        }
+
+        // Add PointerEnter event
+        UnityEngine.EventSystems.EventTrigger.Entry pointerEnter = new UnityEngine.EventSystems.EventTrigger.Entry
+        {
+            eventID = UnityEngine.EventSystems.EventTriggerType.PointerEnter
+        };
+        pointerEnter.callback.AddListener((data) => { OnTogglePointerEnter(toggle); });
+        eventTrigger.triggers.Add(pointerEnter);
+
+        // Add PointerExit event
+        UnityEngine.EventSystems.EventTrigger.Entry pointerExit = new UnityEngine.EventSystems.EventTrigger.Entry
+        {
+            eventID = UnityEngine.EventSystems.EventTriggerType.PointerExit
+        };
+        pointerExit.callback.AddListener((data) => { OnTogglePointerExit(toggle); });
+        eventTrigger.triggers.Add(pointerExit);
+    }
+
+    private void OnTogglePointerEnter(Toggle toggle)
+    {
+        if (toggle == null || descriptionPanelRoot == null)
+        {
+            return;
+        }
+
+        currentHoveredToggle = toggle;
+
+        // Start hover delay coroutine
+        if (hoverDelayCoroutine != null)
+        {
+            StopCoroutine(hoverDelayCoroutine);
+        }
+        hoverDelayCoroutine = StartCoroutine(ShowDescriptionPanelAfterDelay(toggle));
+    }
+
+    private void OnTogglePointerExit(Toggle toggle)
+    {
+        if (currentHoveredToggle == toggle)
+        {
+            currentHoveredToggle = null;
+        }
+
+        // Cancel hover delay
+        if (hoverDelayCoroutine != null)
+        {
+            StopCoroutine(hoverDelayCoroutine);
+            hoverDelayCoroutine = null;
+        }
+
+        HideDescriptionPanel();
+    }
+
+    private IEnumerator ShowDescriptionPanelAfterDelay(Toggle toggle)
+    {
+        yield return new WaitForSeconds(hoverDelay);
+
+        // Check if still hovering
+        if (currentHoveredToggle == toggle)
+        {
+            ShowDescriptionPanel(toggle);
+        }
+    }
+
+    private void ShowDescriptionPanel(Toggle toggle)
+    {
+        if (toggle == null || descriptionPanelRoot == null || !bindings.TryGetValue(toggle, out ToggleBinding binding))
+        {
+            return;
+        }
+
+        // Get tech node data
+        if (TechManager.Instance == null)
+        {
+            return;
+        }
+
+        TechNode node = TechManager.Instance.GetTechNode(binding.TechId);
+        if (node == null)
+        {
+            return;
+        }
+
+        // Update description text
+        if (descriptionText != null)
+        {
+            string description = !string.IsNullOrEmpty(node.description) ? node.description : "无描述 (No description)";
+            
+            // Add tech info
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine($"<b>{node.name}</b>");
+            sb.AppendLine(description);
+            sb.AppendLine($"<color=#FFD700>消耗: {node.cost} 灵石</color>");
+            
+            // Show prerequisites
+            if (node.prerequisites != null && node.prerequisites.Count > 0)
+            {
+                sb.Append("<color=#888888>前置: ");
+                for (int i = 0; i < node.prerequisites.Count; i++)
+                {
+                    string prereqId = node.prerequisites[i];
+                    TechNode prereqNode = TechManager.Instance.GetTechNode(prereqId);
+                    string prereqName = prereqNode != null ? prereqNode.name : prereqId;
+                    sb.Append(prereqName);
+                    if (i < node.prerequisites.Count - 1)
+                    {
+                        sb.Append(", ");
+                    }
+                }
+                sb.Append("</color>");
+            }
+            
+            descriptionText.text = sb.ToString();
+        }
+
+        // Position panel
+        PositionDescriptionPanel(toggle.GetComponent<RectTransform>());
+
+        // Show panel
+        descriptionPanelRoot.SetActive(true);
+        if (descPanelCanvasGroup != null)
+        {
+            descPanelCanvasGroup.alpha = 1f;
+        }
+    }
+
+    private void HideDescriptionPanel()
+    {
+        if (descriptionPanelRoot != null)
+        {
+            descriptionPanelRoot.SetActive(false);
+            if (descPanelCanvasGroup != null)
+            {
+                descPanelCanvasGroup.alpha = 0f;
+            }
+        }
+    }
+
+    private void PositionDescriptionPanel(RectTransform toggleRect)
+    {
+        if (descriptionPanelRect == null || canvas == null || toggleRect == null)
+        {
+            return;
+        }
+
+        Vector2 toggleAnchoredPos = toggleRect.anchoredPosition;
+        bool isToggleOnLeft = toggleAnchoredPos.x < 0;
+
+        descriptionPanelRect.pivot = new Vector2(isToggleOnLeft ? 0f : 1f, 0.5f);
+        descriptionPanelRect.anchorMin = new Vector2(0.5f, 0f);
+        descriptionPanelRect.anchorMax = new Vector2(0.5f, 0f);
+
+        // Use fixed panel width
+        descriptionPanelRect.sizeDelta = new Vector2(descPanelWidth, descriptionPanelRect.sizeDelta.y);
+
+        float toggleHalfWidth = toggleRect.rect.width * 0.5f;
+        float xOffset = isToggleOnLeft 
+            ? toggleHalfWidth + descPanelMargin
+            : -(toggleHalfWidth + descPanelMargin);
+
+        descriptionPanelRect.anchoredPosition = new Vector2(toggleAnchoredPos.x + xOffset, toggleAnchoredPos.y);
+
+        // Update sprite based on Y position threshold
+        UpdateDescriptionPanelSprite(toggleAnchoredPos.y);
+        Debug.Log($"TechToggleBinder: Positioned description panel for toggle '{toggleRect.name}' at {descriptionPanelRect.anchoredPosition}, Y={toggleAnchoredPos.y}");
+    }
+
+    private void UpdateDescriptionPanelSprite(float yPosition)
+    {
+        if (descPanelBackgroundImage == null)
+        {
+            return;
+        }
+
+        // Check if both sprites are assigned
+        if (descPanelSpriteAbove == null && descPanelSpriteBelow == null)
+        {
+            return; // No sprites assigned, skip
+        }
+
+        // Update sprite based on threshold
+        if (yPosition > descPanelYThreshold)
+        {
+            // Above threshold - use descPanelSpriteAbove
+            if (descPanelSpriteAbove != null)
+            {
+                descPanelBackgroundImage.sprite = descPanelSpriteAbove;
+            }
+        }
+        else
+        {
+            // Below or equal to threshold - use descPanelSpriteBelow
+            if (descPanelSpriteBelow != null)
+            {
+                descPanelBackgroundImage.sprite = descPanelSpriteBelow;
+            }
+        }
     }
 }
