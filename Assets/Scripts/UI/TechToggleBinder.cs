@@ -142,10 +142,10 @@ public class TechToggleBinder : MonoBehaviour
             }
 
             TechNode node = TechManager.Instance.GetTechNode(binding.TechId);
-            bool isUnlocked = node != null && node.isUnlocked;
-            bool isAvailable = !isUnlocked && TechManager.Instance.CanUnlockTech(binding.TechId);
+            bool unlockState = node != null && node.unlockState == 1;
+            bool isAvailable = !unlockState && TechManager.Instance.CanUnlockTech(binding.TechId);
 
-            ApplyState(binding, isUnlocked, isAvailable);
+            ApplyState(binding, unlockState, isAvailable);
         }
 
         isSyncingState = false;
@@ -192,18 +192,18 @@ public class TechToggleBinder : MonoBehaviour
             return;
         }
 
-        ResourceBarUIManager.Instance?.UpdateResourceDisplay();
+        ResourceBar.Instance?.UpdateDisplay();
         onTechUnlocked?.Invoke();
 
         SyncToggleStatesFromTechTree();
     }
 
-    private void ApplyState(ToggleBinding binding, bool isUnlocked, bool isAvailable)
+    private void ApplyState(ToggleBinding binding, bool unlockState, bool isAvailable)
     {
         // Avoid triggering OnValueChanged while syncing.
-        binding.Toggle.SetIsOnWithoutNotify(isUnlocked);
+        binding.Toggle.SetIsOnWithoutNotify(unlockState);
 
-        if (isUnlocked)
+        if (unlockState)
         {
             binding.Toggle.interactable = false;
             ApplyActiveVisual(binding);

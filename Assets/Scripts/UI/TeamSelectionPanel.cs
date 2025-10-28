@@ -67,6 +67,7 @@ public class TeamSelectionPanel : MonoBehaviour
     // Selection state
     private int selectedPetIndex = -1; // -1 means no selection
     private int selectedItemIndex = -1;
+    private Dictionary<string, int> savedDiceAssignment = new Dictionary<string, int>();
 
     // Temp state (before confirm)
     private int tempPetIndex = -1;
@@ -278,9 +279,23 @@ public class TeamSelectionPanel : MonoBehaviour
             return;
         }
 
-        // Save selection
+        // Save selection (but don't enqueue events - that's done by confirm button)
         selectedPetIndex = tempPetIndex;
         selectedItemIndex = tempItemIndex;
+        
+        // Save dice assignment
+        savedDiceAssignment = GetAssignedDices();
+
+        // Update assign button to show "In Action" and disable it
+        if (currentAssignButton != null)
+        {
+            TextMeshProUGUI buttonText = currentAssignButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (buttonText != null)
+            {
+                buttonText.text = "In Action";
+            }
+            currentAssignButton.interactable = false;
+        }
 
         // Close panel
         if (teamPanelRoot != null)
@@ -711,7 +726,12 @@ public class TeamSelectionPanel : MonoBehaviour
     public bool IsDiceLimitFulfilled() => assignedPeople.Count == currentDiceLimit;
 
     /// <summary>
-    /// Get assigned people for dice rolling
+    /// Get saved dice assignment (after continue button pressed)
+    /// </summary>
+    public Dictionary<string, int> GetSavedDiceAssignment() => new Dictionary<string, int>(savedDiceAssignment);
+
+    /// <summary>
+    /// Get assigned people for dice rolling (current temp state, before continue)
     /// </summary>
     public Dictionary<string, int> GetAssignedDices()
     {

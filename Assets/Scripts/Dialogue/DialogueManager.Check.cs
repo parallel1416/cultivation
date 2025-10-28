@@ -61,20 +61,106 @@ public partial class DialogueManager : MonoBehaviour
 
     private CheckResult HandleCheck(CheckCondition condition)
     {
-        // UNFINISHED!!!!!!!!!!
-        // local methods to get assigning situation of current event, only used for diceroll checks
+        // Local methods to get assigning situation of current event, only used for diceroll checks
         Dictionary<string, int> GetAssignedDices()
         {
-            return new Dictionary<string, int>();
+            if (currentEvent == null || EventTracker.Instance == null)
+            {
+                return new Dictionary<string, int>();
+            }
+
+            EventTeamData teamData = EventTracker.Instance.GetEventData(currentEvent.id);
+            if (teamData == null || teamData.assignedMemberIds.Count == 0)
+            {
+                return new Dictionary<string, int>();
+            }
+
+            // Parse dice assignments from team data
+            Dictionary<string, int> diceAssignment = new Dictionary<string, int>
+            {
+                { "Normal", 0 },
+                { "Jingshi", 0 },
+                { "Jianjun", 0 },
+                { "Yuezheng", 0 }
+            };
+
+            foreach (string data in teamData.assignedMemberIds)
+            {
+                if (data.StartsWith("dice:"))
+                {
+                    string[] parts = data.Split(':');
+                    if (parts.Length == 3)
+                    {
+                        string diceType = parts[1];
+                        if (int.TryParse(parts[2], out int count))
+                        {
+                            diceAssignment[diceType] = count;
+                        }
+                    }
+                }
+            }
+
+            return diceAssignment;
         }
+
         string GetAssignedAnimal()
         {
+            if (currentEvent == null || EventTracker.Instance == null)
+            {
+                return "";
+            }
+
+            EventTeamData teamData = EventTracker.Instance.GetEventData(currentEvent.id);
+            if (teamData == null || teamData.assignedMemberIds.Count == 0)
+            {
+                return "";
+            }
+
+            // Find pet assignment (format: "pet:0", "pet:1", "pet:2")
+            foreach (string data in teamData.assignedMemberIds)
+            {
+                if (data.StartsWith("pet:"))
+                {
+                    string[] parts = data.Split(':');
+                    if (parts.Length == 2)
+                    {
+                        return parts[1]; // Return pet index as string
+                    }
+                }
+            }
+
             return "";
         }
+
         string GetAssignedItem()
         {
+            if (currentEvent == null || EventTracker.Instance == null)
+            {
+                return "";
+            }
+
+            EventTeamData teamData = EventTracker.Instance.GetEventData(currentEvent.id);
+            if (teamData == null || teamData.assignedMemberIds.Count == 0)
+            {
+                return "";
+            }
+
+            // Find item assignment (format: "item:0", "item:1", etc.)
+            foreach (string data in teamData.assignedMemberIds)
+            {
+                if (data.StartsWith("item:"))
+                {
+                    string[] parts = data.Split(':');
+                    if (parts.Length == 2)
+                    {
+                        return parts[1]; // Return item index as string
+                    }
+                }
+            }
+
             return "";
         }
+
         string GetComparison(bool isTrue) => isTrue ? ">=" : "<";
         string GetSuccessFailureDesc(bool isTrue) => isTrue ? checkSuccessDesc : checkFailureDesc;
         string GetTechUnlockDesc(bool isTrue) => isTrue ? UnlockedDesc : lockedDesc;

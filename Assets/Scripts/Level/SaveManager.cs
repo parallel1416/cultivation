@@ -19,10 +19,10 @@ public class SaveManager : MonoBehaviour
     public static SaveManager Instance => _instance;
 
     [SerializeField] private bool enableSave = true;
-    [SerializeField] private string saveFileDirectory = Application.persistentDataPath + "/Saves/";
     [SerializeField] private string saveFileFormat = ".json";
     [SerializeField] private bool singleSave = true;
 
+    private string saveFileDirectory; // Set in Awake
     private SaveData saveData; // the only save
 
     private void Awake()
@@ -35,6 +35,15 @@ public class SaveManager : MonoBehaviour
         {
             _instance = this;
             DontDestroyOnLoad(this.gameObject);
+            
+            // Initialize save directory path in Awake
+            saveFileDirectory = Application.persistentDataPath + "/Saves/";
+            
+            // Create directory if it doesn't exist
+            if (!Directory.Exists(saveFileDirectory))
+            {
+                Directory.CreateDirectory(saveFileDirectory);
+            }
         }
     }
 

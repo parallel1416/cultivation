@@ -31,6 +31,7 @@ public class EventPanelManager : MonoBehaviour
         public string eventId;
         public string description;
         public int diceLimit;
+        public bool triggersImmediately; // Whether to play immediately or enqueue
         public bool RequiresTeam => diceLimit > 0;
     }
 
@@ -57,7 +58,7 @@ public class EventPanelManager : MonoBehaviour
     [Header("Panel Animation")] 
     [SerializeField] private float panelSlideDuration = 0.3f;
     [SerializeField] private AnimationCurve panelSlideCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-    [SerializeField] private float panelWidthRatio = 0.4f;
+    [SerializeField] private float panelWidth = 400f;
     [SerializeField] private float panelMargin = 20f;
 
     private Canvas canvas;
@@ -336,7 +337,8 @@ public class EventPanelManager : MonoBehaviour
         {
             eventId = eventId,
             description = $"No description found for {eventId}.",
-            diceLimit = 0
+            diceLimit = 0,
+            triggersImmediately = true // Default to immediate
         };
 
         DialogueEvent dialogueDefinition = DialogueManager.Instance != null
@@ -347,6 +349,7 @@ public class EventPanelManager : MonoBehaviour
         {
             data.description = ExtractDialogueDescription(dialogueDefinition, data.description);
             data.diceLimit = Mathf.Max(0, dialogueDefinition.diceLimit);
+            data.triggersImmediately = dialogueDefinition.triggersImmediately;
         }
 
         return data;
@@ -431,8 +434,7 @@ public class EventPanelManager : MonoBehaviour
         panelRectTransform.anchorMin = new Vector2(0.5f, 0.5f);
         panelRectTransform.anchorMax = new Vector2(0.5f, 0.5f);
 
-        float canvasWidth = (canvas.transform as RectTransform).rect.width;
-        float panelWidth = canvasWidth * panelWidthRatio;
+        // Use fixed panel width
         panelRectTransform.sizeDelta = new Vector2(panelWidth, panelRectTransform.sizeDelta.y);
 
         float buttonHalfWidth = buttonRect.rect.width * 0.5f;
@@ -500,21 +502,24 @@ public class EventPanelManager : MonoBehaviour
             confirmButton.interactable = false;
         }
 
-        // Handle dialogue based on diceLimit
+        // Handle dialogue based on triggersImmediately flag
         if (!string.IsNullOrEmpty(currentEventData.eventId))
         {
-            if (currentEventData.diceLimit == 0)
+            if (currentEventData.triggersImmediately)
             {
-                // No team required - play dialogue immediately
+                // Play dialogue immediately
                 DialogueManager.PlayDialogueEvent(currentEventData.eventId, "MapScene");
+                LogController.Log($"Playing dialogue event '{currentEventData.eventId}' immediately.");
             }
             else
             {
-                // Team required - get selection from TeamSelectionPanel
-                if (teamSelectionPanel != null && teamSelectionPanel.IsDiceLimitFulfilled())
+                // Enqueue dialogue for end of round - get team selection from TeamSelectionPanel if needed
+                if (currentEventData.RequiresTeam && teamSelectionPanel != null)
                 {
-                    // Get dice assignment
-                    Dictionary<string, int> assignedDices = teamSelectionPanel.GetAssignedDices();
+                    // Get saved dice assignment, pet, and item
+                    Dictionary<string, int> assignedDices = teamSelectionPanel.GetSavedDiceAssignment();
+                    int petIndex = teamSelectionPanel.GetSelectedPetIndex();
+                    int itemIndex = teamSelectionPanel.GetSelectedItemIndex();
                     
                     // Queue dialogue for end of round
                     if (DialogueManager.Instance != null)
@@ -523,7 +528,7 @@ public class EventPanelManager : MonoBehaviour
                         LogController.Log($"Queued dialogue event '{currentEventData.eventId}' for end of round. Queue count: {DialogueManager.Instance.GetQueueCount()}");
                     }
 
-                    // Track event confirmation with dice assignment, pet, and item
+                    // Track event confirmation with team data
                     if (EventTracker.Instance != null)
                     {
                         // Store dice assignment, pet and item indices
@@ -539,14 +544,12 @@ public class EventPanelManager : MonoBehaviour
                         }
                         
                         // Add pet index
-                        int petIndex = teamSelectionPanel.GetSelectedPetIndex();
                         if (petIndex >= 0)
                         {
                             teamData.Add($"pet:{petIndex}");
                         }
                         
                         // Add item index
-                        int itemIndex = teamSelectionPanel.GetSelectedItemIndex();
                         if (itemIndex >= 0)
                         {
                             teamData.Add($"item:{itemIndex}");
@@ -559,11 +562,17 @@ public class EventPanelManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning($"EventPanelManager: Cannot confirm - dice limit not fulfilled (need {currentEventData.diceLimit})");
-                    isConfirmed = false;
-                    if (confirmButton != null)
+                    // No team required - just enqueue
+                    if (DialogueManager.Instance != null)
                     {
-                        confirmButton.interactable = true;
+                        DialogueManager.Instance.EnqueueDialogueEvent(currentEventData.eventId);
+                        LogController.Log($"Queued dialogue event '{currentEventData.eventId}' for end of round (no team). Queue count: {DialogueManager.Instance.GetQueueCount()}");
+                    }
+                    
+                    // Track event confirmation without team data
+                    if (EventTracker.Instance != null)
+                    {
+                        EventTracker.Instance.ConfirmEvent(currentEventData.eventId, new List<string>());
                     }
                 }
             }
