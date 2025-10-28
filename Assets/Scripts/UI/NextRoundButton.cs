@@ -37,14 +37,8 @@ public class NextRoundButton : MonoBehaviour
 
     private void OnNextRoundClicked()
     {
-        if (TurnManager.Instance != null)
-        {
-            TurnManager.Instance.NextTurn();
-            Debug.Log("Next round button clicked - advancing turn");
-        }
-        else
-        {
-            Debug.LogError("NextRoundButton: TurnManager.Instance is null!");
-        }
+        // Load TurnScene instead of advancing turn
+        Debug.Log("Next round button clicked - loading TurnScene");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("TurnScene");
     }
 }

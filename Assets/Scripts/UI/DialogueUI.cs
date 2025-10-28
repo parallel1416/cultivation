@@ -89,6 +89,8 @@ public class DialogueUI : MonoBehaviour
     private Action onDiceContinueCallback; // Callback when dice continue is clicked
     private List<GameObject> currentDiceObjects = new List<GameObject>(); // Track created dice objects
     private bool isDiceAnimationComplete = false; // Track if animation is done
+    private bool isTitleShowing = false; // Track if title is currently displaying
+    private bool isDicePanelShowing = false; // Track if dice panel is active
 
     private void Awake()
     {
@@ -342,6 +344,7 @@ public class DialogueUI : MonoBehaviour
         if (titleContainer != null && titleText != null)
         {
             titleText.text = title;
+            isTitleShowing = true; // Block dialogue advancement while title is showing
             StartCoroutine(ShowAndFadeTitle());
         }
     }
@@ -360,9 +363,18 @@ public class DialogueUI : MonoBehaviour
             choicesContainer.SetActive(false);
         }
 
-        // Format the line as "Speaker: text" and append to history
-        string speakerDisplay = string.IsNullOrEmpty(speaker) ? narratorName : speaker;
-        string formattedLine = $"<b>{speakerDisplay}:</b> {text}";
+        // Format the line - if speaker is empty, just show text without speaker formatting
+        string formattedLine;
+        if (string.IsNullOrEmpty(speaker))
+        {
+            // Narrator/narration - no speaker prefix
+            formattedLine = text;
+        }
+        else
+        {
+            // Character dialogue - show "Speaker: text"
+            formattedLine = $"<b>{speaker}:</b> {text}";
+        }
 
         AppendToHistory(formattedLine);
     }
@@ -486,6 +498,7 @@ public class DialogueUI : MonoBehaviour
     {
         if (titleContainer == null)
         {
+            isTitleShowing = false;
             yield break;
         }
 
@@ -506,6 +519,7 @@ public class DialogueUI : MonoBehaviour
         // Hide after fade completes
         titleContainer.alpha = 0f;
         titleContainer.gameObject.SetActive(false);
+        isTitleShowing = false; // Re-enable dialogue advancement
     }
 
     private void HandleChoiceDisplay(string question, ChoiceOption[] choices)
@@ -646,7 +660,9 @@ public class DialogueUI : MonoBehaviour
         if (DialogueManager.Instance != null && 
             DialogueManager.Instance.IsPlayingDialogue() && 
             !DialogueManager.Instance.IsInChoiceMode() &&
-            !DialogueManager.Instance.IsOnCooldown())
+            !DialogueManager.Instance.IsOnCooldown() &&
+            !isTitleShowing && // Don't advance while title is showing
+            !isDicePanelShowing) // Don't advance while dice panel is open
         {
             // Any mouse click or space key advances dialogue
             if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
@@ -762,6 +778,7 @@ public class DialogueUI : MonoBehaviour
         // Store callback
         onDiceContinueCallback = onContinue;
         isDiceAnimationComplete = false;
+        isDicePanelShowing = true; // Block dialogue advancement while dice panel is showing
 
         // Show dice panel
         dicePanel.SetActive(true);
@@ -838,6 +855,8 @@ public class DialogueUI : MonoBehaviour
         {
             dicePanel.SetActive(false);
         }
+
+        isDicePanelShowing = false; // Re-enable dialogue advancement
 
         // Show dialog container again
         if (dialogContainer != null)

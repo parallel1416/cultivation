@@ -1,0 +1,188 @@
+{
+    "desc": "事件简述",
+    "title": "事件标题",
+    "diceLimit": 0,
+    "triggersImmediately": true,
+    "major": false,
+    "sentences": [
+        {
+            "id": "sentence_1",
+            "type": "default",
+            "speaker": "说话人",
+            "text": "这是第一句话的内容。",
+            "target": "sentence_3"
+        },
+        {
+            "text": "这是第二句话的内容。"
+        },
+        {
+            "id": "sentence_3",
+            "text": "第一句话结束后，会跳过第二句话并跳转到此处。"
+        },
+        {
+            "type": "choice",
+            "question": "这是一个选择题，你想做什么？",
+            "choices": [
+                {
+                    "text": "你想选选项一。",
+                    "target": "option_1_target"
+                },
+                {
+                    "text": "选项二看起来也不错。",
+                    "target": "option_2_target"
+                },
+                {
+                    "text": "还是选选项三吧。",
+                    "target": "option_3_target"
+                }
+            ]
+        },
+        {
+            "id": "option_1_target",
+            "text": "你选择了选项一。"
+        },
+        {
+            "id": "option_2_target",
+            "text": "你选择了选项二。"
+        },
+        {
+            "id": "option_3_target",
+            "text": "你选择了选项三。"
+        },
+        {
+            "type": "check",
+            "showCheckResult": true,
+            "checkCondition": {
+                "difficultyClass": 10,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "check_success_target",
+            "failureTarget": "check_failure_target"
+        },
+        {
+            "id": "check_success_target",
+            "text": "你成功通过了检定！"
+        },
+        {
+            "id": "check_failure_target",
+            "text": "你未能通过检定。"
+        },
+        {
+            "type": "check",
+            "checkCondition": {
+                "checkWhat": "tech",
+                "stringId": "story_1"
+            },
+            "successTarget": "tech_success",
+            "failureTarget": "tech_failure"
+        },
+        {
+            "id": "tech_success",
+            "text": "科技检定成功。"
+        },
+        {
+            "id": "tech_failure",
+            "text": "科技检定失败。"
+        },
+        {
+            "type": "check",
+            "checkCondition": {
+                "checkWhat": "globalTag",
+                "stringId": "let_master_notice_mouse"
+            },
+            "successTarget": "tag_success",
+            "failureTarget": "tag_failure"
+        },
+        {
+            "id": "tag_success",
+            "text": "全局标签检定成功。"
+        },
+        {
+            "id": "tag_failure",
+            "text": "全局标签检定失败。"
+        },
+        {
+            "type": "multiCheck",
+            "multiCheckConditions": [
+                {
+                    "difficultyClass": 5,
+                    "checkWhat": "diceRoll"
+                },
+                {
+                    "difficultyClass": 8,
+                    "checkWhat": "money"
+                },
+                {
+                    "checkWhat": "tech",
+                    "stringId": "story_2"
+                },
+                {
+                    "checkWhat": "globalTag",
+                    "stringId": "did_bad_things"
+                }
+            ],
+            "multiCheckTargets": [
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [1, 2, 3],
+                    "target": "good_end"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [4],
+                    "target": "bad_end"
+                },
+                {
+                    "priority": 0,
+                    "target": "normal_end"
+                }
+            ]
+        },
+        {
+            "id": "good_end",
+            "text": "好结局！"
+        },
+        {
+            "id": "bad_end",
+            "text": "坏结局。"
+        },
+        {
+            "id": "normal_end",
+            "text": "普通结局。"
+        },
+        {
+            "type": "default",
+            "text": "掌门给了你一块钱。",
+            "effects": [
+                {
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 1,
+                    "stringValue": "",
+                    "operation": "+"
+                }
+            ]
+        },
+        {
+            "id": "sacrifice_assigned_disciples",
+            "text": "你献祭了你的弟子，但这一切真的值得吗？",
+            "effects": [
+                {
+                    "type": "disciple",
+                    "intValue": 0,
+                    "operation": "-"
+                },
+                {
+                    "type": "money",
+                    "intValue": 20,
+                    "operation": "+"
+                },
+                {
+                    "type": "globalTag",
+                    "stringValue": "embrace_cthulhu",
+                    "operation": "+"
+                }
+            ]
+        }
+    ]
+}

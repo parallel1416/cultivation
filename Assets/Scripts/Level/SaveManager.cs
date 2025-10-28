@@ -152,6 +152,14 @@ public class SaveManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Get the previous save data (from last turn)
+    /// </summary>
+    public SaveData GetPreviousSaveData()
+    {
+        return saveData;
+    }
+
+    /// <summary>
     /// IMPORTANT!
     /// Public method to check if a save exists, for example deciding whether to show "Continue" button in main menu
     /// </summary>

@@ -66,6 +66,12 @@ public class ItemManager : MonoBehaviour
             LogController.LogError($"No such item: {itemId}");
         }
         LogController.Log($"Added {quantity} of item {itemId}. Total now: {items[itemId]}");
+        
+        // Update ResourceBar display if it exists
+        if (ResourceBar.Instance != null)
+        {
+            ResourceBar.Instance.RefreshDropdown();
+        }
     }
 
     public bool ConsumeItem(string itemId, int quantity)
@@ -76,6 +82,13 @@ public class ItemManager : MonoBehaviour
             {
                 items[itemId] -= quantity;
                 LogController.Log($"Consumed {quantity} of item {itemId}. Total now: {items[itemId]}");
+                
+                // Update ResourceBar display if it exists
+                if (ResourceBar.Instance != null)
+                {
+                    ResourceBar.Instance.RefreshDropdown();
+                }
+                
                 return true;
             }
             else

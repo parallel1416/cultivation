@@ -90,7 +90,7 @@ public class NextTurnTransition : MonoBehaviour
             );
         }
 
-        // Step 2: Advance to next turn (handled by TurnManager.NextTurn)
+        // Step 2: Advance to next turn (turn+1)
         if (TurnManager.Instance != null)
         {
             int previousTurn = TurnManager.Instance.CurrentTurn;

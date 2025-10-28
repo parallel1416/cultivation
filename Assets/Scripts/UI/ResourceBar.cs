@@ -123,6 +123,36 @@ public class ResourceBar : MonoBehaviour
     }
 
     /// <summary>
+    /// Refresh the dropdown content if it's currently open
+    /// Call this when items/disciples/pets change
+    /// </summary>
+    public void RefreshDropdown()
+    {
+        if (dropdownMenu == null || !dropdownMenu.activeSelf)
+        {
+            return; // Dropdown not open, no need to refresh
+        }
+
+        // Determine which category is currently selected and refresh it
+        if (pplToggle != null && pplToggle.isOn)
+        {
+            UpdateDropdownContent(DropdownCategory.People);
+        }
+        else if (petToggle != null && petToggle.isOn)
+        {
+            UpdateDropdownContent(DropdownCategory.Pet);
+        }
+        else if (itemToggle != null && itemToggle.isOn)
+        {
+            UpdateDropdownContent(DropdownCategory.Item);
+        }
+        else if (optionToggle != null && optionToggle.isOn)
+        {
+            UpdateDropdownContent(DropdownCategory.Option);
+        }
+    }
+
+    /// <summary>
     /// Toggle dropdown menu visibility
     /// </summary>
     private void ToggleDropdown()
@@ -240,10 +270,31 @@ public class ResourceBar : MonoBehaviour
                 break;
 
             case DropdownCategory.Item:
-                // TODO: Get owned items from inventory system
-                // Placeholder for now
-                descriptions.Add("Item system not yet implemented");
-                descriptions.Add("TODO: Connect to inventory system");
+                // Get owned items from ItemManager
+                if (ItemManager.Instance == null)
+                {
+                    descriptions.Add("ItemManager not found");
+                }
+                else
+                {
+                    var items = ItemManager.Instance.Items;
+                    bool hasAnyItems = false;
+
+                    foreach (var item in items)
+                    {
+                        if (item.Value > 0)
+                        {
+                            hasAnyItems = true;
+                            string itemName = GetItemDisplayName(item.Key);
+                            descriptions.Add($"{itemName}: {item.Value}");
+                        }
+                    }
+
+                    if (!hasAnyItems)
+                    {
+                        descriptions.Add("No items in inventory");
+                    }
+                }
                 break;
 
             case DropdownCategory.Option:
@@ -309,6 +360,28 @@ public class ResourceBar : MonoBehaviour
         foreach (Transform child in contentContainer)
         {
             Destroy(child.gameObject);
+        }
+    }
+
+    /// <summary>
+    /// Convert item ID to display name
+    /// </summary>
+    private string GetItemDisplayName(string itemId)
+    {
+        switch (itemId)
+        {
+            case "zhi_kui_lei":
+                return "Paper Puppet (纸傀儡)";
+            case "yu_chan_tui":
+                return "Jade Cicada Shell (玉蝉蜕)";
+            case "dian_fan_tie":
+                return "Dianfan Iron (颠凡铁)";
+            case "wu_que_jing":
+                return "Perfect Mirror (无缺镜)";
+            case "cheng_fu_fu":
+                return "Burden Talisman (承负符)";
+            default:
+                return itemId; // Fallback to ID if name not found
         }
     }
 
