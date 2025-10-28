@@ -59,12 +59,21 @@ public class TowerDragController : MonoBehaviour
         }
 
         Canvas canvas = treeBackground.GetComponentInParent<Canvas>();
-        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+        
+        // For Screen Space - Overlay, we must use null camera
+        if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        {
+            cachedCamera = null;
+        }
+        else if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
         {
             cachedCamera = canvas.worldCamera;
+            if (cachedCamera == null)
+            {
+                cachedCamera = Camera.main;
+            }
         }
-
-        if (cachedCamera == null)
+        else
         {
             cachedCamera = Camera.main;
         }
@@ -181,10 +190,10 @@ public class TowerDragController : MonoBehaviour
 
         float direction = invertDrag ? 1f : -1f;
         float delta = scrollDelta * scrollSensitivity * direction;
-        float target = Mathf.Clamp(treeBackground.anchoredPosition.y + delta, minY, maxY);
-        SetTreeY(target);
-
-        velocityY = 0f;
+        
+        // Add to velocity instead of directly setting position for smooth inertia
+        velocityY += delta / Time.unscaledDeltaTime;
+        
         lastSampleY = treeBackground.anchoredPosition.y;
         lastSampleTime = Time.unscaledTime;
     }
@@ -237,11 +246,12 @@ public class TowerDragController : MonoBehaviour
         }
 
         baseY = treeBackground.anchoredPosition.y;
-        minY = baseY - Mathf.Abs(lowerPadding);
-        maxY = baseY;
+        maxY = 0f;  // Can't scroll above the starting position
 
         if (nodesContainer == null)
         {
+            minY = -lowerPadding;
+            SetTreeY(Mathf.Clamp(treeBackground.anchoredPosition.y, minY, maxY));
             return;
         }
 
@@ -263,13 +273,15 @@ public class TowerDragController : MonoBehaviour
 
         if (highest <= float.MinValue)
         {
-            return;
+            minY = -lowerPadding;
         }
-
-        float paddedMax = highest + overscrollPadding;
-        maxY = Mathf.Max(baseY, paddedMax);
-        float clamped = Mathf.Clamp(treeBackground.anchoredPosition.y, minY, maxY);
-        SetTreeY(clamped);
+        else
+        {
+            // minY is negative: allows scrolling down to show the highest node
+            minY = -(highest + overscrollPadding);
+        }
+        
+        SetTreeY(Mathf.Clamp(treeBackground.anchoredPosition.y, minY, maxY));
     }
 
     private float CalculateTopEdge(RectTransform rect)

@@ -627,7 +627,6 @@ public class TechToggleBinder : MonoBehaviour
 
         // Update sprite based on Y position threshold
         UpdateDescriptionPanelSprite(toggleAnchoredPos.y);
-        Debug.Log($"TechToggleBinder: Positioned description panel for toggle '{toggleRect.name}' at {descriptionPanelRect.anchoredPosition}, Y={toggleAnchoredPos.y}");
     }
 
     private void UpdateDescriptionPanelSprite(float yPosition)
