@@ -764,13 +764,20 @@ public class DialogueUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Show dice panel with assigned team data and perform animated dice roll
+    /// Show dice panel with pre-calculated dice result and perform animated dice roll
     /// </summary>
-    public void ShowDicePanel(Dictionary<string, int> assignedDices, string petId, string itemId, Action onContinue)
+    public void ShowDicePanel(DiceResult diceResult, Action onContinue)
     {
         if (dicePanel == null)
         {
             Debug.LogError("DialogueUI: Dice panel not assigned!");
+            onContinue?.Invoke();
+            return;
+        }
+
+        if (diceResult == null)
+        {
+            Debug.LogError("DialogueUI: DiceResult is null!");
             onContinue?.Invoke();
             return;
         }
@@ -796,6 +803,42 @@ public class DialogueUI : MonoBehaviour
 
         // Clear existing dice
         ClearDiceDisplays();
+
+        // Get pet and item IDs from current event's team data
+        string petId = "";
+        string itemId = "";
+
+        if (DialogueManager.Instance != null && EventTracker.Instance != null)
+        {
+            var currentEvent = DialogueManager.Instance.GetCurrentEvent();
+            if (currentEvent != null)
+            {
+                EventTeamData teamData = EventTracker.Instance.GetEventData(currentEvent.id);
+                if (teamData != null && teamData.assignedMemberIds.Count > 0)
+                {
+                    // Extract pet and item from team data
+                    foreach (string data in teamData.assignedMemberIds)
+                    {
+                        if (data.StartsWith("pet:"))
+                        {
+                            string[] parts = data.Split(':');
+                            if (parts.Length == 2)
+                            {
+                                petId = parts[1];
+                            }
+                        }
+                        else if (data.StartsWith("item:"))
+                        {
+                            string[] parts = data.Split(':');
+                            if (parts.Length == 2)
+                            {
+                                itemId = parts[1];
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         // Display assigned pet image
         if (petImage != null)
@@ -831,19 +874,10 @@ public class DialogueUI : MonoBehaviour
             diceContinueButton.interactable = false;
         }
 
-        // Get dice result and start animation
-        if (DiceRollManager.Instance != null)
-        {
-            DiceResult diceResult = DiceRollManager.Instance.GetDiceResult(assignedDices, petId, itemId);
-            StartCoroutine(AnimateDiceRoll(diceResult));
-        }
-        else
-        {
-            Debug.LogError("DialogueUI: DiceRollManager not found!");
-            EnableContinueButton();
-        }
+        // Start animation with pre-calculated dice result
+        StartCoroutine(AnimateDiceRoll(diceResult));
 
-        Debug.Log($"DialogueUI: Showing dice panel with {assignedDices?.Count ?? 0} dice types");
+        Debug.Log($"DialogueUI: Showing dice panel with pre-calculated result: {diceResult.result}");
     }
 
     /// <summary>
