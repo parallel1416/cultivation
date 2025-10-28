@@ -20,17 +20,20 @@ public class CheckResult
 {
     public bool isSuccess;
     public string description;
+    public DiceResult diceResult; // Store dice result to avoid re-rolling
 
     public CheckResult(bool isSuccess, string description)
     {
         this.isSuccess = isSuccess;
         this.description = description;
+        this.diceResult = null;
     }
 
     public CheckResult()
     {
         this.isSuccess = false;
         this.description = "";
+        this.diceResult = null;
     }
 }
 
@@ -58,6 +61,9 @@ public partial class DialogueManager : MonoBehaviour
         "globalTag",
         "SpecialDice"
     };
+
+    // Temporary storage for dice result to avoid re-rolling
+    private DiceResult cachedDiceResult;
 
     private CheckResult HandleCheck(CheckCondition condition)
     {
@@ -183,12 +189,21 @@ public partial class DialogueManager : MonoBehaviour
             case "diceroll":
             case "dice":
             case "diceRoll":
-                Dictionary<string, int> assignedDices = GetAssignedDices();
-                string assignedAnimal = GetAssignedAnimal();
-                string assignedItem = GetAssignedItem();
-
-                // Throw the dice!
-                DiceResult diceResult = DiceRollManager.Instance.GetDiceResult(assignedDices, assignedAnimal, assignedItem);
+                DiceResult diceResult;
+                
+                // Use cached dice result if available, otherwise calculate
+                if (cachedDiceResult != null)
+                {
+                    diceResult = cachedDiceResult;
+                }
+                else
+                {
+                    // Fallback: calculate if not cached (shouldn't happen in normal flow)
+                    Dictionary<string, int> assignedDices = GetAssignedDices();
+                    string assignedAnimal = GetAssignedAnimal();
+                    string assignedItem = GetAssignedItem();
+                    diceResult = DiceRollManager.Instance.GetDiceResult(assignedDices, assignedAnimal, assignedItem);
+                }
 
                 int totalResult = diceResult.result;
                 isSuccess = totalResult >= dc;
@@ -196,6 +211,7 @@ public partial class DialogueManager : MonoBehaviour
 
                 checkResult.isSuccess = isSuccess;
                 checkResult.description = $"{resultDesc} {GetComparison(isSuccess)} {dc}\n{diceCheckDesc}{GetSuccessFailureDesc(isSuccess)}";
+                checkResult.diceResult = diceResult; // Store dice result
                 break;
 
 
@@ -252,10 +268,17 @@ public partial class DialogueManager : MonoBehaviour
 
     private void ShowDicePanelBeforeCheck(DialogueSentence sentence, CheckCondition condition)
     {
-        // Get team data
+        // Calculate dice result ONCE here and cache it
         Dictionary<string, int> assignedDices = GetAssignedDicesFromEvent();
         string assignedAnimal = GetAssignedAnimalFromEvent();
         string assignedItem = GetAssignedItemFromEvent();
+
+        // Get the dice result and cache it
+        cachedDiceResult = null;
+        if (DiceRollManager.Instance != null)
+        {
+            cachedDiceResult = DiceRollManager.Instance.GetDiceResult(assignedDices, assignedAnimal, assignedItem);
+        }
 
         // Find DialogueUI
         DialogueUI dialogueUI = FindObjectOfType<DialogueUI>();
@@ -266,11 +289,13 @@ public partial class DialogueManager : MonoBehaviour
             return;
         }
 
-        // Show dice panel with callback to continue
-        dialogueUI.ShowDicePanel(assignedDices, assignedAnimal, assignedItem, () =>
+        // Show dice panel with the pre-calculated dice result
+        dialogueUI.ShowDicePanel(cachedDiceResult, () =>
         {
-            // User clicked continue, now execute the check
+            // User clicked continue, now execute the check (which will use cachedDiceResult)
             ExecuteCheck(sentence, condition);
+            // Clear cache after use
+            cachedDiceResult = null;
         });
     }
 

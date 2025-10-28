@@ -238,4 +238,9 @@ public partial class DialogueManager : MonoBehaviour
     {
         return dialogueQueue.Count;
     }
+
+    public DialogueEvent GetCurrentEvent()
+    {
+        return currentEvent;
+    }
 }
