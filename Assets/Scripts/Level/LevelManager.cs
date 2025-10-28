@@ -12,6 +12,8 @@ public class LevelManager : MonoBehaviour
     private static LevelManager _instance;
     public static LevelManager Instance => _instance;
 
+    public bool IsBuggy => GlobalTagManager.Instance.GetTagValue("is_buggy");
+
     // Core resources
     // SerializeField only for debugging in inspector
     [SerializeField] private int money = 200;
