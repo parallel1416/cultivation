@@ -1,0 +1,26 @@
+{
+    "desc": "An example dialogue with background, portrait, and music",
+    "title": "Mountain Summit",
+    "background": "Backgrounds/mountain_peak",
+    "portrait": "Portraits/sage",
+    "music": "Music/peaceful_theme",
+    "triggersImmediately": true,
+    "major": false,
+    "sentences": [
+        {
+            "speaker": "Sage",
+            "text": "Welcome, young cultivator. You have journeyed far to reach this sacred peak."
+        },
+        {
+            "speaker": "Sage",
+            "text": "The path of cultivation is long and arduous, but the view from the summit makes it all worthwhile."
+        },
+        {
+            "text": "The wind howls softly as you gaze upon the endless mountains below. A sense of peace washes over you."
+        },
+        {
+            "speaker": "Sage",
+            "text": "Remember this feeling. It will guide you through the trials ahead."
+        }
+    ]
+}

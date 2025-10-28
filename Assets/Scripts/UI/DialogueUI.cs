@@ -31,6 +31,45 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private GameObject choicePrefab;
     [SerializeField] private Transform choiceParent; // Parent transform for instantiated choice buttons
 
+    [Header("Visual Settings")]
+    [SerializeField] private Image backgroundImage; // Background image component
+    [SerializeField] private Image portraitImage; // Portrait image component
+    [SerializeField] private Sprite defaultBackgroundSprite; // Default background if none specified
+    [SerializeField] private Sprite defaultPortraitSprite; // Default portrait if none specified
+
+    [Header("Dice Panel References")]
+    [SerializeField] private GameObject dicePanel;
+    [SerializeField] private Transform diceContainer; // Container for dice displays
+    [SerializeField] private Image petImage; // Display assigned pet image
+    [SerializeField] private Image itemImage; // Display assigned item image
+    [SerializeField] private Button diceContinueButton; // Button to roll dice and continue
+    [SerializeField] private GameObject dicePrefab; // Prefab for individual dice (with image + text)
+    
+    [Header("Dice Sprites")]
+    [SerializeField] private Sprite d4Sprite;
+    [SerializeField] private Sprite d6Sprite;
+    [SerializeField] private Sprite d8Sprite;
+    [SerializeField] private Sprite d10Sprite;
+    [SerializeField] private Sprite d12Sprite;
+    [SerializeField] private Sprite d20Sprite;
+    
+    [Header("Pet/Item Sprites")]
+    [SerializeField] private Sprite mouseSprite;
+    [SerializeField] private Sprite chickenSprite;
+    [SerializeField] private Sprite sheepSprite;
+    [SerializeField] private Sprite paperPuppetSprite;
+    [SerializeField] private Sprite jadeCicadaSprite;
+    [SerializeField] private Sprite fanfanScrollSprite;
+    [SerializeField] private Sprite perfectMirrorSprite;
+    [SerializeField] private Sprite burdenTalismanSprite;
+    
+    [Header("Animation Settings")]
+    [SerializeField] private float diceAnimationDelay = 0.5f; // Delay between showing each dice
+    [SerializeField] private float resultTransitionDelay = 0.8f; // Delay between result stages
+    [SerializeField] private Color originalResultColor = Color.white;
+    [SerializeField] private Color itemResultColor = Color.yellow;
+    [SerializeField] private Color animalResultColor = Color.green;
+
     [Header("UI Settings")]
     [SerializeField] private string narratorName = "Narrator"; // Name for narration lines
     [SerializeField] private bool autoScrollToBottom = true; // Auto-scroll to newest dialogue
@@ -47,6 +86,9 @@ public class DialogueUI : MonoBehaviour
     private System.Text.StringBuilder dialogueHistory = new System.Text.StringBuilder();
     private Coroutine pendingScrollCoroutine;
     private CanvasGroup fadeOverlay;
+    private Action onDiceContinueCallback; // Callback when dice continue is clicked
+    private List<GameObject> currentDiceObjects = new List<GameObject>(); // Track created dice objects
+    private bool isDiceAnimationComplete = false; // Track if animation is done
 
     private void Awake()
     {
@@ -83,8 +125,17 @@ public class DialogueUI : MonoBehaviour
         DialogueManager.Instance.OnDialogueEnd += HandleDialogueEnd;
         DialogueManager.Instance.OnChoiceStart += HandleChoiceStart;
         DialogueManager.Instance.OnChoiceEnd += HandleChoiceEnd;
+        DialogueManager.Instance.OnBackgroundChange += HandleBackgroundChange;
+        DialogueManager.Instance.OnPortraitChange += HandlePortraitChange;
+        DialogueManager.Instance.OnMusicChange += HandleMusicChange;
         
-    hasSubscribedToEvents = true;
+        hasSubscribedToEvents = true;
+
+        // Setup dice continue button listener
+        if (diceContinueButton != null)
+        {
+            diceContinueButton.onClick.AddListener(OnDiceContinueClicked);
+        }
     }
 
     private void UnsubscribeFromEvents()
@@ -100,8 +151,17 @@ public class DialogueUI : MonoBehaviour
         DialogueManager.Instance.OnDialogueEnd -= HandleDialogueEnd;
         DialogueManager.Instance.OnChoiceStart -= HandleChoiceStart;
         DialogueManager.Instance.OnChoiceEnd -= HandleChoiceEnd;
+        DialogueManager.Instance.OnBackgroundChange -= HandleBackgroundChange;
+        DialogueManager.Instance.OnPortraitChange -= HandlePortraitChange;
+        DialogueManager.Instance.OnMusicChange -= HandleMusicChange;
         
         hasSubscribedToEvents = false;
+
+        // Cleanup dice continue button listener
+        if (diceContinueButton != null)
+        {
+            diceContinueButton.onClick.RemoveListener(OnDiceContinueClicked);
+        }
     }
 
     private void Start()
@@ -115,6 +175,11 @@ public class DialogueUI : MonoBehaviour
         if (choicesContainer != null)
         {
             choicesContainer.SetActive(false);
+        }
+
+        if (dicePanel != null)
+        {
+            dicePanel.SetActive(false);
         }
 
         // Initialize title container - start visible at full opacity
@@ -681,4 +746,459 @@ public class DialogueUI : MonoBehaviour
     {
         StartCoroutine(FadeOutAndEndScene());
     }
+
+    /// <summary>
+    /// Show dice panel with assigned team data and perform animated dice roll
+    /// </summary>
+    public void ShowDicePanel(Dictionary<string, int> assignedDices, string petId, string itemId, Action onContinue)
+    {
+        if (dicePanel == null)
+        {
+            Debug.LogError("DialogueUI: Dice panel not assigned!");
+            onContinue?.Invoke();
+            return;
+        }
+
+        // Store callback
+        onDiceContinueCallback = onContinue;
+        isDiceAnimationComplete = false;
+
+        // Show dice panel
+        dicePanel.SetActive(true);
+
+        // Hide other UI
+        if (dialogContainer != null)
+        {
+            dialogContainer.SetActive(false);
+        }
+
+        if (choicesContainer != null)
+        {
+            choicesContainer.SetActive(false);
+        }
+
+        // Clear existing dice
+        ClearDiceDisplays();
+
+        // Display assigned pet image
+        if (petImage != null)
+        {
+            if (!string.IsNullOrEmpty(petId))
+            {
+                petImage.sprite = GetPetSprite(petId);
+                petImage.enabled = true;
+            }
+            else
+            {
+                petImage.enabled = false;
+            }
+        }
+
+        // Display assigned item image
+        if (itemImage != null)
+        {
+            if (!string.IsNullOrEmpty(itemId))
+            {
+                itemImage.sprite = GetItemSprite(itemId);
+                itemImage.enabled = true;
+            }
+            else
+            {
+                itemImage.enabled = false;
+            }
+        }
+
+        // Disable continue button until animation completes
+        if (diceContinueButton != null)
+        {
+            diceContinueButton.interactable = false;
+        }
+
+        // Get dice result and start animation
+        if (DiceRollManager.Instance != null)
+        {
+            DiceResult diceResult = DiceRollManager.Instance.GetDiceResult(assignedDices, petId, itemId);
+            StartCoroutine(AnimateDiceRoll(diceResult));
+        }
+        else
+        {
+            Debug.LogError("DialogueUI: DiceRollManager not found!");
+            EnableContinueButton();
+        }
+
+        Debug.Log($"DialogueUI: Showing dice panel with {assignedDices?.Count ?? 0} dice types");
+    }
+
+    /// <summary>
+    /// Hide dice panel
+    /// </summary>
+    public void HideDicePanel()
+    {
+        if (dicePanel != null)
+        {
+            dicePanel.SetActive(false);
+        }
+
+        // Show dialog container again
+        if (dialogContainer != null)
+        {
+            dialogContainer.SetActive(true);
+        }
+
+        ClearDiceDisplays();
+    }
+
+    /// <summary>
+    /// Animate dice roll showing original → item effect → pet effect
+    /// </summary>
+    private IEnumerator AnimateDiceRoll(DiceResult diceResult)
+    {
+        if (diceContainer == null || diceResult == null)
+        {
+            EnableContinueButton();
+            yield break;
+        }
+
+        int diceCount = diceResult.oldResult.Count;
+
+        // Create all dice objects first
+        for (int i = 0; i < diceCount; i++)
+        {
+            GameObject diceObj = CreateDiceObject(i, diceResult.sizes[i]);
+            currentDiceObjects.Add(diceObj);
+            yield return new WaitForSeconds(diceAnimationDelay);
+        }
+
+        // Phase 1: Show original results
+        for (int i = 0; i < diceCount; i++)
+        {
+            UpdateDiceDisplay(currentDiceObjects[i], diceResult.oldResult[i], originalResultColor);
+        }
+
+        yield return new WaitForSeconds(resultTransitionDelay);
+
+        // Phase 2: Item effect - flash item image and update results
+        if (itemImage != null && itemImage.enabled)
+        {
+            StartCoroutine(FlashImage(itemImage));
+        }
+
+        for (int i = 0; i < diceCount; i++)
+        {
+            if (diceResult.oldResult[i] != diceResult.itemResult[i])
+            {
+                UpdateDiceDisplay(currentDiceObjects[i], diceResult.itemResult[i], itemResultColor);
+            }
+        }
+
+        yield return new WaitForSeconds(resultTransitionDelay);
+
+        // Phase 3: Pet effect - flash pet image and update to final results
+        if (petImage != null && petImage.enabled)
+        {
+            StartCoroutine(FlashImage(petImage));
+        }
+
+        for (int i = 0; i < diceCount; i++)
+        {
+            if (diceResult.itemResult[i] != diceResult.animalResult[i])
+            {
+                UpdateDiceDisplay(currentDiceObjects[i], diceResult.animalResult[i], animalResultColor);
+            }
+        }
+
+        yield return new WaitForSeconds(0.5f);
+
+        // Animation complete - enable continue button
+        EnableContinueButton();
+    }
+
+    /// <summary>
+    /// Flash an image to indicate effect activation
+    /// </summary>
+    private IEnumerator FlashImage(Image image)
+    {
+        if (image == null) yield break;
+
+        Color originalColor = image.color;
+        
+        // Flash bright
+        for (int i = 0; i < 2; i++)
+        {
+            image.color = Color.white;
+            yield return new WaitForSeconds(0.15f);
+            image.color = originalColor;
+            yield return new WaitForSeconds(0.15f);
+        }
+    }
+
+    /// <summary>
+    /// Create a dice display object with image and text
+    /// </summary>
+    private GameObject CreateDiceObject(int index, int faceCount)
+    {
+        GameObject diceObj;
+
+        if (dicePrefab != null)
+        {
+            // Use prefab if provided
+            diceObj = Instantiate(dicePrefab, diceContainer);
+        }
+        else
+        {
+            // Create simple GameObject with Image and Text
+            diceObj = new GameObject($"Dice_{index}");
+            diceObj.transform.SetParent(diceContainer, false);
+
+            // Add horizontal layout
+            HorizontalLayoutGroup layout = diceObj.AddComponent<HorizontalLayoutGroup>();
+            layout.childAlignment = TextAnchor.MiddleLeft;
+            layout.spacing = 10f;
+
+            // Create image child
+            GameObject imageObj = new GameObject("DiceImage");
+            imageObj.transform.SetParent(diceObj.transform, false);
+            Image diceImage = imageObj.AddComponent<Image>();
+            diceImage.sprite = GetDiceSprite(faceCount);
+            LayoutElement imageLayout = imageObj.AddComponent<LayoutElement>();
+            imageLayout.preferredWidth = 40;
+            imageLayout.preferredHeight = 40;
+
+            // Create text child
+            GameObject textObj = new GameObject("DiceText");
+            textObj.transform.SetParent(diceObj.transform, false);
+            TextMeshProUGUI diceText = textObj.AddComponent<TextMeshProUGUI>();
+            diceText.text = "?";
+            diceText.fontSize = 24;
+            diceText.color = Color.white;
+            diceText.alignment = TextAlignmentOptions.Left;
+        }
+
+        // Set dice image sprite based on face count
+        Image img = diceObj.GetComponentInChildren<Image>();
+        if (img != null)
+        {
+            img.sprite = GetDiceSprite(faceCount);
+        }
+
+        return diceObj;
+    }
+
+    /// <summary>
+    /// Update dice display with new result and color
+    /// </summary>
+    private void UpdateDiceDisplay(GameObject diceObj, int result, Color color)
+    {
+        if (diceObj == null) return;
+
+        TextMeshProUGUI text = diceObj.GetComponentInChildren<TextMeshProUGUI>();
+        if (text != null)
+        {
+            text.text = result.ToString();
+            text.color = color;
+        }
+    }
+
+    /// <summary>
+    /// Enable continue button after animation
+    /// </summary>
+    private void EnableContinueButton()
+    {
+        isDiceAnimationComplete = true;
+        if (diceContinueButton != null)
+        {
+            diceContinueButton.interactable = true;
+        }
+    }
+
+    /// <summary>
+    /// Clear all dice display objects
+    /// </summary>
+    private void ClearDiceDisplays()
+    {
+        foreach (GameObject diceObj in currentDiceObjects)
+        {
+            if (diceObj != null)
+            {
+                Destroy(diceObj);
+            }
+        }
+        currentDiceObjects.Clear();
+    }
+
+    /// <summary>
+    /// Get dice sprite based on number of faces
+    /// </summary>
+    private Sprite GetDiceSprite(int faceCount)
+    {
+        switch (faceCount)
+        {
+            case 4: return d4Sprite;
+            case 6: return d6Sprite;
+            case 8: return d8Sprite;
+            case 10: return d10Sprite;
+            case 12: return d12Sprite;
+            case 20: return d20Sprite;
+            default: return d6Sprite; // Default to d6
+        }
+    }
+
+    /// <summary>
+    /// Get pet sprite from ID
+    /// </summary>
+    private Sprite GetPetSprite(string petId)
+    {
+        switch (petId)
+        {
+            case "0": return mouseSprite;
+            case "1": return chickenSprite;
+            case "2": return sheepSprite;
+            default: return null;
+        }
+    }
+
+    /// <summary>
+    /// Get item sprite from ID
+    /// </summary>
+    private Sprite GetItemSprite(string itemId)
+    {
+        switch (itemId)
+        {
+            case "0": return paperPuppetSprite;
+            case "1": return jadeCicadaSprite;
+            case "2": return fanfanScrollSprite;
+            case "3": return perfectMirrorSprite;
+            case "4": return burdenTalismanSprite;
+            default: return null;
+        }
+    }
+
+    /// <summary>
+    /// Called when dice continue button is clicked
+    /// </summary>
+    private void OnDiceContinueClicked()
+    {
+        HideDicePanel();
+
+        // Invoke callback to continue dialogue/perform roll
+        onDiceContinueCallback?.Invoke();
+        onDiceContinueCallback = null;
+    }
+
+    #region Visual and Audio Handlers
+
+    /// <summary>
+    /// Handle background image change
+    /// </summary>
+    private void HandleBackgroundChange(string backgroundPath)
+    {
+        if (backgroundImage == null)
+        {
+            Debug.LogWarning("DialogueUI: Background image component not assigned");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(backgroundPath))
+        {
+            // Use default background
+            if (defaultBackgroundSprite != null)
+            {
+                backgroundImage.sprite = defaultBackgroundSprite;
+            }
+            return;
+        }
+
+        // Load background sprite from Resources
+        Sprite backgroundSprite = Resources.Load<Sprite>(backgroundPath);
+        if (backgroundSprite != null)
+        {
+            backgroundImage.sprite = backgroundSprite;
+            Debug.Log($"DialogueUI: Background changed to {backgroundPath}");
+        }
+        else
+        {
+            Debug.LogWarning($"DialogueUI: Background sprite not found: {backgroundPath}");
+            // Fallback to default
+            if (defaultBackgroundSprite != null)
+            {
+                backgroundImage.sprite = defaultBackgroundSprite;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handle portrait image change
+    /// </summary>
+    private void HandlePortraitChange(string portraitPath)
+    {
+        if (portraitImage == null)
+        {
+            Debug.LogWarning("DialogueUI: Portrait image component not assigned");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(portraitPath))
+        {
+            // Hide portrait or use default
+            if (defaultPortraitSprite != null)
+            {
+                portraitImage.sprite = defaultPortraitSprite;
+                portraitImage.enabled = true;
+            }
+            else
+            {
+                portraitImage.enabled = false;
+            }
+            return;
+        }
+
+        // Load portrait sprite from Resources
+        Sprite portraitSprite = Resources.Load<Sprite>(portraitPath);
+        if (portraitSprite != null)
+        {
+            portraitImage.sprite = portraitSprite;
+            portraitImage.enabled = true;
+            Debug.Log($"DialogueUI: Portrait changed to {portraitPath}");
+        }
+        else
+        {
+            Debug.LogWarning($"DialogueUI: Portrait sprite not found: {portraitPath}");
+            // Fallback to default or hide
+            if (defaultPortraitSprite != null)
+            {
+                portraitImage.sprite = defaultPortraitSprite;
+                portraitImage.enabled = true;
+            }
+            else
+            {
+                portraitImage.enabled = false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handle music change - uses SoundManager
+    /// </summary>
+    private void HandleMusicChange(string musicPath)
+    {
+        if (SoundManager.Instance == null)
+        {
+            Debug.LogWarning("DialogueUI: SoundManager instance not found");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(musicPath))
+        {
+            // Stop current music
+            SoundManager.Instance.StopBGM(true);
+            return;
+        }
+
+        // Play BGM with crossfade
+        SoundManager.Instance.CrossfadeBGM(musicPath);
+        Debug.Log($"DialogueUI: Music changed to {musicPath}");
+    }
+
+    #endregion
 }
+

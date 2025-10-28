@@ -221,7 +221,9 @@ public class EventPanelManager : MonoBehaviour
         SetAllButtonsInactive();
         SetButtonState(mapping, true);
 
-        currentEventData = FetchEventData(mapping.eventId);
+        // Get eventId from button name (set by EventButtonsManager) or from mapping
+        string eventId = !string.IsNullOrEmpty(mapping.button.name) ? mapping.button.name : mapping.eventId;
+        currentEventData = FetchEventData(eventId);
         
         // Check if this event was already confirmed
         bool wasConfirmed = EventTracker.Instance != null && 

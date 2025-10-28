@@ -13,6 +13,11 @@ public partial class DialogueManager : MonoBehaviour
     public event Action OnDialogueEnd;
     public event Action OnChoiceStart;
     public event Action OnChoiceEnd;
+    
+    // Events for visual and audio changes
+    public event Action<string> OnBackgroundChange; // background resource path
+    public event Action<string> OnPortraitChange; // portrait resource path
+    public event Action<string> OnMusicChange; // music resource path
 
     /// <summary>
     /// Called by UI to advance dialogue when using UI-based input instead of keyboard
@@ -77,5 +82,21 @@ public partial class DialogueManager : MonoBehaviour
     private void TriggerChoiceEnd()
     {
         OnChoiceEnd?.Invoke();
+    }
+
+    // Trigger visual/audio changes
+    private void TriggerBackgroundChange(string backgroundPath)
+    {
+        OnBackgroundChange?.Invoke(backgroundPath);
+    }
+
+    private void TriggerPortraitChange(string portraitPath)
+    {
+        OnPortraitChange?.Invoke(portraitPath);
+    }
+
+    private void TriggerMusicChange(string musicPath)
+    {
+        OnMusicChange?.Invoke(musicPath);
     }
 }

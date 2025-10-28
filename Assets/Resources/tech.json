@@ -1,0 +1,142 @@
+{
+    "nodes": [
+        {
+            "id": "story_1",
+            "name": "初入山门",
+            "description": "蓬门今始为君开。",
+            "cost": 1,
+            "prerequisites": [],
+            "isUnlocked": true
+        },{
+            "id": "story_2",
+            "name": "仙会筹备",
+            "description": "为仙会筹备所需物资。",
+            "cost":25,
+            "prerequisites": ["story_1"],
+            "unlockState": 0
+        },{
+            "id": "story_3",
+            "name": "祭阵",
+            "description": "举办祭阵，扶乩降鸾。",
+            "cost":30,
+            "prerequisites": ["story_2"],
+            "unlockState": 0
+        },
+        {
+            "id": "recruit",
+            "name": "奇人异士",
+            "description": "宗门百废待兴，你和掌门需要为宗门延揽奇人异士。",
+            "cost": 1,
+            "prerequisites": [],
+            "unlockState": 0
+        },
+        {
+            "id": "recruit_normal_1",
+            "name": "广纳门徒",
+            "description": "延揽更多的弟子。",
+            "cost": 3,
+            "prerequisites": ["recruit"],
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 5
+        },
+        {
+            "id": "recruit_normal_2",
+            "name": "广纳门徒",
+            "description": "延揽更多的弟子。",
+            "cost": 3,
+            "prerequisites": ["recruit_normal_1"],
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 5
+        },
+        {
+            "id": "recruit_normal_3",
+            "name": "广纳门徒",
+            "description": "延揽更多的弟子。",
+            "cost": 3,
+            "prerequisites": ["recruit_normal_2"],
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 5
+        },
+        {
+            "id": "recruit_special_1",
+            "name": "松枝挂剑",
+            "description": "一位仗剑之人前来拜访。",
+            "cost": 5,
+            "prerequisites": ["recruit"],
+            "unlockState": 0
+        },
+        {
+            "id": "recruit_special_3",
+            "name": "珠盘玉落",
+            "description": "门徒向你推举了一位怀抱琵琶的修士。",
+            "cost": 10,
+            "prerequisites": ["recruit_special_2"],
+            "unlockState": 0
+        },
+        {
+            "id": "farm_1",
+            "name": "开垦荒园",
+            "description": "晨兴理荒秽，带月荷锄归。",
+            "cost": 1,
+            "prerequisites": [],
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 3
+        },
+        {
+            "id": "farm_2",
+            "name": "扩建宗门",
+            "description": "进一步扩建宗门规模，提升宗门庶务效果。",
+            "cost": 3,
+            "prerequisites": ["farm_1"],
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 5
+        },
+        {
+            "id": "farm_3",
+            "name": "扩建宗门",
+            "description": "进一步扩建宗门规模，提升宗门庶务效果。",
+            "cost": 10,
+            "prerequisites": ["farm_2"],
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 12
+        },
+        {
+            "id": "pet_1",
+            "name": "灵鼠",
+            "description": "良鼠择木而栖。",
+            "cost": 1,
+            "prerequisites": [],
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 3
+        },
+        {
+            "id": "pet_2",
+            "name": "凤雏",
+            "description": "凤凰于飞，翙翙其羽。",
+            "cost": 4,
+            "prerequisites": ["pet_1"],
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 5
+        },
+        {
+            "id": "pet_3",
+            "name": "獬豸",
+            "description": "四凶有獬豸，一臂无螳螂。",
+            "cost": 8,
+            "prerequisites": ["pet_2"],
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 10
+        }
+        
+    ]
+    
+} 

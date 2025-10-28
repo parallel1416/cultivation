@@ -12,6 +12,12 @@ public partial class DialogueEvent
     public int diceLimit = 0; // max dice(disciple) number you can assign to this event, 0 by default (like normal dialogue event), which means you can not assign any dice(disciple) to it
     public bool triggersImmediately = true; // immediately triggered events will show event UI at once, and not be added to event queue, which plays after player clicks the next turn button.
     public bool major = false; // major event will lock the next turn button and force player to handle this event 
+    
+    // Visual and audio settings
+    public string background = ""; // Background image resource path (e.g., "Backgrounds/forest")
+    public string portrait = ""; // Portrait image resource path (e.g., "Portraits/character_name")
+    public string music = ""; // Background music resource path (e.g., "Music/dialogue_theme")
+    
     public List<DialogueSentence> sentences = new List<DialogueSentence>();
 }
 

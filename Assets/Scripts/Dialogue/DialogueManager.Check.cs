@@ -236,7 +236,46 @@ public partial class DialogueManager : MonoBehaviour
     {
         CheckCondition condition = sentence.checkCondition;
 
-        
+        // Check if this is a dice roll check
+        string checkWhat = condition.checkWhat;
+        if (checkWhat == "diceroll" || checkWhat == "dice" || checkWhat == "diceRoll")
+        {
+            // Show dice panel before rolling
+            ShowDicePanelBeforeCheck(sentence, condition);
+        }
+        else
+        {
+            // Non-dice checks proceed immediately
+            ExecuteCheck(sentence, condition);
+        }
+    }
+
+    private void ShowDicePanelBeforeCheck(DialogueSentence sentence, CheckCondition condition)
+    {
+        // Get team data
+        Dictionary<string, int> assignedDices = GetAssignedDicesFromEvent();
+        string assignedAnimal = GetAssignedAnimalFromEvent();
+        string assignedItem = GetAssignedItemFromEvent();
+
+        // Find DialogueUI
+        DialogueUI dialogueUI = FindObjectOfType<DialogueUI>();
+        if (dialogueUI == null)
+        {
+            Debug.LogWarning("DialogueManager: DialogueUI not found, skipping dice panel");
+            ExecuteCheck(sentence, condition);
+            return;
+        }
+
+        // Show dice panel with callback to continue
+        dialogueUI.ShowDicePanel(assignedDices, assignedAnimal, assignedItem, () =>
+        {
+            // User clicked continue, now execute the check
+            ExecuteCheck(sentence, condition);
+        });
+    }
+
+    private void ExecuteCheck(DialogueSentence sentence, CheckCondition condition)
+    {
         CheckResult checkResult = HandleCheck(condition);
         bool isSuccess = checkResult.isSuccess;
         string resultDescription = checkResult.description;
@@ -259,5 +298,102 @@ public partial class DialogueManager : MonoBehaviour
         {
             PlayNextEvent();
         }
+    }
+
+    // Helper methods to get team data from current event
+    private Dictionary<string, int> GetAssignedDicesFromEvent()
+    {
+        if (currentEvent == null || EventTracker.Instance == null)
+        {
+            return new Dictionary<string, int>();
+        }
+
+        EventTeamData teamData = EventTracker.Instance.GetEventData(currentEvent.id);
+        if (teamData == null || teamData.assignedMemberIds.Count == 0)
+        {
+            return new Dictionary<string, int>();
+        }
+
+        Dictionary<string, int> diceAssignment = new Dictionary<string, int>
+        {
+            { "Normal", 0 },
+            { "Jingshi", 0 },
+            { "Jianjun", 0 },
+            { "Yuezheng", 0 }
+        };
+
+        foreach (string data in teamData.assignedMemberIds)
+        {
+            if (data.StartsWith("dice:"))
+            {
+                string[] parts = data.Split(':');
+                if (parts.Length == 3)
+                {
+                    string diceType = parts[1];
+                    if (int.TryParse(parts[2], out int count))
+                    {
+                        diceAssignment[diceType] = count;
+                    }
+                }
+            }
+        }
+
+        return diceAssignment;
+    }
+
+    private string GetAssignedAnimalFromEvent()
+    {
+        if (currentEvent == null || EventTracker.Instance == null)
+        {
+            return "";
+        }
+
+        EventTeamData teamData = EventTracker.Instance.GetEventData(currentEvent.id);
+        if (teamData == null || teamData.assignedMemberIds.Count == 0)
+        {
+            return "";
+        }
+
+        foreach (string data in teamData.assignedMemberIds)
+        {
+            if (data.StartsWith("pet:"))
+            {
+                string[] parts = data.Split(':');
+                if (parts.Length == 2)
+                {
+                    return parts[1];
+                }
+            }
+        }
+
+        return "";
+    }
+
+    private string GetAssignedItemFromEvent()
+    {
+        if (currentEvent == null || EventTracker.Instance == null)
+        {
+            return "";
+        }
+
+        EventTeamData teamData = EventTracker.Instance.GetEventData(currentEvent.id);
+        if (teamData == null || teamData.assignedMemberIds.Count == 0)
+        {
+            return "";
+        }
+
+        foreach (string data in teamData.assignedMemberIds)
+        {
+            if (data.StartsWith("item:"))
+            {
+                string[] parts = data.Split(':');
+                if (parts.Length == 2)
+                {
+                    return parts[1];
+                }
+            }
+        }
+
+        return "";
     }
 }

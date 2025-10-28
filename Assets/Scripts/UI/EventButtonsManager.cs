@@ -30,6 +30,17 @@ public class EventButtonsManager : MonoBehaviour
 
     private void Start()
     {
+        // Initialize turn dialogues if not already set up
+        if (DialogueListManager.Instance != null)
+        {
+            // Check if dialogues are already set up for current turn
+            if (DialogueListManager.Instance.CurrentTurnDialogues.Count == 0)
+            {
+                Debug.Log("EventButtonsManager: No dialogues found, calling SetUpTurnDialogues()");
+                DialogueListManager.Instance.SetUpTurnDialogues();
+            }
+        }
+        
         // Update event buttons when MapScene loads
         UpdateEventButtons();
     }

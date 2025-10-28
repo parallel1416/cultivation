@@ -42,6 +42,9 @@ public partial class DialogueManager : MonoBehaviour
                 currentEvent = dialogueQueue.Dequeue();
                 LogController.Log($"Playing dialogue event: {currentEvent.id}");
                 
+                // Apply visual and audio settings from event
+                ApplyEventSettings(currentEvent);
+                
                 if (!string.IsNullOrEmpty(currentEvent.title))
                 {
                     string titleText = $"=== {currentEvent.title} ===";
@@ -177,6 +180,10 @@ public partial class DialogueManager : MonoBehaviour
         if (dialogueQueue.Count > 0)
         {
             currentEvent = dialogueQueue.Dequeue();
+            
+            // Apply visual and audio settings for new event
+            ApplyEventSettings(currentEvent);
+            
             BuildIdIndexMap();
             currentSentenceIndex = 0;
             PlayCurrentSentence();
@@ -222,5 +229,34 @@ public partial class DialogueManager : MonoBehaviour
         // temporarily use Debug.Log for output
         // should be replaced by proper UI display later
         // Debug.Log(message);
+    }
+
+    /// <summary>
+    /// Apply visual and audio settings from dialogue event
+    /// </summary>
+    private void ApplyEventSettings(DialogueEvent dialogueEvent)
+    {
+        if (dialogueEvent == null)
+        {
+            return;
+        }
+
+        // Trigger background change
+        if (!string.IsNullOrEmpty(dialogueEvent.background))
+        {
+            TriggerBackgroundChange(dialogueEvent.background);
+        }
+
+        // Trigger portrait change
+        if (!string.IsNullOrEmpty(dialogueEvent.portrait))
+        {
+            TriggerPortraitChange(dialogueEvent.portrait);
+        }
+
+        // Trigger music change
+        if (!string.IsNullOrEmpty(dialogueEvent.music))
+        {
+            TriggerMusicChange(dialogueEvent.music);
+        }
     }
 }
