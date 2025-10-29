@@ -12,7 +12,7 @@ public class LevelManager : MonoBehaviour
     private static LevelManager _instance;
     public static LevelManager Instance => _instance;
 
-    public bool IsBuggy => GlobalTagManager.Instance.GetTagValue("is_buggy");
+    public bool IsBuggy => GlobalTagManager.Instance.GetTagValue("truth");
 
     // Core resources
     // SerializeField only for debugging in inspector

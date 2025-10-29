@@ -12,7 +12,9 @@ public class ItemManager : MonoBehaviour
         "yu_chan_tui",
         "dian_fan_tie",
         "wu_que_jing",
-        "cheng_fu_fu"
+        "cheng_fu_fu",
+        "jian_pu_can_zhang",
+        "fei_guang_jian_fu"
     };
 
     [SerializeField] private int paperPuppetDiceSize = 4;

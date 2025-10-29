@@ -47,9 +47,16 @@ public class DiceRollManager : MonoBehaviour
     [SerializeField] private string dianFanTieDesc = "点繁帖";
     [SerializeField] private string wuQueJingDesc = "无缺镜";
     [SerializeField] private string chengFuFuDesc = "承负符";
+    [SerializeField] private string jianPuCanZhangDesc = "剑谱残章";
+    [SerializeField] private string feiGuangJianFuDesc = "飞光剑符";
 
     [SerializeField] private string reRollDesc = "重投道具";
     [SerializeField] private string enableDesc = "生效!";
+    [SerializeField] private string becauseDesc = "因";
+    [SerializeField] private string minusDesc = "而减少！";
+    [SerializeField] private string plusDesc = "而增加！";
+
+    [SerializeField] private string finalDesc = "最终结果：";
 
     [SerializeField]
     private IReadOnlyList<string> reRollItems = new List<string>()
@@ -189,6 +196,8 @@ public class DiceRollManager : MonoBehaviour
         }
         int diceSeqNum = 0;
 
+        // Single dice rolls
+
         // Normal disciple dices
         if (normalDiceNumber > 0)
         {
@@ -223,11 +232,36 @@ public class DiceRollManager : MonoBehaviour
             diceSeqNum++;
         }
 
+        // Item effects
+        if (assignedItem == "cheng_fu_fu" && result != 0)
+        {
+            result -= 2;
+            finalDesc.Append($" - 2({chengFuFuDesc})");
+        }
+
+        if (assignedItem == "fei_guang_jian_fu")
+        {
+            result += 10;
+            finalDesc.Append($" + 10({feiGuangJianFuDesc})");
+        }
+
+        if (finalDesc.Length == 0) // no dice or plus item assigned
+        {
+            finalDesc.Append(finalDesc);
+            finalDesc.Append(result);
+        }
+        else
+        {
+            finalDesc.Remove(0, 3); // remove first " + " or " - "
+            finalDesc.Insert(0, finalDesc);
+            finalDesc.Append($" = {result}");
+        }
+
         // final result desc
 
-
+        desc.AppendLine(finalDesc.ToString());
         diceResult.result = result;
-        diceResult.checkDescription = desc.ToString();
+        diceResult.checkDescription = desc.ToString().TrimEnd();
 
         return diceResult;
 
@@ -240,10 +274,14 @@ public class DiceRollManager : MonoBehaviour
             int diceSize = GetSizeBasedOnDiceType(diceType);
             string diceDesc = GetDescBasedOnDiceType(diceType);
 
+            StringBuilder lineDesc = new StringBuilder();
+
             bool yuezhengSpecialDice = enableYuezhengSpecialDice && diceType == "Yuezheng";
             bool isHigherMinRoll = assignedItem == "wu_que_jing"; // wuquejing effect: min roll is 2 (never rolls 1)
-            bool isReRoll = reRollItems.Contains(assignedItem); // reroll item like yu_chan_tui and cheng_fu_fu
+            bool isReRoll_1 = assignedItem == "yu_chan_tui";
+            bool isReRoll_2 = assignedItem == "cheng_fu_fu";
             bool isLucky = assignedItem == "dian_fan_tie" && diceSeqNum == luckyDice; // lucky max item
+            bool isAverage = assignedItem == "jian_pu_can_zhang";
 
             int roll;
 
@@ -258,40 +296,57 @@ public class DiceRollManager : MonoBehaviour
             }
 
             // desc string of this line ready
-            desc.Append($"[ {(diceDesc)}: ] 1d{GetSizeDisplay(diceSize)} = ");
+            lineDesc.Append($"[ {(diceDesc)}: ] 1d{GetSizeDisplay(diceSize)} = ");
 
 
             // First roll (old result)
             roll = GetRoll();
-            // record old roll
-            diceResult.oldResult.Add(roll);
+           
 
 
             // All item logics
 
             // handle reroll logic, desc including when not reroll
             string reRollResultDesc = "";
-            if (isReRoll)
+            if (isReRoll_1) // yuchantui
             {
                 int roll_new = GetRoll();
                 int roll_final = Mathf.Max(roll, roll_new);
+                int roll_old = Mathf.Min(roll, roll_new); // make player happy
+                // record old roll
+                diceResult.oldResult.Add(roll_old);
 
-                reRollResultDesc = $"({GetRollDisplay(roll)}, {GetRollDisplay(roll_new)}) => {GetRollDisplay(roll_final)} [{reRollDesc}{enableDesc}]";
+                reRollResultDesc = $"({GetRollDisplay(roll)}, {GetRollDisplay(roll_new)}) => {GetRollDisplay(roll_final)} [{yuChanTuiDesc}{enableDesc}]";
+
+                roll = roll_final;
+            }
+            else if (isReRoll_2) //chengfufu
+            {
+                int roll_new_1 = GetRoll();
+                int roll_new_2 = GetRoll();
+                int roll_final = Mathf.Max(roll, roll_new_1, roll_new_2);
+                int roll_old = Mathf.Min(roll, roll_new_1, roll_new_2); // make player happy
+                // record old roll
+                diceResult.oldResult.Add(roll_old);
+
+                reRollResultDesc = $"({GetRollDisplay(roll)}, {GetRollDisplay(roll_new_1)}, {GetRollDisplay(roll_new_2)}) => {GetRollDisplay(roll_final)} [{chengFuFuDesc}{enableDesc}]";
 
                 roll = roll_final;
             }
             else
             {
+                // record old roll
+                diceResult.oldResult.Add(roll);
                 reRollResultDesc = $"{GetRollDisplay(roll)}";
 
-                // handle minroll logic               
+                // handle minroll logic, only desc              
                 if (isHigherMinRoll)
                 {
                     reRollResultDesc += $" [{wuQueJingDesc}{enableDesc}]";
                 }
-                    
+
             }
-            desc.Append(reRollResultDesc);
+            lineDesc.Append(reRollResultDesc);
 
             // handle lucky max logic
             string luckyResultDesc = "";
@@ -301,9 +356,21 @@ public class DiceRollManager : MonoBehaviour
                 roll = roll_max;
                 luckyResultDesc = $" => {GetRollDisplay(roll)} [{dianFanTieDesc}{enableDesc}]";
             }
-            desc.Append(luckyResultDesc);
+            lineDesc.Append(luckyResultDesc);
+
+            // handle average logic
+            string averageResultDesc = "";
+            if (isAverage)
+            {
+                int averageRoll = diceSize / 2 + 1; // d4 to 3, d6 to 4, d8 to 5, etc.
+                roll = averageRoll;
+                averageResultDesc = $" => {GetRollDisplay(roll)} [{jianPuCanZhangDesc}{enableDesc}]";
+            }
+            lineDesc.Append(averageResultDesc);
 
             diceResult.itemResult.Add(roll);
+
+
 
 
             // All animal logics
@@ -312,21 +379,21 @@ public class DiceRollManager : MonoBehaviour
             if (assignedAnimal == "mouse")
             {
                 roll += 1;
-                desc.Append($" => {GetRollDisplay(roll)} [{mouseDesc}{enableDesc}]");
+                lineDesc.Append($" => {GetRollDisplay(roll)} [{mouseDesc}{enableDesc}]");
             }
 
             // handle reverse logic
             if (assignedAnimal == "chicken")
             {
                 roll = diceSize + 1 - roll;
-                desc.Append($" => {GetRollDisplay(roll)} [{chickenDesc}{enableDesc}]");
+                lineDesc.Append($" => {GetRollDisplay(roll)} [{chickenDesc}{enableDesc}]");
             }
 
             // handle 1 to 3 logic
             if (assignedAnimal == "sheep" && roll == 1)
             {
                 roll = 3;
-                desc.Append($" => {GetRollDisplay(roll)} [{sheepDesc}{enableDesc}]");
+                lineDesc.Append($" => {GetRollDisplay(roll)} [{sheepDesc}{enableDesc}]");
             }
 
             diceResult.animalResult.Add(roll);
@@ -334,8 +401,8 @@ public class DiceRollManager : MonoBehaviour
 
             // Final
             result += roll;
-            desc.Append('\n');
-            finalDesc.Append($"{roll} + ");
+            desc.AppendLine(lineDesc.ToString());
+            finalDesc.Append($" + {roll}");
             return;
 
 
