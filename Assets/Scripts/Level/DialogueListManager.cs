@@ -490,9 +490,10 @@ public class DialogueListManager : MonoBehaviour
     public void PushToPlayMainlineDialogues()
     {
         int currentTurn = TurnManager.Instance.CurrentTurn;
-        List<string> dialogues = mainlineAtOnceDialogueEvents[currentTurn];
+        List<string> dialogues = new List<string>();
+        if(mainlineAtOnceDialogueEvents != null) mainlineAtOnceDialogueEvents.TryGetValue(currentTurn, out dialogues);
 
-        if (dialogues == null) return;
+        if (dialogues == null || dialogues.Count == 0) return;
         foreach (string dialogue in dialogues)
         {
             DialogueManager.PlayDialogueEvent(dialogue); // Directly play in dialogue scene

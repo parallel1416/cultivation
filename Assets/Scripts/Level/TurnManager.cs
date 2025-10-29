@@ -67,7 +67,8 @@ public class TurnManager : MonoBehaviour
         // Advance turn
         currentTurn++;
         //resetActionPoints();
-        
+        LevelManager.Instance.ResetActiveResources(); // reset active status of resources like disciples and animals/pets at turn start
+
         LogController.Log($"Turn incremented to: {currentTurn}");
 
         // Create a save at new turn starts

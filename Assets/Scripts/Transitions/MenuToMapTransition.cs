@@ -116,6 +116,7 @@ public class MenuToMapTransition : TransitionAnimator
 
     private void OnStartButtonClicked()
     {
+        GameManager.StartNewGame();
         StartCoroutine(TransitionToMapScene());
     }
 
