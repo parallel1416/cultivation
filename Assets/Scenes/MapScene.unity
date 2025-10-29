@@ -1836,6 +1836,7 @@ RectTransform:
   - {fileID: 1904412454}
   - {fileID: 1286787165}
   - {fileID: 1453077881}
+  - {fileID: 1279694050}
   m_Father: {fileID: 1219999050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -4823,6 +4824,106 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1277934454}
   m_CullTransparentMesh: 1
+--- !u!1 &1279694049
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1279694050}
+  - component: {fileID: 1279694053}
+  - component: {fileID: 1279694052}
+  - component: {fileID: 1279694051}
+  m_Layer: 5
+  m_Name: star7
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1279694050
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279694049}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 511326309}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 54, y: 10.5}
+  m_SizeDelta: {x: -198.71, y: -140.6719}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1279694051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279694049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0c5f2f6af72161438cd48d723bacd6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  amplitude: 10
+  frequency: 0.3
+  direction: {x: 0, y: 1, z: 0}
+  phaseOffset: 0
+  randomizePhase: 0
+  customCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  isEnabled: 1
+--- !u!114 &1279694052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279694049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.61006284, g: 0.6081444, b: 0.6081444, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 331ed42267dcacf4c9ebf655e0a2de64, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1279694053
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279694049}
+  m_CullTransparentMesh: 1
 --- !u!1 &1284822747
 GameObject:
   m_ObjectHideFlags: 0
@@ -7194,6 +7295,15 @@ MonoBehaviour:
   - targetObject: {fileID: 1067705534}
     normalImage: {fileID: 21300000, guid: fc67b486528836442a221646a2782763, type: 3}
     buggyImage: {fileID: 21300000, guid: 453ba711e43665b489dd18dd17f1304f, type: 3}
+  - targetObject: {fileID: 1428881164}
+    normalImage: {fileID: 21300000, guid: c21dbe9d8c4bdbb498f274290bb0e9cd, type: 3}
+    buggyImage: {fileID: 21300000, guid: 026683f866a431543af9ba462f017541, type: 3}
+  - targetObject: {fileID: 657892003}
+    normalImage: {fileID: 21300000, guid: c21dbe9d8c4bdbb498f274290bb0e9cd, type: 3}
+    buggyImage: {fileID: 21300000, guid: 026683f866a431543af9ba462f017541, type: 3}
+  - targetObject: {fileID: 205725351}
+    normalImage: {fileID: 21300000, guid: 867de4008c79af24294d4971708fe8cd, type: 3}
+    buggyImage: {fileID: 21300000, guid: a12a3420881a4404fb830a72610294b7, type: 3}
   textColorEntries:
   - targetText: {fileID: 305543102}
     normalColor: {r: 0.18238991, g: 0.18238991, b: 0.18238991, a: 1}
