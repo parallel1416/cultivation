@@ -280,6 +280,9 @@ public partial class DialogueManager : MonoBehaviour
             cachedDiceResult = DiceRollManager.Instance.GetDiceResult(assignedDices, assignedAnimal, assignedItem);
         }
 
+        // Get difficulty class
+        int difficulty = condition.difficultyClass;
+
         // Find DialogueUI
         DialogueUI dialogueUI = FindObjectOfType<DialogueUI>();
         if (dialogueUI == null)
@@ -289,8 +292,8 @@ public partial class DialogueManager : MonoBehaviour
             return;
         }
 
-        // Show dice panel with the pre-calculated dice result
-        dialogueUI.ShowDicePanel(cachedDiceResult, () =>
+        // Show dice panel with the pre-calculated dice result and difficulty
+        dialogueUI.ShowDicePanel(cachedDiceResult, difficulty, () =>
         {
             // User clicked continue, now execute the check (which will use cachedDiceResult)
             ExecuteCheck(sentence, condition);

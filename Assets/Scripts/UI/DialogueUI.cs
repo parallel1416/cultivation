@@ -39,6 +39,8 @@ public class DialogueUI : MonoBehaviour
 
     [Header("Dice Panel References")]
     [SerializeField] private GameObject dicePanel;
+    [SerializeField] private Image dicePanelBackground; // Background image to change based on win/lose
+    [SerializeField] private TextMeshProUGUI difficultyText; // Display current difficulty
     [SerializeField] private Transform diceContainer; // Container for dice displays
     [SerializeField] private Image petImage; // Display assigned pet image
     [SerializeField] private Image itemImage; // Display assigned item image
@@ -52,6 +54,11 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private Sprite d10Sprite;
     [SerializeField] private Sprite d12Sprite;
     [SerializeField] private Sprite d20Sprite;
+    
+    [Header("Dice Panel Backgrounds")]
+    [SerializeField] private Sprite dicePanelWinSprite; // Background for successful roll
+    [SerializeField] private Sprite dicePanelLoseSprite; // Background for failed roll
+    [SerializeField] private Sprite dicePanelNeutralSprite; // Background before result is shown
     
     [Header("Pet/Item Sprites")]
     [SerializeField] private Sprite mouseSprite;
@@ -766,7 +773,7 @@ public class DialogueUI : MonoBehaviour
     /// <summary>
     /// Show dice panel with pre-calculated dice result and perform animated dice roll
     /// </summary>
-    public void ShowDicePanel(DiceResult diceResult, Action onContinue)
+    public void ShowDicePanel(DiceResult diceResult, int difficulty, Action onContinue)
     {
         if (dicePanel == null)
         {
@@ -789,6 +796,18 @@ public class DialogueUI : MonoBehaviour
 
         // Show dice panel
         dicePanel.SetActive(true);
+
+        // Set neutral background at start
+        if (dicePanelBackground != null && dicePanelNeutralSprite != null)
+        {
+            dicePanelBackground.sprite = dicePanelNeutralSprite;
+        }
+
+        // Display difficulty
+        if (difficultyText != null)
+        {
+            difficultyText.text = $"Difficulty: {difficulty}";
+        }
 
         // Hide other UI
         if (dialogContainer != null)
@@ -875,7 +894,7 @@ public class DialogueUI : MonoBehaviour
         }
 
         // Start animation with pre-calculated dice result
-        StartCoroutine(AnimateDiceRoll(diceResult));
+        StartCoroutine(AnimateDiceRoll(diceResult, difficulty));
 
         Debug.Log($"DialogueUI: Showing dice panel with pre-calculated result: {diceResult.result}");
     }
@@ -904,7 +923,7 @@ public class DialogueUI : MonoBehaviour
     /// <summary>
     /// Animate dice roll showing original → item effect → pet effect
     /// </summary>
-    private IEnumerator AnimateDiceRoll(DiceResult diceResult)
+    private IEnumerator AnimateDiceRoll(DiceResult diceResult, int difficulty)
     {
         if (diceContainer == null || diceResult == null)
         {
@@ -962,8 +981,40 @@ public class DialogueUI : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
+        // Determine win/lose and update background
+        bool isSuccess = diceResult.result >= difficulty;
+        UpdateDicePanelBackground(isSuccess);
+
         // Animation complete - enable continue button
         EnableContinueButton();
+    }
+
+    /// <summary>
+    /// Update dice panel background based on win/lose
+    /// </summary>
+    private void UpdateDicePanelBackground(bool isSuccess)
+    {
+        if (dicePanelBackground == null)
+        {
+            return;
+        }
+
+        if (isSuccess)
+        {
+            if (dicePanelWinSprite != null)
+            {
+                dicePanelBackground.sprite = dicePanelWinSprite;
+                Debug.Log("DialogueUI: Dice roll SUCCESS - showing win background");
+            }
+        }
+        else
+        {
+            if (dicePanelLoseSprite != null)
+            {
+                dicePanelBackground.sprite = dicePanelLoseSprite;
+                Debug.Log("DialogueUI: Dice roll FAIL - showing lose background");
+            }
+        }
     }
 
     /// <summary>
