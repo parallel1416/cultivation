@@ -1,0 +1,42 @@
+{
+    "desc": "你需要派遣门徒处理宗门庶务。",
+
+    "title": "宗门庶务",
+    "diceLimit": 2,
+    "triggersImmediately": false,
+    
+    "major": false,
+
+    "sentences": [
+        {
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 6,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target",
+            "failureTarget": "failure_target"
+        },{
+            "id":"success_target",
+            "text":"你趁门徒们还没有得到你要检阅修炼成果的消息，突然造访道场，把没有好好修炼的门徒都教训了一通，并罚他们去灵草园种植劳作，砥砺道行。当然，这也顺带解决了灵草园杂草丛生的小问题。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"failure_target",
+            "text":"听到你要来检阅修炼成果的消息，门徒们都彼此奔走相告：天枢来了！天枢来了！等你到达的时候，门徒们都正襟危坐地围聚在一块修炼打坐，互相指点修行上的疑难之处，真可谓相亲相爱，一派和谐。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 2,
+                    "operation": "+"
+                }],
+            "target":"END"
+        }
+
+    ]
+}

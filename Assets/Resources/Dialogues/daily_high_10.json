@@ -1,0 +1,115 @@
+{
+    "desc": "你需要派遣门徒处理宗门庶务。",
+
+    "title": "宗门庶务",
+    "diceLimit": 3,
+    "triggersImmediately": false,
+    
+    "major": false,
+
+    "sentences": [
+        {
+            "type": "check",
+            "checkCondition": {
+                "checkWhat": "tech",
+                "stringId": "pet_2" 
+            },
+            "successTarget": "hen",
+            "failureTarget": "mouse"
+        },
+        
+        {
+            "id":"hen",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 10,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target",
+            "failureTarget": "failure_target"
+        },{
+            "id":"success_target",
+            "text":"凤雏失踪了！门徒们提着油灯找了三天三夜，这才在山下的农舍里找到了这只不让人省心的神鸟。"
+        },{
+            "text":"凤雏瑟瑟发抖地缩成一团，好像是感应到了自己差点被炖成鸡汤的命运。你爱怜地抚摸它丰厚的羽毛，却发现它好像比之前要更圆润了一些……？",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 8,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"failure_target",
+            "text":"凤雏失踪了！门徒们提着油灯找了三天三夜，直到山下的农人提着差点被炖成鸡汤的凤雏找上门来。据他所言，凤雏闯进农舍之中，霸占了柔软的干草堆，把他家的谷物堆全吃光了。你头大如斗，赶紧把他打发走了，又对凤雏耳提面命，叫它不许再生事端！",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "-"
+                }],
+            "target":"END"
+        },
+
+        {
+            "id":"mouse",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 10,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target_mouse",
+            "failureTarget": "failure_target_mouse"
+        },{
+            "id":"success_target_mouse",
+            "text":"灵鼠失踪了！门徒们提着油灯找了三天三夜，这才在山下的农舍里找到了这只不让人省心的老鼠。"
+        },{
+            "text":"灵鼠迈动它灵活的八条腿爬上你的手掌。它挺直胸膛，吱吱大叫，为你衔来一枚来路可疑的宝石，似是在等你的夸赞。"
+        },{
+            "type": "choice",
+
+            "choices": [
+                {
+                    "text": "严辞拒绝",
+                    "target": "refuse"
+                },
+                {
+                    "text": "勉强收下",
+                    "target": "xiaona"
+                }
+            ]
+        },
+        {
+            "id":"refuse",
+            "text":"你批评了灵鼠，教育它不该收取不义之财。灵鼠委屈地吱了一会，跳下手掌，把宝石留在了你的手中。你只好笑纳了。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 8,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"xiaona",
+            "text":"虽说修道者不可收不义之财，但因果使然，既然已经机缘巧合下落进你的手中，就只好笑纳了。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 8,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },
+            {
+            "id":"failure_target_mouse",
+            "text":"灵鼠失踪了！门徒们提着油灯找了三天三夜，直到山下的农人提着差点被喂给猫吃的灵鼠找上门来。据他所言，灵鼠闯进农舍之中，东突西窜，还把他家的小米堆全吃光了。你头大如斗，赶紧把他打发走了，又对灵鼠耳提面命，叫它不许再生事端！",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "-"
+                }],
+            "target":"END"
+        }
+    ]
+}

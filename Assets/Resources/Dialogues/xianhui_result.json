@@ -1,0 +1,87 @@
+{
+    "desc": "仙会即将宣布结果。",
+
+    "title": "仙会结果",
+
+    "triggersImmediately": true,
+    
+    "major": true,
+
+    "sentences": [
+        {
+            "type": "multiCheck",
+            "showCheckResult": false, 
+
+            "multiCheckConditions": [                
+                {
+                    "checkWhat": "glotablTag",
+                    "stringId": "win_1"
+                },{
+                    "checkWhat": "glotablTag",
+                    "stringId": "win_2"
+                },{
+                    "checkWhat": "glotablTag",
+                    "stringId": "win_3"
+                },{
+                    "checkWhat": "glotablTag",
+                    "stringId": "win_4"
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "normal"
+                },{
+                    "priority": 1,
+                    "requiredConditionIndices": [0,1,2,3],
+                    "target": "first"
+                },{
+                    "priority": 2,
+                    "requiredConditionIndices": [0,1,2],
+                    "target": "first"
+                },{
+                    "priority": 3,
+                    "requiredConditionIndices": [0,1,3],
+                    "target": "first"
+                },{
+                    "priority": 4,
+                    "requiredConditionIndices": [1,2,3],
+                    "target": "first"
+                },{
+                    "priority": 5,
+                    "requiredConditionIndices": [0,2,3],
+                    "target": "first"
+                }
+            ]
+        },
+        {
+            "id":"first",
+            "text":"仙门盛会持续了三天三夜，直到最后一夜群星归位、月上中天。最后，众宗门主事人心悦诚服，推你们的宗门为首。你能够看见，有许多人将目光投向了你们，你们的美名也会更加远扬。",
+            "effects": [
+                {
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "first", 
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "bug", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"normal",
+            "text":"仙门盛会持续了三天三夜，直到最后一夜群星归位、月上中天。最后，众宗门主事人推了一家新建不久、然而人才辈出的宗门为首。你的门徒们多少有些羡慕，但更多的都是对这次仙会的新鲜激动之情，也算有了许多收获。",
+            "target": "END"
+        }
+    ]
+}

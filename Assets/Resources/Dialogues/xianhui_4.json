@@ -1,0 +1,57 @@
+{
+    "desc": "你需要派遣门徒比试灵兽。",
+
+    "title": "灵兽",
+
+    "dicelimit": 1,
+
+    "triggersImmediately": false,
+    
+    "major": true,
+
+    "sentences": [
+        {
+            "text": "说来尴尬，但你其实暗中希望门中灵宠更神气灵秀一些。如今看到其他宗门牵出的灵兽，你心中平衡了许多：或是长了许多眼睛的松鼠，或是两翼异常宽大的禽鸟，相比起来，似乎还是你们的灵兽顺眼可爱……"
+        },
+        {
+            "type": "check",
+            
+            "showCheckResult": true,
+
+            "checkCondition": {
+                "difficultyClass": 5,
+                "checkWhat": "diceRoll"
+            },
+
+            "successTarget": "success",
+
+            "failureTarget": "failure"
+        },
+        {
+            "id":"success",
+            "text":"门徒呼喝着灵兽出击，他们十分神勇，折桂归来。灵鼠率先得意地跃上你的手心，啃了啃你的手指。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_4", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"failure",
+            "text":"门徒呼喝着灵兽出击，他们十分神勇，然而最终惜败给了一头生有蝠翼的漆黑巨骓。它是此处唯一如此神气的灵兽，主人欣喜若狂，依偎着它又哭又笑。",
+            "target": "END"
+        }
+    ]
+}

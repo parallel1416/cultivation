@@ -429,22 +429,32 @@ public class EventPanelManager : MonoBehaviour
             return;
         }
 
-        Vector2 buttonAnchoredPos = buttonRect.anchoredPosition;
-        bool isButtonOnLeft = buttonAnchoredPos.x < 0;
+        // Calculate average position from button's anchors
+        float anchorAverageX = (buttonRect.anchorMin.x + buttonRect.anchorMax.x) * 0.5f;
+        float anchorAverageY = (buttonRect.anchorMin.y + buttonRect.anchorMax.y) * 0.5f;
+        bool isButtonOnLeft = anchorAverageX < 0.5f;
 
+        // Set panel anchors to match button's average position
+        panelRectTransform.anchorMin = new Vector2(anchorAverageX, anchorAverageY);
+        panelRectTransform.anchorMax = new Vector2(anchorAverageX, anchorAverageY);
+
+        // Set pivot based on which side the button is on
+        // If button on left, panel expands to the right (pivot at left edge)
+        // If button on right, panel expands to the left (pivot at right edge)
         panelRectTransform.pivot = new Vector2(isButtonOnLeft ? 0f : 1f, 0.5f);
-        panelRectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        panelRectTransform.anchorMax = new Vector2(0.5f, 0.5f);
 
         // Use fixed panel width
         panelRectTransform.sizeDelta = new Vector2(panelWidth, panelRectTransform.sizeDelta.y);
 
+        // Calculate horizontal offset
+        // Panel should be positioned next to the button with margin
         float buttonHalfWidth = buttonRect.rect.width * 0.5f;
         float xOffset = isButtonOnLeft 
-            ? buttonHalfWidth + panelMargin
-            : -(buttonHalfWidth + panelMargin);
+            ? buttonHalfWidth + panelMargin  // Button on left, panel goes right
+            : -(buttonHalfWidth + panelMargin); // Button on right, panel goes left
 
-        panelRectTransform.anchoredPosition = new Vector2(buttonAnchoredPos.x + xOffset, buttonAnchoredPos.y);
+        // Position panel relative to button's anchored position
+        panelRectTransform.anchoredPosition = new Vector2(xOffset + buttonRect.anchoredPosition.x, buttonRect.anchoredPosition.y);
     }
 
     private IEnumerator AnimatePanel(bool slideIn)

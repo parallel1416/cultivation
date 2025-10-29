@@ -1,0 +1,82 @@
+{
+    "desc": "你需要派遣门徒处理宗门庶务。",
+
+    "title": "宗门庶务",
+    "diceLimit": 3,
+    "triggersImmediately": false,
+    
+    "major": false,
+
+    "sentences": [
+        {
+            "type": "multiCheck",
+
+            "showCheckResult": false, 
+
+                "multiCheckConditions": [
+                { 
+                    "checkWhat": "tech",
+                    "stringId": "pet_2" 
+                },
+                {
+                    "checkWhat": "tech",
+                    "stringId": "pet_3" 
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "normal"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [0],
+                    "target": "medium"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [0,1],
+                    "target": "high"
+                }
+            ]
+        },
+        {
+            "id":"normal",
+            "text":"门徒们修炼愈见长进，彻底开窍了。彻底开窍了。彻底开窍了。彻底开窍了。"
+        },{
+            "text":"你能看见有些人的皮肤上已经浮现出了荧荧的光亮，他们告诉你那是他们自行刻写的符咒，有护体之能。如同星子闪烁。如同星子闪烁。如同星子闪烁。如同星子闪烁。如同星子闪烁。如同星子闪烁。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 2,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"medium",
+            "text":"门徒们修炼愈见长进，彻底开窍了。彻底开窍了。彻底开窍了。彻底开窍了。"
+        },{
+            "text":"你能看见有些人的皮肤上已经浮现出了荧荧的光亮，他们告诉你那是他们自行刻写的符咒，有护体之能。如同星子闪烁。如同星子闪烁。如同星子闪烁。如同星子闪烁。如同星子闪烁。如同星子闪烁。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"high",
+            "text":"门徒们修炼愈见长进，彻底开窍了。彻底开窍了。彻底开窍了。彻底开窍了。"
+        },{
+            "text":"你能看见有些人的皮肤上已经浮现出了荧荧的光亮，他们告诉你那是他们自行刻写的符咒，有护体之能。如同星子闪烁。如同星子闪烁。如同星子闪烁。如同星子闪烁。如同星子闪烁。如同星子闪烁。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 8,
+                    "operation": "+"
+                }],
+            "target":"END"
+        }
+    ]
+}

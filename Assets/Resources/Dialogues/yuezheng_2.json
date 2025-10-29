@@ -3,7 +3,7 @@
 
     "title": "大曲试演",
 
-    "triggersImmediately": true,
+    "triggersImmediately": false,
     
     "major": false,
 

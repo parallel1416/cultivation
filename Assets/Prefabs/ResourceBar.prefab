@@ -489,7 +489,7 @@ MonoBehaviour:
   gameObjectToggleEntries: []
   swapOnStart: 1
   swapOnEnable: 1
-  enableDebugPreview: 1
+  enableDebugPreview: 0
   previewAsBuggyState: 1
 --- !u!1 &4716826085830206859
 GameObject:

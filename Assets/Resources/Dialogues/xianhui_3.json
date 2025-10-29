@@ -1,0 +1,214 @@
+{
+    "desc": "你需要派遣门徒比试论辩。",
+
+    "title": "论道",
+
+    "dicelimit": 1,
+
+    "triggersImmediately": false,
+    
+    "major": true,
+
+    "sentences": [
+        {
+            "text": "山洞秘境，在人声到来之前，唯有寂静。此处不斗技艺，只论心法。对大道感悟至深之人，才能够代表宗门前来。不够颖悟之人，哪怕只是走进此处，也会为论道话语中蕴含的奥妙和威力所伤。"
+        },
+        {
+            "type": "check",
+            
+            "showCheckResult": true,
+
+            "checkCondition": {
+                "difficultyClass": 5,
+                "checkWhat": "diceRoll"
+            },
+
+            "successTarget": "success",
+
+            "failureTarget": "failure"
+        },
+        {
+            "id":"success",
+            "type": "multiCheck",
+            "showCheckResult": false, 
+
+            "multiCheckConditions": [                
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jingshi"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jianjun"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Yuezheng"
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "normal_s"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [1],
+                    "target": "jianjun_s"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [2],
+                    "target": "yuezheng_s"
+                },{
+                    "priority": 3,
+                    "requiredConditionIndices": [0],
+                    "target": "jingshi_s"
+                }
+            ]
+        },
+        {
+            "id":"failure",
+            "type": "multiCheck",
+            "showCheckResult": false, 
+
+            "multiCheckConditions": [                
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jingshi"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jianjun"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Yuezheng"
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "normal_f"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [1],
+                    "target": "jianjun_f"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [2],
+                    "target": "yuezheng_f"
+                },{
+                    "priority": 3,
+                    "requiredConditionIndices": [0],
+                    "target": "jingshi_f"
+                }
+            ]
+        },
+        {
+            "id":"normal_s",
+            "text":"门徒用上从经师那里学来的全身本领，滔滔不绝，辩上了一个时辰，难舍难分。最后，门徒艰难取胜时，听众掌声雷动。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_3", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"jianjun_s",
+            "text":"大道至简。剑君虽然寡言，但她总能切中对方话中要害，使得对手的一切诡辩花招都无处遁形。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_3", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"yuezheng_s",
+            "text":"乐正总是自有一番道理。奇思妙想的譬喻、大逆不道的议论，将对手辩得哑口无言。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_3", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"jingshi_s",
+            "text":"论起宗门中最熟谙道法之人，无人能出经师其右。他胸有成竹，旁征博引，口中每吐一字都仿佛蕴含千钧的重量。对手心悦诚服，甘拜下风。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_3", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"normal_f",
+            "text":"门徒用上从经师那里学来的全身本领，滔滔不绝，辩上了一个时辰，难舍难分。最后，门徒遗憾落败时，听众也为他喝彩。",
+            "target": "END"
+        },{
+            "id":"jianjun_f",
+            "text":"剑君虽然寡言，但她总能切中对方话中要害。可惜这次遇上的对手对经文咒言研习深刻许多，剑君时常接不上话来，只好遗憾离场。",
+            "target": "END"
+        },{
+            "id":"yuezheng_f",
+            "text":"乐正总是自有一番道理。奇思妙想的譬喻、大逆不道的议论，引得观众嘘声一片。",
+            "target": "END"
+        },{
+            "id":"jingshi_f",
+            "text":"经师无疑是门中最熟谙道法之人。然而许是太紧张的缘故，他张口结舌，吞吞吐吐，竟连一句辩驳也讲不清楚。对手乘胜追击，很快就令他哑口无言了。",
+            "target": "END"
+        }
+    ]
+}

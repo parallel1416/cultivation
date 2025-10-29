@@ -1,0 +1,67 @@
+{
+    "desc": "你需要派遣门徒处理宗门庶务。",
+
+    "title": "宗门庶务",
+    "diceLimit": 3,
+    "triggersImmediately": false,
+    
+    "major": false,
+
+    "sentences": [
+        {
+            "type": "check",
+
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "specialDice",
+
+                "stringID": "Yuezheng"
+            },
+
+            "successTarget": "yuezheng_assigned",
+            "failureTarget": "yuezheng_not_assigned"
+        },{
+            "id":"yuezheng_assigned",
+            "text":"你把宗门庶务交给了乐正，很快就意识到这是个严重的失策。经师急匆匆地找到你，指控乐正在讲经堂里开办故事大赛，她命令每个人都要接龙上个人讲的故事，无论这个故事的走向多么荒诞不羁。据经师所言，现在故事已经发展到了“经师为什么保留他做落第士子的历史？” 这种令人发指的内容。"
+            ,"effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"yuezheng_not_assigned",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 10,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target",
+            "failureTarget": "failure_target"
+        },{
+            "id":"success_target",
+            "text":"宗门突然兴起了一股深夜讲鬼故事的风气，你半夜蹲守在槐树顶上，果然见到三五门徒围坐一团。等其中一人绘声绘色地讲起“红衣师姐”的时候，你突然从槐树上一跃而下，把门徒们吓得七零八落。第二日，你果然收到了几个门徒自发递交的检讨报告。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 8,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"failure_target",
+            "text":"宗门突然兴起了一股深夜讲鬼故事的风气，你半夜蹲守在槐树顶上，果然见到三五门徒围坐一团。你本想突然发难，却不料高估了自己的身手，从槐树上重重地跌在地上，回去躺了几天才恢复好。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }],
+            "target":"END"
+        }
+
+    ]
+}

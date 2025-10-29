@@ -1,0 +1,135 @@
+{
+    "desc": "你需要派遣门徒处理宗门庶务。",
+
+    "title": "宗门庶务",
+    "diceLimit": 3,
+    "triggersImmediately": false,
+    
+    "major": false,
+
+    "sentences": [
+        {
+            "type": "multiCheck",
+
+            "showCheckResult": false, 
+
+                "multiCheckConditions": [
+                { 
+                    "checkWhat": "tech",
+                    "stringId": "pet_2" 
+                },
+                {
+                    "checkWhat": "tech",
+                    "stringId": "pet_3" 
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "normal"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [0],
+                    "target": "medium"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [0,1],
+                    "target": "high"
+                }
+            ]
+        },
+        {
+            "id":"normal",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 4,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target1",
+            "failureTarget": "failure_target1"
+        },{
+            "id":"success_target1",
+            "text":"闂ㄥ緬浠湪浣犵殑寮曞涓嬫枊鎴掔ń棣栵紝鐒氶琛岄亾銆傝繖娆＄殑娉曚簨鐩稿綋鎴愬姛锛岃櫧鐒朵綘鏃犳硶鐩存帴淇偧锛屼絾浣犺兘鐪嬪嚭闂ㄥ緬浠湪娉曚簨涔嬪悗绁炴儏铏旇瘹锛屽畻闂ㄥ唴寮ユ极鐨勪慨閬撴皼鍥翠篃鐩婂姞娴撻儊銆�",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 2,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"failure_target1",
+            "text":"民间官府派人上山清查土地，收取赋税。你在那官员的逼问之下支支吾吾，未能对帐面的几个错漏之处做出妥善的应对，只好偷偷塞了几个灵石贿赂了事。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 1,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },
+        {
+            "id":"medium",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 6,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target2",
+            "failureTarget": "failure_target2"
+        },{
+            "id":"success_target2",
+            "text":"闂ㄥ緬浠湪浣犵殑寮曞涓嬫枊鎴掔ń棣栵紝鐒氶琛岄亾銆傝繖娆＄殑娉曚簨鐩稿綋鎴愬姛锛岃櫧鐒朵綘鏃犳硶鐩存帴淇偧锛屼絾浣犺兘鐪嬪嚭闂ㄥ緬浠湪娉曚簨涔嬪悗绁炴儏铏旇瘹锛屽畻闂ㄥ唴寮ユ极鐨勪慨閬撴皼鍥翠篃鐩婂姞娴撻儊銆�",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"failure_target2",
+            "text":"民间官府派人上山清查土地，收取赋税。你在那官员的逼问之下支支吾吾，未能对帐面的几个错漏之处做出妥善的应对，只好偷偷塞了几个灵石贿赂了事。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 2,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },
+        {
+            "id":"high",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 10,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target3",
+            "failureTarget": "failure_target3"
+        },{
+            "id":"success_target3",
+            "text":"闂ㄥ緬浠湪浣犵殑寮曞涓嬫枊鎴掔ń棣栵紝鐒氶琛岄亾銆傝繖娆＄殑娉曚簨鐩稿綋鎴愬姛锛岃櫧鐒朵綘鏃犳硶鐩存帴淇偧锛屼絾浣犺兘鐪嬪嚭闂ㄥ緬浠湪娉曚簨涔嬪悗绁炴儏铏旇瘹锛屽畻闂ㄥ唴寮ユ极鐨勪慨閬撴皼鍥翠篃鐩婂姞娴撻儊銆�",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 8,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"failure_target3",
+            "text":"民间官府派人上山清查土地，收取赋税。你在那官员的逼问之下支支吾吾，未能对帐面的几个错漏之处做出妥善的应对，只好偷偷塞了几个灵石贿赂了事。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }],
+            "target":"END"
+        }
+    ]
+}

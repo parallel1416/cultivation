@@ -1,0 +1,66 @@
+{
+    "desc": "你需要派遣门徒处理宗门庶务。",
+
+    "title": "宗门庶务",
+    "diceLimit": 1,
+    "triggersImmediately": false,
+    
+    "major": false,
+
+    "sentences": [
+        {
+            "type": "check",
+
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "specialDice",
+
+                "stringID": "Jianjun"
+            },
+
+            "successTarget": "jianjun_assigned",
+            "failureTarget": "jianjun_not_assigned"
+        },{
+            "id":"jianjun_assigned",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 4,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "jj_success_target",
+            "failureTarget": "jj_failure_target"
+        },{
+            "id":"jj_success_target",
+            "text":"你支使剑君去磨砺门徒的武艺。检验成果时，门徒甲向你崇敬地向你诉说剑君威严相济，有大师之风；门徒乙兴致勃勃地和你描绘剑君的身姿，真是如游龙一般精彩；门徒丙则扭捏地和表示她很喜欢和剑君一起练剑的日子，要是能多有机会私下相处就更好了。你赞许了门徒甲和门徒乙的刻苦用功，把门徒丙发配去灵草园除草。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 2,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"jj_failure_target",
+            "text":"你支使剑君去磨砺门徒的武艺。检验成果时，门徒甲向你崇敬地向你诉说剑君威严相济，有大师之风；门徒乙兴致勃勃地和你描绘剑君的身姿，真是如游龙一般精彩；门徒丙则扭捏地和表示她很喜欢和剑君一起练剑的日子，要是能多有机会私下相处就更好了。你赞许了门徒甲和门徒乙的刻苦用功，把门徒丙发配去灵草园除草。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 1,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"jianjun_not_assigned",
+            "text":"宗门日课上，你问起门徒们都是因何修道。有门徒高谈阔论，答曰修道是为长生久视，自在逍遥；有门徒面容沉郁，谈起山下故人潦倒、士子沦落；有门徒懵懵懂懂，笑得天真，只说恰巧山上管饭管住，便留下来了。从他们的讲述里，你感觉自己好像也体会了一遍还没来得及体会的人生。"
+            ,"effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 2,
+                    "operation": "+"
+                }]
+        }
+
+    ]
+}

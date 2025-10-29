@@ -1,0 +1,217 @@
+{
+    "desc": "你需要派遣门徒比试武艺。",
+
+    "title": "斗法",
+
+    "dicelimit": 1,
+
+    "triggersImmediately": false,
+    
+    "major": true,
+
+    "sentences": [
+        {
+            "text": "山顶青石光滑如镜，正适合做修仙中人的比武台。各宗门中的武人长身而立，或使刀剑，或抱筝琴，或持符咒。你和其他修士一起屏息观看，只待台上的比试开始。"
+        },
+        {
+            "type": "check",
+            
+            "showCheckResult": true,
+
+            "checkCondition": {
+                "difficultyClass": 5,
+                "checkWhat": "diceRoll"
+            },
+
+            "successTarget": "success",
+
+            "failureTarget": "failure"
+        },
+        {
+            "id":"success",
+            "type": "multiCheck",
+            "showCheckResult": false, 
+
+            "multiCheckConditions": [                
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jingshi"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jianjun"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Yuezheng"
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "normal_s"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [1],
+                    "target": "jianjun_s"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [2],
+                    "target": "yuezheng_s"
+                },{
+                    "priority": 3,
+                    "requiredConditionIndices": [0],
+                    "target": "jingshi_s"
+                }
+            ]
+        },
+        {
+            "id":"failure",
+            "type": "multiCheck",
+            "showCheckResult": false, 
+
+            "multiCheckConditions": [                
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jingshi"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jianjun"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Yuezheng"
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "normal_f"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [1],
+                    "target": "jianjun_f"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [2],
+                    "target": "yuezheng_f"
+                },{
+                    "priority": 3,
+                    "requiredConditionIndices": [0],
+                    "target": "jingshi_f"
+                }
+            ]
+        },
+        {
+            "id":"normal_s",
+            "text":"你选派了一名武艺出众的门徒。她天资不错，兼之勤勉，在你门中拔得头筹。"},
+        {
+            "text":"门徒一鸣惊人，尽管初出茅庐，也正是因此，她无惧任何对手。她遇上了许多难缠的对手，行动诡谲不可预测的，身体发肤盖满符咒的，口中喷吐迷药黑雾的……但她都一一挑落，迎来了满场的喝彩。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_1", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"jianjun_s",
+            "text":"剑君闲话少说，长剑出鞘，寒光乍现。只见她身姿夭矫，很是潇洒，引出周围一片钦羡赞赏之声。那剑势如虹，破空而去，对方修士竟是抵挡不住，连连倒退。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_1", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"yuezheng_s",
+            "text":"乐正抱琴而坐，姿态甚美。对手看在眼里，不免存了小觑之心。只是对手显然没想到，那乐音竟然融入了许多大曲的妙处，好像许多人同奏一般如雷贯耳，又有无穷怪异变化；不由神识剧震，气海翻涌，只好伏地认输了。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_1", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"jingshi_s",
+            "text":"经师负手而立，手中玉笔翻飞，墨迹便化作了两道灵符，引动天雷直向对手面门扑去。那修士左抵右挡，顷刻之间衣袍就已被雷火劈焦，连忙扔下武器束手就降。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_1", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"normal_f",
+            "text":"你选派了一名武艺出众的门徒。她天资不错，兼之勤勉，在你门中拔得头筹。"},{
+            "text":"只是如今高手如云，门徒到底年资尚浅、积累有限，奋力支撑了几个回合，还是败下阵来。她垂头丧气地走下台来，你看在眼里，对她说了好些勉励之语，她才又振作起来。",
+            "target": "END"
+        },{
+            "id":"jianjun_f",
+            "text":"剑君的确是一流高手，只是她运气颇差，遇上的对手已经到了剑随意动、如臂使指的境界。那剑竟还会诡谲地抖动扭曲，就好像它自己也长了眼睛，知道往哪里去一般；如此，剑君中正平和的招式不免败下阵来，黯然退场。",
+            "target": "END"
+        },{
+            "id":"yuezheng_f",
+            "text":"你最怕乐正遇上的，自然是擅长幻术的对手……她已经完全忽视了对手，追着满场幻化出的火树银花奔跑起来。等到她为追逐一只蝴蝶跳下台去，你才很不情愿地承认这场比试的确是输了……",
+            "target": "END"
+        },{
+            "id":"jingshi_f",
+            "text":"经师善使咒法，却毕竟是个不通刀兵的文弱书生。他还来不及提笔作印，便被对手凌厉的剑势逼下了比武台，悻然落败。",
+            "target": "END"
+        }
+    ]
+}

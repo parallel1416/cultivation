@@ -3,7 +3,7 @@
 
     "title": "宇宙之音",
 
-    "triggersImmediately": true,
+    "triggersImmediately": false,
     
     "major": true,
 

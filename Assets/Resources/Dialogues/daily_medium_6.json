@@ -1,0 +1,66 @@
+{
+    "desc": "你需要派遣门徒处理宗门庶务。",
+
+    "title": "宗门庶务",
+    "diceLimit": 2,
+    "triggersImmediately": false,
+    
+    "major": false,
+
+    "sentences": [
+        {
+            "type": "check",
+
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "specialDice",
+
+                "stringID": "Jingshi"
+            },
+
+            "successTarget": "jingshi_assigned",
+            "failureTarget": "jingshi_not_assigned"
+        },{
+            "id":"jingshi_assigned",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 6,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "js_success_target",
+            "failureTarget": "js_failure_target"
+        },{
+            "id":"js_success_target",
+            "text":"经师自如地接过你递交给他的宗门公函，只有微微颤动的指尖泄漏了他起伏的心绪。他批复公函时运笔如飞，得心应手。你意识到对于屡试不第、蹉跎半生的他来说，或许等这一刻已经太久了。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"js_failure_target",
+            "text":"经师自如地接过你递交给他的宗门公函，只有微微颤动的指尖泄漏了他起伏的心绪。他批复公函时神情慎重，甚至有些迟疑。你意识到对于屡试不第、蹉跎半生的他来说，或许等这一刻已经太久了。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 2,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"jingshi_not_assigned",
+            "text":"凡间的节庆日子近了，你也忍不住凡心躁动。你已经死而复生太久，人间的旧习几乎忘却，可这时你却想起家中长辈的叮咛，想起人间每次节庆的欢欣。于是你发动宗门上下张灯结彩，将符纸裁作桃符，就连掌门闭关的洞府也被你挂上了小小的灯笼。暮色四合时，门徒们挤在廊下互道“佳节安康”，你突然觉得山门好像也有了家的温度。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }]
+        }
+
+    ]
+}

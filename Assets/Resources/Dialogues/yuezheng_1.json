@@ -3,7 +3,7 @@
 
     "title": "珠盘玉落",
 
-    "triggersImmediately": true,
+    "triggersImmediately": false,
     
     "major": false,
 

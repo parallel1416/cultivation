@@ -1,0 +1,86 @@
+{
+    "desc": "你需要派遣门徒处理宗门庶务。",
+
+    "title": "宗门庶务",
+    "diceLimit": 3,
+    "triggersImmediately": false,
+    
+    "major": false,
+
+    "sentences": [
+        {
+            "type": "check",
+
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "specialDice",
+
+                "stringID": "Master"
+            },
+
+            "successTarget": "master_assigned",
+            "failureTarget": "master_not_assigned"
+        },{
+            "id":"master_assigned",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 10,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "m_success_target",
+            "failureTarget": "m_failure_target"
+        },{
+            "id":"m_success_target",
+            "text":"并不出乎意料，你很快便熟习了一切杂事庶务，比传授你这些事的掌门更加灵巧、圆活。这是属于早慧孩童的特权：你过早地认识了家中的一切，身影业已模糊的、俗世的那个母亲似乎教给了你许多她的智慧。掌门自然非常乐见——她借招贤纳齐为名，又溜下山去玩了！",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 8,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"m_failure_target",
+            "text":"你磕磕绊绊地按照掌门的指示处理宗门事务，核对宗门灵石账目、处理邻山宗门的来函、应付凡俗官府的供奉请帖……一桩桩庶务堆积如山，你很快被浩如烟海的公函淹没了。至于掌门，她借招贤纳齐为名，早就溜下山去玩了！",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },
+        {
+            "id":"master_not_assigned",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 10,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target",
+            "failureTarget": "failure_target"
+        },{
+            "id":"success_target",
+            "text":"民间官府派人上山清查土地，收取赋税。你连夜赶制了一份详细精美的账册，大书特书宗门发展益国益民，那官员听得连连点头，给你们免了一月赋税。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 8,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"failure_target",
+            "text":"民间官府派人上山清查土地，收取赋税。你在那官员的逼问之下支支吾吾，未能对帐面的几个错漏之处做出妥善的应对，只好偷偷塞了几个灵石贿赂了事。",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "-"
+                }],
+            "target":"END"
+        }
+    ]
+}

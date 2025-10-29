@@ -1,0 +1,97 @@
+{
+    "desc": "你和经师准备好了献祭所需的一切。",
+
+    "title": "祭阵",
+
+    "triggersImmediately": true,
+    
+    "major": false,
+
+    "sentences": [
+        {
+            "text": "经师沐浴焚香，着手筹备献祭法阵。他只问你，拿谁的血肉为引。"
+        },
+        {
+            "type": "check",
+
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "globalTag",
+                "stringID": "moren_sacrificeable"
+            },
+
+            "successTarget": "withmoren",
+            "failureTarget": "withoutmoren"
+        },
+        {
+            "id":"withmoren",
+            "type": "choice",
+
+            "choices": [
+                {
+                    "text": "监牢里的魔人囚徒",
+                    "target": "moren"
+                },
+                {
+                    "text": "随意选一个门徒",
+                    "target": "random"
+                }
+            ]
+        },
+        {
+            "id":"withoutmoren",
+            "type": "choice",
+
+            "choices": [
+                {
+                    "text": "随意选一个门徒",
+                    "target": "random"
+                }
+            ]
+        },
+        {
+            "id":"moren",
+            "text": "这过去已被毁灭、也未必有将来的魔人，当然是最好的选择。法阵会享用他最后的鲜血。"},
+            {
+                "text":"他面无表情地注视着你的动作，没有出声，也没有反抗，可是他的眼睛仍然燃烧着某种令你不快的光。你知道，这光很快就要被你亲手熄灭了。",
+            "target":"ritual"
+        },
+        {
+            "id":"random",
+            "text": "任意一个门徒，都可以满足这血的渴望。这等小事，你并不在乎……"},
+            {
+                "text":"你把昏迷的门徒带至阵法中央，她仍然熟睡着，面容安稳，似乎并不担心在宗门里会发生什么可怕的事情。你曾亲手将她招进宗门，问过她的理想，带她走上修行的道路。但你现在要亲手将她杀死了，为此你感到后悔吗？",
+            "effects": [
+                {
+                    "showOutput":false,
+                    "type": "disciple",
+
+                    "intValue": 1,
+
+                    "stringValue": "goodyz", 
+                    "operation": "-"
+                }
+            ],
+            "target":"ritual"
+        },{
+            "id":"ritual",
+            "text":"既然人牲已经选定，仪式便可以开始了。在你面前，这位昔日的书生散发跣足，身披麻衣，苍白得如同一片宣纸做的剪影。然而他的手却很稳：当他剖开人牲的胸膛，让血从指尖滴落到法阵上时，你没有看到丝毫颤抖的痕迹。"
+        },
+        {
+            "text": "灵力顺着鲜血画就的阵法逆流而上，没入经师的掌心之中。这阵法最终成型，还要等待掌门出关的时刻。你和经师对望一眼，又不约而同地一齐望向了山的那一边。",
+            "effects": [
+                {
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "EVIL", 
+                    "operation": "+"
+                }
+            ]
+        }
+    ]
+}

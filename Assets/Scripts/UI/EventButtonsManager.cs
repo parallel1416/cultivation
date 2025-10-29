@@ -15,17 +15,32 @@ public class EventButtonsManager : MonoBehaviour
     [SerializeField] private Button event4Button;
     [SerializeField] private Button event5Button;
 
+    [Header("Buggy State Event Buttons")]
+    [SerializeField] private Button buggyEvent1Button;
+    [SerializeField] private Button buggyEvent2Button;
+    [SerializeField] private Button buggyEvent3Button;
+    [SerializeField] private Button buggyEvent4Button;
+    [SerializeField] private Button buggyEvent5Button;
+
     private List<Button> eventButtons = new List<Button>();
+    private List<Button> buggyEventButtons = new List<Button>();
     private Dictionary<Button, string> buttonToEventId = new Dictionary<Button, string>();
 
     private void Awake()
     {
-        // Collect all button references
+        // Collect all normal button references
         eventButtons.Add(event1Button);
         eventButtons.Add(event2Button);
         eventButtons.Add(event3Button);
         eventButtons.Add(event4Button);
         eventButtons.Add(event5Button);
+
+        // Collect all buggy button references
+        buggyEventButtons.Add(buggyEvent1Button);
+        buggyEventButtons.Add(buggyEvent2Button);
+        buggyEventButtons.Add(buggyEvent3Button);
+        buggyEventButtons.Add(buggyEvent4Button);
+        buggyEventButtons.Add(buggyEvent5Button);
     }
 
     private void Start()
@@ -54,6 +69,7 @@ public class EventButtonsManager : MonoBehaviour
     /// <summary>
     /// Updates event buttons based on current turn's dialogue list.
     /// Assigns first 5 events from DialogueListManager to event1-event5 buttons.
+    /// If buggy state is active, uses buggy buttons instead.
     /// </summary>
     public void UpdateEventButtons()
     {
@@ -71,15 +87,31 @@ public class EventButtonsManager : MonoBehaviour
             return;
         }
 
+        // Check if in buggy state
+        bool isBuggy = LevelManager.Instance != null && LevelManager.Instance.IsBuggy;
+
+        // Determine which set of buttons to use
+        List<Button> activeButtons = isBuggy ? buggyEventButtons : eventButtons;
+        List<Button> inactiveButtons = isBuggy ? eventButtons : buggyEventButtons;
+
+        // Disable the inactive button set
+        foreach (Button button in inactiveButtons)
+        {
+            if (button != null)
+            {
+                button.gameObject.SetActive(false);
+            }
+        }
+
         // Clear previous mappings
         buttonToEventId.Clear();
 
-        // Assign events to buttons (up to 5)
-        for (int i = 0; i < eventButtons.Count; i++)
+        // Assign events to active buttons (up to 5)
+        for (int i = 0; i < activeButtons.Count; i++)
         {
-            if (eventButtons[i] == null)
+            if (activeButtons[i] == null)
             {
-                Debug.LogWarning($"EventButtonsManager: Event button {i + 1} is not assigned!");
+                Debug.LogWarning($"EventButtonsManager: {(isBuggy ? "Buggy " : "")}Event button {i + 1} is not assigned!");
                 continue;
             }
 
@@ -87,22 +119,22 @@ public class EventButtonsManager : MonoBehaviour
             {
                 // Event available - enable button and assign event ID
                 string eventId = currentDialogues[i];
-                eventButtons[i].gameObject.SetActive(true);
-                eventButtons[i].interactable = true;
-                eventButtons[i].name = eventId; // Set button name to event ID for EventPanelManager
-                buttonToEventId[eventButtons[i]] = eventId;
+                activeButtons[i].gameObject.SetActive(true);
+                activeButtons[i].interactable = true;
+                activeButtons[i].name = eventId; // Set button name to event ID for EventPanelManager
+                buttonToEventId[activeButtons[i]] = eventId;
 
-                Debug.Log($"Event button {i + 1} assigned to event: {eventId}");
+                Debug.Log($"{(isBuggy ? "Buggy " : "")}Event button {i + 1} assigned to event: {eventId}");
             }
             else
             {
                 // No event for this button - disable it
-                eventButtons[i].gameObject.SetActive(false);
-                Debug.Log($"Event button {i + 1} disabled (no event available)");
+                activeButtons[i].gameObject.SetActive(false);
+                Debug.Log($"{(isBuggy ? "Buggy " : "")}Event button {i + 1} disabled (no event available)");
             }
         }
 
-        Debug.Log($"EventButtonsManager: Updated {currentDialogues.Count} event buttons for turn {TurnManager.Instance?.CurrentTurn}");
+        Debug.Log($"EventButtonsManager: Updated {currentDialogues.Count} event buttons for turn {TurnManager.Instance?.CurrentTurn} (Buggy: {isBuggy})");
     }
 
     /// <summary>

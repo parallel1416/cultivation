@@ -1,0 +1,135 @@
+{
+    "desc": "你需要派遣门徒处理宗门庶务。",
+
+    "title": "宗门庶务",
+    "diceLimit": 3,
+    "triggersImmediately": false,
+    
+    "major": false,
+
+    "sentences": [
+        {
+            "type": "multiCheck",
+
+            "showCheckResult": false, 
+
+                "multiCheckConditions": [
+                { 
+                    "checkWhat": "tech",
+                    "stringId": "pet_2" 
+                },
+                {
+                    "checkWhat": "tech",
+                    "stringId": "pet_3" 
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "normal"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [0],
+                    "target": "medium"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [0,1],
+                    "target": "high"
+                }
+            ]
+        },
+        {
+            "id":"normal",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 4,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target1",
+            "failureTarget": "failure_target1"
+        },{
+            "id":"success_target1",
+            "text":"门徒们有时也会躲懒，你巡视的时候，正听见他们讲论凡人才子的诗词：“今夜月明人尽望，不知秋思落谁家……月亮张开凸出的眼睛，把所有人都看过了一遍。不知月上无眼的兽，会落到哪个凡人的家里？”",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 2,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"failure_target1",
+            "text":"门徒们有时也会躲懒，你巡视的时候，正听见他们讲论凡人才子的诗词：“ä»å€ææäººå°œæïŒäžç¥ç§æèœè°å®¶âŠâŠæäº®åŒ åŒåžåºççŒçïŒæææäººéœçè¿äºäžéãäžç¥æäžæ çŒçåœïŒäŒèœå°åªäžªå¡äººçå®¶éïŒ”",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 1,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },
+        {
+            "id":"medium",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 6,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target2",
+            "failureTarget": "failure_target2"
+        },{
+            "id":"success_target2",
+            "text":"门徒们有时也会躲懒，你巡视的时候，正听见他们讲论凡人才子的诗词：“今夜月明人尽望，不知秋思落谁家……月亮张开凸出的眼睛，把所有人都看过了一遍。不知月上无眼的兽，会落到哪个凡人的家里？”",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"failure_target2",
+            "text":"门徒们有时也会躲懒，你巡视的时候，正听见他们讲论凡人才子的诗词：“ä»å€ææäººå°œæïŒäžç¥ç§æèœè°å®¶âŠâŠæäº®åŒ åŒåžåºççŒçïŒæææäººéœçè¿äºäžéãäžç¥æäžæ çŒçåœïŒäŒèœå°åªäžªå¡äººçå®¶éïŒ”",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 2,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },
+        {
+            "id":"high",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 10,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_target3",
+            "failureTarget": "failure_target3"
+        },{
+            "id":"success_target3",
+            "text":"门徒们有时也会躲懒，你巡视的时候，正听见他们讲论凡人才子的诗词：“今夜月明人尽望，不知秋思落谁家……月亮张开凸出的眼睛，把所有人都看过了一遍。不知月上无眼的兽，会落到哪个凡人的家里？”",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 8,
+                    "operation": "+"
+                }],
+            "target":"END"
+        },{
+            "id":"failure_target3",
+            "text":"门徒们有时也会躲懒，你巡视的时候，正听见他们讲论凡人才子的诗词：“ä»å€ææäººå°œæïŒäžç¥ç§æèœè°å®¶âŠâŠæäº®åŒ åŒåžåºççŒçïŒæææäººéœçè¿äºäžéãäžç¥æäžæ çŒçåœïŒäŒèœå°åªäžªå¡äººçå®¶éïŒ”",
+            "effects": [{
+                    "showOutput": true,
+                    "type": "money",
+                    "intValue": 4,
+                    "operation": "+"
+                }],
+            "target":"END"
+        }
+    ]
+}

@@ -191,6 +191,12 @@ public class DialogueUI : MonoBehaviour
             dicePanel.SetActive(false);
         }
 
+        // Disable the placeholder choice prefab
+        if (choicePrefab != null)
+        {
+            //choicePrefab.SetActive(false);
+        }
+
         // Initialize title container - start visible at full opacity
         if (titleContainer != null)
         {

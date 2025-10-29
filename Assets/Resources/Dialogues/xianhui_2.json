@@ -1,0 +1,214 @@
+{
+    "desc": "你需要派遣门徒比试技艺。",
+
+    "title": "试艺",
+
+    "dicelimit": 1,
+
+    "triggersImmediately": false,
+    
+    "major": true,
+
+    "sentences": [
+        {
+            "text": "山腰云霞环绕，绿树碧溪。各宗门中身怀技艺之人聚集在此。吟诗作对也好，放声而歌也好，提笔作画也好，但凡能够展示精妙本领，表现仙家气派者，均有机会在这一项里拔得头筹。"
+        },
+        {
+            "type": "check",
+            
+            "showCheckResult": true,
+
+            "checkCondition": {
+                "difficultyClass": 5,
+                "checkWhat": "diceRoll"
+            },
+
+            "successTarget": "success",
+
+            "failureTarget": "failure"
+        },
+        {
+            "id":"success",
+            "type": "multiCheck",
+            "showCheckResult": false, 
+
+            "multiCheckConditions": [                
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jingshi"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jianjun"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Yuezheng"
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "normal_s"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [1],
+                    "target": "jianjun_s"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [2],
+                    "target": "yuezheng_s"
+                },{
+                    "priority": 3,
+                    "requiredConditionIndices": [0],
+                    "target": "jingshi_s"
+                }
+            ]
+        },
+        {
+            "id":"failure",
+            "type": "multiCheck",
+            "showCheckResult": false, 
+
+            "multiCheckConditions": [                
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jingshi"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Jianjun"
+                },
+                {
+                    "checkWhat": "specialDice",
+                    "stringId": "Yuezheng"
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "normal_f"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [1],
+                    "target": "jianjun_f"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [2],
+                    "target": "yuezheng_f"
+                },{
+                    "priority": 3,
+                    "requiredConditionIndices": [0],
+                    "target": "jingshi_f"
+                }
+            ]
+        },
+        {
+            "id":"normal_s",
+            "text":"这位献艺的门徒选择的竟是说书。他绘声绘色，将门派中种种趣事一一道来，周围观众哄笑不已。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_2", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"jianjun_s",
+            "text":"剑君使的是杀人剑，但为必要之事、重要之人，她也能够舞剑。应用之妙，存乎一心；可以伤人的武艺，也能够变换出这样潇洒的身姿。虽然步法招式有些拙朴，但观众无不为之赞叹。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_2", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"yuezheng_s",
+            "text":"这是乐正最得意的，当然要尽情展现一番。她与十余个门徒各持乐器，奏起了排演已久的大曲。正如当日的你，观众都被这神妙的音律所震撼，脸上一片迷狂之色，久久不能言语。在场资历较长的修仙者甚至流下泪来，喃喃着这演奏与大道是多么应和……",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_2", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"jingshi_s",
+            "text":"你从未见过经师作画的场景。然而此刻，你发现他竟然还是一位丹青妙手：墨色的蜻蜓自他笔下翩然振翅，仿佛就要落到台下观众那花青色的衣衫上。众人见之，无不啧啧称奇。",
+            "effects": [
+                {
+                    "showOutput":true,
+                    "type": "money",
+
+                    "intValue": 4,
+                    "operation": "+"
+                },{
+                    "showOutput":false,
+                    "type": "globalTag",
+
+                    "intValue": 1,
+
+                    "stringValue": "win_2", 
+                    "operation": "+"
+                }
+            ],
+            "target": "END"
+        },{
+            "id":"normal_f",
+            "text":"这位献艺的门徒选择的竟是说书。他准备刻苦，然而临场怯阵，说得结结巴巴，观众听得呵欠连天。",
+            "target": "END"
+        },{
+            "id":"jianjun_f",
+            "text":"剑君使的是杀人剑，但为必要之事、重要之人，她也能够舞剑。只是，她似乎对此不大习惯，不太懂得收敛自己的锋芒，因此不比其他的演出者赏心悦目。",
+            "target": "END"
+        },{
+            "id":"yuezheng_f",
+            "text":"不知为何，此次演出大失水准，门徒们犹如一大群很不对付的鸟雀在鸣叫。乐正显然没有要统合群鸟的意思，她本人就是最吵嚷的。等观众们听完一曲，头晕目眩地离去时，那种嘈杂而怪异的响动仍然在所有人耳边回荡荡荡荡荡荡……",
+            "target": "END"
+        },{
+            "id":"jingshi_f",
+            "text":"经师挥毫泼墨，作了一副栩栩如生的蜻蜓点水图。然而他的对手指尖一点，竟叫画里的禽鸟活了起来，绕着比试场地振翅飞行了三周。凡人画作终归不比此等奇技夺人眼球，台下的观众很快便都被吸引走了。",
+            "target": "END"
+        }
+    ]
+}
