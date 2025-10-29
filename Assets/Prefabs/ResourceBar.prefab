@@ -324,6 +324,7 @@ GameObject:
   - component: {fileID: 3954339852620849396}
   - component: {fileID: 1796009934951895295}
   - component: {fileID: 1885644218383581596}
+  - component: {fileID: 639413452289927423}
   m_Layer: 5
   m_Name: ResourceBar
   m_TagString: Untagged
@@ -412,6 +413,24 @@ MonoBehaviour:
   optionToggle: {fileID: 357270500325895289}
   contentContainer: {fileID: 441936644621975134}
   descriptionItemPrefab: {fileID: 0}
+  peopleIcons:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  petIcons:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  itemIcons:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  blackedOutColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   animationDuration: 0.3
   slideDistance: 1100
   slideCurve:
@@ -438,6 +457,40 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &639413452289927423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4497434820879658272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c95bec1db772e94fa14b45ec2e21aae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  swapEntries:
+  - targetObject: {fileID: 3708670299315728173}
+    normalImage: {fileID: 21300000, guid: afa79aa5ac951ce459f176184a448b44, type: 3}
+    buggyImage: {fileID: 21300000, guid: 86ac359d22521674bbc90d464a30c64d, type: 3}
+  - targetObject: {fileID: 7186786739709138656}
+    normalImage: {fileID: 21300000, guid: 6f76ef11454008148a7d0c75877334f4, type: 3}
+    buggyImage: {fileID: 21300000, guid: 27d025845fbaeca4db11c24eb2141f70, type: 3}
+  - targetObject: {fileID: 8942320407105644258}
+    normalImage: {fileID: 21300000, guid: 6c5435af85b53214681c88c71b16598a, type: 3}
+    buggyImage: {fileID: 21300000, guid: f53d5c8f31ad07e4cbf66cdb0a48b558, type: 3}
+  - targetObject: {fileID: 7137070688673206234}
+    normalImage: {fileID: 21300000, guid: c4e2635d4f229ab4380df52800ba1e0f, type: 3}
+    buggyImage: {fileID: 21300000, guid: e02b3222a06b7204299374392e94f504, type: 3}
+  - targetObject: {fileID: 2658580433075843412}
+    normalImage: {fileID: 21300000, guid: 90eeb2dad7035654d8f56d8e20a27fdc, type: 3}
+    buggyImage: {fileID: 21300000, guid: 81f70852b5e10c64394c4d6314742b02, type: 3}
+  textColorEntries: []
+  gameObjectToggleEntries: []
+  swapOnStart: 1
+  swapOnEnable: 1
+  enableDebugPreview: 1
+  previewAsBuggyState: 1
 --- !u!1 &4716826085830206859
 GameObject:
   m_ObjectHideFlags: 0

@@ -129,13 +129,33 @@ public class NextTurnTransition : MonoBehaviour
 
     private void CreateFadeOverlay()
     {
-        // Find or create canvas
+        // Find canvas by searching up the parent hierarchy
         Canvas canvas = GetComponentInParent<Canvas>();
+        
+        // If not found, try searching from root up
         if (canvas == null)
         {
-            Debug.LogError("NextTurnTransition: No Canvas found in parent hierarchy");
+            Transform current = transform;
+            while (current != null && canvas == null)
+            {
+                canvas = current.GetComponent<Canvas>();
+                current = current.parent;
+            }
+        }
+        
+        // If still not found, try to find any canvas in the scene
+        if (canvas == null)
+        {
+            canvas = FindObjectOfType<Canvas>();
+        }
+        
+        if (canvas == null)
+        {
+            Debug.LogError("NextTurnTransition: No Canvas found in parent hierarchy or scene");
             return;
         }
+
+        Debug.Log($"NextTurnTransition: Found canvas '{canvas.name}'");
 
         // Create fade overlay GameObject
         GameObject fadeObject = new GameObject("FadeOverlay");

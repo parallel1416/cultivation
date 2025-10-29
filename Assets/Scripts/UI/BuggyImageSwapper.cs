@@ -95,14 +95,12 @@ public class BuggyImageSwapper : MonoBehaviour
             {
                 PreviewNormal();
             }
-            Debug.Log($"BuggyImageSwapper: Using debug preview mode. Previewing as {(previewAsBuggyState ? "BUGGY" : "NORMAL")} state.");
             return;
         }
         #endif
 
         if (LevelManager.Instance == null)
         {
-            Debug.LogWarning("BuggyImageSwapper: LevelManager instance not found. Cannot swap images.");
             return;
         }
 
@@ -113,14 +111,12 @@ public class BuggyImageSwapper : MonoBehaviour
         {
             if (entry.targetObject == null)
             {
-                Debug.LogWarning("BuggyImageSwapper: Target object is null in swap entry. Skipping.");
                 continue;
             }
 
             Image imageComponent = entry.targetObject.GetComponent<Image>();
             if (imageComponent == null)
             {
-                Debug.LogWarning($"BuggyImageSwapper: No Image component found on {entry.targetObject.name}. Skipping.");
                 continue;
             }
 
@@ -129,33 +125,17 @@ public class BuggyImageSwapper : MonoBehaviour
 
             if (selectedSprite == null)
             {
-                Debug.LogWarning($"BuggyImageSwapper: {(isBuggy ? "Buggy" : "Normal")} image is null for {entry.targetObject.name}. Skipping.");
                 continue;
             }
 
             imageComponent.sprite = selectedSprite;
         }
 
-        // Change text colors
-        foreach (var entry in textColorEntries)
-        {
-            if (entry.targetText == null)
-            {
-                Debug.LogWarning("BuggyImageSwapper: Target text is null in text color entry. Skipping.");
-                continue;
-            }
-
-            // Select the appropriate color based on IsBuggy state
-            Color selectedColor = isBuggy ? entry.buggyColor : entry.normalColor;
-            entry.targetText.color = selectedColor;
-        }
-
-        // Enable/disable GameObjects
+        // Enable/disable GameObjects FIRST (before changing text colors)
         foreach (var entry in gameObjectToggleEntries)
         {
             if (entry.targetObject == null)
             {
-                Debug.LogWarning("BuggyImageSwapper: Target object is null in toggle entry. Skipping.");
                 continue;
             }
 
@@ -164,7 +144,18 @@ public class BuggyImageSwapper : MonoBehaviour
             entry.targetObject.SetActive(shouldBeActive);
         }
 
-        Debug.Log($"BuggyImageSwapper: Swapped {swapEntries.Count} images, {textColorEntries.Count} text colors, and toggled {gameObjectToggleEntries.Count} GameObjects. IsBuggy = {isBuggy}");
+        // Change text colors AFTER GameObjects are toggled
+        foreach (var entry in textColorEntries)
+        {
+            if (entry.targetText == null)
+            {
+                continue;
+            }
+
+            // Select the appropriate color based on IsBuggy state
+            Color selectedColor = isBuggy ? entry.buggyColor : entry.normalColor;
+            entry.targetText.color = selectedColor;
+        }
     }
 
     /// <summary>
@@ -192,21 +183,22 @@ public class BuggyImageSwapper : MonoBehaviour
             }
         }
 
-        // Preview normal text colors
+        // Preview normal GameObject states (IsBuggy = false) - Do this BEFORE text colors
+        foreach (var entry in gameObjectToggleEntries)
+        {
+            if (entry.targetObject != null)
+            {
+                bool shouldBeActive = !entry.activeWhenBuggy;
+                entry.targetObject.SetActive(shouldBeActive);
+            }
+        }
+
+        // Preview normal text colors - Do this AFTER GameObject toggles
         foreach (var entry in textColorEntries)
         {
             if (entry.targetText != null)
             {
                 entry.targetText.color = entry.normalColor;
-            }
-        }
-
-        // Preview normal GameObject states (IsBuggy = false)
-        foreach (var entry in gameObjectToggleEntries)
-        {
-            if (entry.targetObject != null)
-            {
-                entry.targetObject.SetActive(!entry.activeWhenBuggy);
             }
         }
     }
@@ -227,21 +219,22 @@ public class BuggyImageSwapper : MonoBehaviour
             }
         }
 
-        // Preview buggy text colors
+        // Preview buggy GameObject states (IsBuggy = true) - Do this BEFORE text colors
+        foreach (var entry in gameObjectToggleEntries)
+        {
+            if (entry.targetObject != null)
+            {
+                bool shouldBeActive = entry.activeWhenBuggy;
+                entry.targetObject.SetActive(shouldBeActive);
+            }
+        }
+
+        // Preview buggy text colors - Do this AFTER GameObject toggles
         foreach (var entry in textColorEntries)
         {
             if (entry.targetText != null)
             {
                 entry.targetText.color = entry.buggyColor;
-            }
-        }
-
-        // Preview buggy GameObject states (IsBuggy = true)
-        foreach (var entry in gameObjectToggleEntries)
-        {
-            if (entry.targetObject != null)
-            {
-                entry.targetObject.SetActive(entry.activeWhenBuggy);
             }
         }
     }
