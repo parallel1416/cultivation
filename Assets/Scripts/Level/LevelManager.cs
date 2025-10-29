@@ -25,6 +25,11 @@ public class LevelManager : MonoBehaviour
     // normal disciples
     [SerializeField] private int activeDisciples = 0;
 
+    // status
+    // -1 for locked, killed or dismissed;
+    // 0 for unlocked but occupied;
+    // 1 for unlocked and idle.
+
     // spirit animals
     [SerializeField] private int statusMouse = -1;
     [SerializeField] private int statusChicken = -1;
@@ -102,7 +107,31 @@ public class LevelManager : MonoBehaviour
 
     public void StartNewGame()
     {
+        if (GlobalTagManager.Instance == null)
+        {
+            LogController.LogError("StartGame: GlobalTagManager.Instance not exist!");
+        }
+        else GlobalTagManager.Instance.LoadGlobalTags();
 
+        if (TechManager.Instance == null)
+        {
+            LogController.LogError("StartGame: TechManager.Instance not exist!");
+        }
+        else TechManager.Instance.LoadTechTree();
+
+        if (ItemManager.Instance == null)
+        {
+            LogController.LogError("StartGame: ItemManager.Instance not exist!");
+        }
+        else ItemManager.Instance.RegisterAllItems();
+
+        if (TurnManager.Instance == null)
+        {
+            LogController.LogError("StartGame: TurnManager.Instance not exist!");
+        }
+        else TurnManager.Instance.ResetTurn(1);
+
+        LogController.Log("StartGame: New game started!");
     }
 
 
@@ -172,7 +201,7 @@ public class LevelManager : MonoBehaviour
     /// This will reduce the upper limit of available disciples per turn!
     /// Will force kill to zero if an overkill happens.
     /// </summary>
-    public bool KillDisciples(int amount)
+    public bool DismissDisciples(int amount)
     {
         if (amount < 0)
         {

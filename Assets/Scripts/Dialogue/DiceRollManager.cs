@@ -33,30 +33,30 @@ public class DiceRollManager : MonoBehaviour
     private static DiceRollManager _instance;
     public static DiceRollManager Instance => _instance;
 
-    [SerializeField] private string normalDiscipleDesc = "普通弟子";
-    [SerializeField] private string jingshiDesc = "经师";
-    [SerializeField] private string jianjunDesc = "剑君";
-    [SerializeField] private string yuezhengDesc = "乐正";
+    [SerializeField] private readonly string normalDiscipleDesc = "普通门徒";
+    [SerializeField] private readonly string jingshiDesc = "经师";
+    [SerializeField] private readonly string jianjunDesc = "剑君";
+    [SerializeField] private readonly string yuezhengDesc = "乐正";
 
-    [SerializeField] private string mouseDesc = "灵鼠";
-    [SerializeField] private string chickenDesc = "凤雏";
-    [SerializeField] private string sheepDesc = "獬豸";
+    [SerializeField] private readonly string mouseDesc = "灵鼠";
+    [SerializeField] private readonly string chickenDesc = "凤雏";
+    [SerializeField] private readonly string sheepDesc = "獬豸";
 
-    [SerializeField] private string zhiKuiLeiDesc = "纸傀儡";
-    [SerializeField] private string yuChanTuiDesc = "玉蝉蜕";
-    [SerializeField] private string dianFanTieDesc = "点繁帖";
-    [SerializeField] private string wuQueJingDesc = "无缺镜";
-    [SerializeField] private string chengFuFuDesc = "承负符";
-    [SerializeField] private string jianPuCanZhangDesc = "剑谱残章";
-    [SerializeField] private string feiGuangJianFuDesc = "飞光剑符";
+    [SerializeField] private readonly string zhiKuiLeiDesc = "纸傀儡";
+    [SerializeField] private readonly string yuChanTuiDesc = "玉蝉蜕";
+    [SerializeField] private readonly string dianFanTieDesc = "点繁帖";
+    [SerializeField] private readonly string wuQueJingDesc = "无缺镜";
+    [SerializeField] private readonly string chengFuFuDesc = "承负符";
+    [SerializeField] private readonly string jianPuCanZhangDesc = "剑谱残章";
+    [SerializeField] private readonly string feiGuangJianFuDesc = "飞光剑符";
 
-    [SerializeField] private string reRollDesc = "重投道具";
-    [SerializeField] private string enableDesc = "生效!";
-    [SerializeField] private string becauseDesc = "因";
-    [SerializeField] private string minusDesc = "而减少！";
-    [SerializeField] private string plusDesc = "而增加！";
+    [SerializeField] private readonly string reRollDesc = "重投道具";
+    [SerializeField] private readonly string enableDesc = "生效!";
+    [SerializeField] private readonly string becauseDesc = "因";
+    [SerializeField] private readonly string minusDesc = "而减少！";
+    [SerializeField] private readonly string plusDesc = "而增加！";
 
-    [SerializeField] private string finalDesc = "最终结果：";
+    [SerializeField] private readonly string finalDesc = "最终结果：";
 
     [SerializeField]
     private IReadOnlyList<string> reRollItems = new List<string>()
@@ -65,9 +65,9 @@ public class DiceRollManager : MonoBehaviour
         "cheng_fu_fu"
     };
 
-    [SerializeField] private bool enableYuezhengSpecialDice = false;
-    [SerializeField] private string yuezhengSize = "♪";
-    [SerializeField] private string yuezhengHigherNote = "清";
+    [SerializeField] private readonly bool enableYuezhengSpecialDice = true;
+    [SerializeField] private readonly string yuezhengSize = "♪";
+    [SerializeField] private readonly string yuezhengHigherNote = "清";
     [SerializeField]
     private IReadOnlyList<int> yuezhengDiceResults = new List<int>()
     {

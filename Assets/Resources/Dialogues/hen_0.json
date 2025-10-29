@@ -1,0 +1,14 @@
+{
+  "desc": "凤凰于飞，翙翙其羽。",
+  "title": "凤雏",
+  "diceLimit": 0,
+  "triggersImmediately": true,
+  "major": false,
+  "sentence":
+  [
+    {
+      "text": "你们从山脚下的草市上精心挑选了一只有五色羽毛的母鸡。大家都相信，这是一只凤凰的雏鸟。",
+      "target": "END"
+    }
+  ]
+}

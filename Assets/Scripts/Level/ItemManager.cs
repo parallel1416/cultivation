@@ -34,8 +34,6 @@ public class ItemManager : MonoBehaviour
         {
             _instance = this;
             DontDestroyOnLoad(this.gameObject);
-
-            RegisterAllItems();
         }
     }
 
@@ -49,10 +47,14 @@ public class ItemManager : MonoBehaviour
         items[itemId] = 0;
     }
 
+    /// <summary>
+    /// Generate an all 0 but complete item dictionary 
+    /// </summary>
     public void RegisterAllItems()
     {
         foreach (string id in itemRegisterList)
         {
+            // no conflict prevention, make sure itemRegisterList has no duplicate IDs
             RegisterItem(id);
         }
     }

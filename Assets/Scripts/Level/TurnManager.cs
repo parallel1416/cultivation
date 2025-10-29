@@ -12,7 +12,7 @@ public class TurnManager : MonoBehaviour
 
     // Only for debugging in inspector
     [SerializeField] private int currentTurn = 1;
-    [SerializeField] private int actionPointPerTurn = 4;
+    //[SerializeField] private int actionPointPerTurn = 4;
 
     private int actionPoint = 0;
 
@@ -66,16 +66,19 @@ public class TurnManager : MonoBehaviour
         
         // Advance turn
         currentTurn++;
-        resetActionPoints();
+        //resetActionPoints();
         
         LogController.Log($"Turn incremented to: {currentTurn}");
 
         // Create a save at new turn starts
         SaveManager.Instance.CreateSave();
         
-        // Setup new turn's dialogue events
         if (DialogueListManager.Instance != null)
         {
+            // Immediately play all turn-start dialogues
+            DialogueListManager.Instance.PushToPlayMainlineDialogues();
+
+            // Setup new turn's dialogue events
             DialogueListManager.Instance.SetUpTurnDialogues();
             LogController.Log($"Setup dialogues for turn {currentTurn}. Available events: {DialogueListManager.Instance.CurrentTurnDialogues.Count}");
         }
@@ -85,31 +88,31 @@ public class TurnManager : MonoBehaviour
         }
         
         // LevelManager.Instance.GenerateResourcesPerTurn();
-        LogController.Log($"=== Turn {currentTurn} started ===");
+        LogController.Log($"TurnManager: Turn {currentTurn} started!");
     }
 
-    public void ResetTurns(int targetTurn)
+    public void ResetTurn(int targetTurn)
     {
         currentTurn = targetTurn;
-        LogController.Log($"Turn reset to: {currentTurn}");
+        LogController.Log($"TurnManager: Turn reset to: {currentTurn}");
     }
 
-    public bool ConsumeActionPoint(int amount)
-    {
-        if (actionPoint >= amount)
-        {
-            actionPoint -= amount;
-            LogController.Log($"Consumed {amount} action points. Remaining: {actionPoint}");
-            return true;
-        }
-        LogController.LogError("Not enough action points to consume.");
-        return false;
-    }
+    //public bool ConsumeActionPoint(int amount)
+    //{
+    //    if (actionPoint >= amount)
+    //    {
+    //        actionPoint -= amount;
+    //        LogController.Log($"Consumed {amount} action points. Remaining: {actionPoint}");
+    //        return true;
+    //    }
+    //    LogController.LogError("Not enough action points to consume.");
+    //    return false;
+    //}
 
-    private void resetActionPoints()
-    {
-        actionPoint = actionPointPerTurn;
-    }
+    //private void resetActionPoints()
+    //{
+    //    actionPoint = actionPointPerTurn;
+    //}
 
-    public void ApplySaveData(SaveData saveData) => ResetTurns(saveData.turn);
+    public void ApplySaveData(SaveData saveData) => ResetTurn(saveData.turn);
 }

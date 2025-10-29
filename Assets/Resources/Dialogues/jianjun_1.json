@@ -17,9 +17,6 @@
                 {
                     "showOutput":false,
                     "type": "globalTag",
-
-                    "intValue": 1,
-
                     "stringValue": "jianjun_event_1_triggered", 
                     "operation": "+"
                 }

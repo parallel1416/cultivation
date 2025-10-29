@@ -14,9 +14,6 @@
                 {
                     "showOutput":false,
                     "type": "globalTag",
-
-                    "intValue": 1,
-
                     "stringValue": "jingshi_event_1_triggered", 
                     "operation": "+"
                 }

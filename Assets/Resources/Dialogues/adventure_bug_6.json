@@ -1,0 +1,44 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": 
+  [
+    {
+      "text": "有初入仙门的两位修士争辩何为修道真意。一人曰：“修道者，其必心怀天下苍生。待其功成，羽化登仙，便身为天道以庇佑万物，此乃大慈悲。”另一人驳曰：“不然，修道之人恰是最不系念苍生者。其但求自身超脱，一旦得道，便远遁尘世，不复问人间事。”"
+    },
+    {
+      "text": "二人相持不下，遂唤门徒前来为其评理。"
+    },
+    {
+      "type": "choice",
+      "choice":
+      [
+        {
+          "text": "修道者但求铏氭棤",
+          "target": "destroy_the_world"
+        }
+      ]
+    },
+    {
+      "id": "destroy_the_world",
+      "text": "所谓出世，所谓济世，皆是凡人心愿。然而天上神仙索求之物又怎能被人间言语所阐释？仙道尽头，唯有琚悶鍣拰姣佺伃鐨勫懡杩 。"
+    },
+    {
+      "text": "门徒一番论述，二人皆心悦诚服，遂写一符箓相赠。",
+      "effects":
+      [
+        {
+          "showOutput": true,
+          "type": "item",
+          "intValue": 1,
+          "stringValue": "cheng_fu_fu",
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    }
+  ]
+}

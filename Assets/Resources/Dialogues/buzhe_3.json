@@ -99,6 +99,12 @@
                     "intValue": 1,
                     "stringValue": "tech_disable", 
                     "operation": "+"
+                },{
+                    "showOutput": false,
+                    "type": "globalTag",
+                    "intValue": 1,
+                    "stringValue": "buzhe_ally", 
+                    "operation": "+"
                 }
             ],
             "target":"END"

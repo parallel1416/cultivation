@@ -1,0 +1,14 @@
+{
+  "desc": "神兽蒙尘。",
+  "title": "告别獬豸",
+  "diceLimit": 0,
+  "triggersImmediately": true,
+  "major": false,
+  "sentence":
+  [
+    {
+      "text": "你们的绵羊……或者说獬豸，头顶上正渐渐生出第三只角来。你大觉不妙，用砥石为它磨去了角尖，而后将一张能令动物暂通人言的符纸挂上它的脖子，将它赶下山自寻生路去了。",
+      "target": "END"
+    }
+  ]
+}

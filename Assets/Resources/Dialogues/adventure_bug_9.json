@@ -1,0 +1,24 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": [
+    {
+      "text": "门徒们日渐勤勉，你不需要督促，他们就自行下山历练。"
+    },
+    {
+      "text": "归来时，他们兴致勃勃，议论着此番游历的见闻：南方洪水泛滥，渔民为了活下去，只好生出了尾鳍。他们在宫阙的断瓦残垣之间游走，捞取大如人头的肉灵珠……",
+      "effects": [
+        {
+          "showOutput": true,
+          "type": "money",
+          "intValue": 2,
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    }
+  ]
+}
