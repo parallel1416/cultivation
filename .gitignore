@@ -98,3 +98,10 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Font files
+/[Aa]ssets/Fonts/*.otf
+/[Aa]ssets/Fonts/*.ttf
+
+# TextMesh Pro auto-generated font asset files
+/[Aa]ssets/Fonts/*.asset
