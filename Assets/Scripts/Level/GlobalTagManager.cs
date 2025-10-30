@@ -40,8 +40,7 @@ public class GlobalTagManager : MonoBehaviour
 
     /// <summary>
     /// Load tags from json file
-    /// Only called at new game starts
-    /// When load game from a save, use ApplySaveData() instead
+
     /// </summary>
     public void LoadGlobalTags()
     {

@@ -19,6 +19,8 @@ public class TurnManager : MonoBehaviour
     public int CurrentTurn => currentTurn;
     public int ActionPoint => actionPoint;
 
+    public static event System.Action OnTurnChanged;
+
     private void Awake()
     {
         if (_instance == null)
@@ -63,9 +65,9 @@ public class TurnManager : MonoBehaviour
         {
             LogController.LogError("DialogueManager.Instance is null!");
         }
-        
+
         // Advance turn
-        currentTurn++;
+        AdvanceTurn();
         //resetActionPoints();
         LevelManager.Instance.ResetActiveResources(); // reset active status of resources like disciples and animals/pets at turn start
 
@@ -92,10 +94,21 @@ public class TurnManager : MonoBehaviour
         LogController.Log($"TurnManager: Turn {currentTurn} started!");
     }
 
+    private void AdvanceTurn()
+    {
+        currentTurn++;
+
+        // only used for refreshing UI for now
+        OnTurnChanged?.Invoke();
+    }
+
     public void ResetTurn(int targetTurn)
     {
         currentTurn = targetTurn;
         LogController.Log($"TurnManager: Turn reset to: {currentTurn}");
+
+        // only used for refreshing UI for now
+        OnTurnChanged?.Invoke();
     }
 
     //public bool ConsumeActionPoint(int amount)
