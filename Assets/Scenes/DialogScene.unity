@@ -2306,6 +2306,7 @@ MonoBehaviour:
   itemImage: {fileID: 1180360181}
   diceContinueButton: {fileID: 1674918869}
   dicePrefab: {fileID: 457537380}
+  diceResultText: {fileID: 1566031090}
   d4Sprite: {fileID: 21300000, guid: e21d9148580bef54b9dfb4ab39c461e5, type: 3}
   d6Sprite: {fileID: 0}
   d8Sprite: {fileID: 21300000, guid: 482dc27cf9ca3ed438aeb7510bd34100, type: 3}

@@ -46,7 +46,8 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private Image itemImage; // Display assigned item image
     [SerializeField] private Button diceContinueButton; // Button to roll dice and continue
     [SerializeField] private GameObject dicePrefab; // Prefab for individual dice (with image + text)
-    
+    [SerializeField] private TextMeshProUGUI diceResultText; // Text to show final result
+
     [Header("Dice Sprites")]
     [SerializeField] private Sprite d4Sprite;
     [SerializeField] private Sprite d6Sprite;
@@ -1077,6 +1078,7 @@ public class DialogueUI : MonoBehaviour
             if (dicePanelWinSprite != null)
             {
                 dicePanelBackground.sprite = dicePanelWinSprite;
+                diceResultText.text = "成\n功";
                 Debug.Log("DialogueUI: Dice roll SUCCESS - showing win background");
             }
         }
@@ -1085,6 +1087,7 @@ public class DialogueUI : MonoBehaviour
             if (dicePanelLoseSprite != null)
             {
                 dicePanelBackground.sprite = dicePanelLoseSprite;
+                diceResultText.text = "失\n败";
                 Debug.Log("DialogueUI: Dice roll FAIL - showing lose background");
             }
         }

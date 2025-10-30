@@ -285,6 +285,8 @@ public class TowerDragController : MonoBehaviour
             }
         }
 
+        overscrollPadding = LevelManager.Instance.IsBuggy ? 0f : 2250f;
+
         if (highest <= float.MinValue)
         {
             minY = Mathf.Max(heightBasedLimit, -lowerPadding);
@@ -293,7 +295,7 @@ public class TowerDragController : MonoBehaviour
         {
             // minY is negative: allows scrolling down to show the highest node
             // Use the lower (more restrictive) of the two limits
-            float nodeBasedLimit = -(highest + overscrollPadding);
+            float nodeBasedLimit = -(highest - overscrollPadding);
             minY = Mathf.Max(heightBasedLimit, nodeBasedLimit);
         }
         
