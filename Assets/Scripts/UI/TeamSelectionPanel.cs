@@ -231,6 +231,17 @@ public class TeamSelectionPanel : MonoBehaviour
         if (teamPanelRoot != null)
             teamPanelRoot.SetActive(true);
 
+        // Show people preview by default
+        if (pplPreviewRoot != null)
+            pplPreviewRoot.SetActive(true);
+
+        // Hide pet and item previews
+        if (petPreviewRoot != null)
+            petPreviewRoot.SetActive(false);
+
+        if (itemPreviewRoot != null)
+            itemPreviewRoot.SetActive(false);
+
         // Reset temp state to current selection
         tempPetIndex = selectedPetIndex;
         tempItemIndex = selectedItemIndex;
@@ -245,7 +256,7 @@ public class TeamSelectionPanel : MonoBehaviour
         // Update slot images
         UpdateSlotDisplay();
 
-        Debug.Log("TeamSelectionPanel: Team panel opened");
+        Debug.Log("TeamSelectionPanel: Team panel opened with people preview");
     }
 
     private void OnCloseButtonClicked()

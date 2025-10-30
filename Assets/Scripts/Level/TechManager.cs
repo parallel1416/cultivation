@@ -40,6 +40,9 @@ public partial class TechManager : MonoBehaviour
     private Dictionary<string, TechNode> techNodes = new Dictionary<string, TechNode>();
     public Dictionary<string, TechNode> TechNodes => techNodes;
 
+    // Event fired when a tech is successfully unlocked
+    public event Action<string> OnTechUnlocked;
+
     private void Awake()
     {
         if (_instance != null && _instance != this)
@@ -116,6 +119,9 @@ public partial class TechManager : MonoBehaviour
         tech.unlockState = 1;
         ApplyUnlockTechEffect(techId);
         LogController.Log($"TechManager: Tech unlocked!: {tech.name} ({tech.id})");
+
+        // Fire the unlock event
+        OnTechUnlocked?.Invoke(techId);
 
         return true;
     }

@@ -3702,7 +3702,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2925352566858774119, guid: 45dd0750571f501408a7587050f2fff5, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 4164
+      value: 5496
       objectReference: {fileID: 0}
     - target: {fileID: 2925352566858774119, guid: 45dd0750571f501408a7587050f2fff5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -4134,6 +4134,7 @@ GameObject:
   - component: {fileID: 1407012345}
   - component: {fileID: 1407012346}
   - component: {fileID: 1407012347}
+  - component: {fileID: 1407012348}
   m_Layer: 0
   m_Name: SceneManager
   m_TagString: Untagged
@@ -4382,6 +4383,26 @@ MonoBehaviour:
   demolishButtonActiveSprite: {fileID: 21300000, guid: 4dbfd0ca908433f488adbbd54a94802a, type: 3}
   demolishButtonNormalSprite: {fileID: 21300000, guid: aeb475783b6644445b39ded8ae33aff5, type: 3}
   techDisableTagKey: tech_disable
+--- !u!114 &1407012348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1407012341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08b61b87db8687d47a4cdc0aaf66df7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  techDialogueMappings:
+  - techId: story_1
+    dialogueEventId: entry
+    playOnce: 1
+    hasPlayed: 0
+  onDialogueTriggered:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1411381927
 GameObject:
   m_ObjectHideFlags: 0

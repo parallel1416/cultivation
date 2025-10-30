@@ -255,6 +255,20 @@ public class TowerDragController : MonoBehaviour
             return;
         }
 
+        // Calculate canvas height for the drag limit
+        float canvasHeight = 0f;
+        if (parentRect != null)
+        {
+            canvasHeight = parentRect.rect.height;
+        }
+        
+        // Calculate tree background height
+        float treeBackgroundHeight = treeBackground.rect.height;
+        
+        // Calculate the limit based on tree height and canvas height
+        // This prevents dragging past the bottom of the tree
+        float heightBasedLimit = -(treeBackgroundHeight - canvasHeight);
+        
         float highest = float.MinValue;
         for (int i = 0; i < nodesContainer.childCount; i++)
         {
@@ -273,12 +287,14 @@ public class TowerDragController : MonoBehaviour
 
         if (highest <= float.MinValue)
         {
-            minY = -lowerPadding;
+            minY = Mathf.Max(heightBasedLimit, -lowerPadding);
         }
         else
         {
             // minY is negative: allows scrolling down to show the highest node
-            minY = -(highest + overscrollPadding);
+            // Use the lower (more restrictive) of the two limits
+            float nodeBasedLimit = -(highest + overscrollPadding);
+            minY = Mathf.Max(heightBasedLimit, nodeBasedLimit);
         }
         
         SetTreeY(Mathf.Clamp(treeBackground.anchoredPosition.y, minY, maxY));
