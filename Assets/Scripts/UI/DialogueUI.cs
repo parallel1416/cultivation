@@ -103,12 +103,14 @@ public class DialogueUI : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log("DialogueUI: Awake called");
         // Subscribe to events as early as possible
         SubscribeToEvents();
     }
 
     private void OnEnable()
     {
+        Debug.Log("DialogueUI: OnEnable called");
         // Re-subscribe if needed (in case manager was recreated)
         SubscribeToEvents();
     }
@@ -127,9 +129,12 @@ public class DialogueUI : MonoBehaviour
     {
         if (hasSubscribedToEvents || DialogueManager.Instance == null)
         {
+            Debug.Log($"DialogueUI: SubscribeToEvents skipped - hasSubscribedToEvents: {hasSubscribedToEvents}, DialogueManager.Instance: {DialogueManager.Instance != null}");
             return;
         }
 
+        Debug.Log("DialogueUI: Subscribing to DialogueManager events...");
+        
         DialogueManager.Instance.OnTitleDisplay += HandleTitleDisplay;
         DialogueManager.Instance.OnDialogueDisplay += HandleDialogueDisplay;
         DialogueManager.Instance.OnChoiceDisplay += HandleChoiceDisplay;
@@ -141,6 +146,7 @@ public class DialogueUI : MonoBehaviour
         DialogueManager.Instance.OnMusicChange += HandleMusicChange;
         
         hasSubscribedToEvents = true;
+        Debug.Log("DialogueUI: Successfully subscribed to all DialogueManager events");
 
         // Setup dice continue button listener
         if (diceContinueButton != null)
@@ -231,7 +237,7 @@ public class DialogueUI : MonoBehaviour
         dialogScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
         dialogScrollRect.movementType = ScrollRect.MovementType.Clamped;
         dialogScrollRect.scrollSensitivity = 20f; // Enable mouse wheel scrolling
-        dialogScrollRect.verticalNormalizedPosition = 0f; // Start at bottom
+        dialogScrollRect.verticalNormalizedPosition = 1f; // Start at top (1 = top, 0 = bottom)
         RefreshContentLayout();
     }
 
@@ -253,17 +259,22 @@ public class DialogueUI : MonoBehaviour
 
     private IEnumerator InitializeWhenReady()
     {
+        Debug.Log("DialogueUI: InitializeWhenReady started - waiting for DialogueManager...");
+        
         // Wait until DialogueManager instance becomes available
         while (DialogueManager.Instance == null)
         {
             yield return null;
         }
 
+        Debug.Log("DialogueUI: DialogueManager instance found!");
+
         // Ensure subscription now that instance exists
         SubscribeToEvents();
 
         // Check if there are already queued dialogues (from map scene events)
         bool hasQueuedDialogues = DialogueManager.Instance.GetQueueCount() > 0;
+        Debug.Log($"DialogueUI: Queue count: {DialogueManager.Instance.GetQueueCount()}, autoStartOnEnable: {autoStartOnEnable}, dialogueEventId: '{dialogueEventId}'");
 
         // Auto-start dialogue only if:
         // 1. autoStartOnEnable is true
@@ -280,11 +291,16 @@ public class DialogueUI : MonoBehaviour
             LogController.Log($"Skipping auto-start, {DialogueManager.Instance.GetQueueCount()} dialogue(s) already queued");
             // Start playback of queued dialogues
             yield return null;
+            Debug.Log("DialogueUI: Starting playback of queued dialogues");
             DialogueManager.Instance.StartDialoguePlayback();
         }
         else if (autoStartOnEnable && string.IsNullOrEmpty(dialogueEventId))
         {
             LogController.LogWarning("autoStartOnEnable is true but dialogueEventId is empty");
+        }
+        else
+        {
+            Debug.Log("DialogueUI: No auto-start conditions met");
         }
     }
 
@@ -356,6 +372,8 @@ public class DialogueUI : MonoBehaviour
 
     private void HandleTitleDisplay(string title)
     {
+        Debug.Log($"DialogueUI: HandleTitleDisplay called with title: '{title}'");
+        
         // Display title in separate container with fade animation
         if (titleContainer != null && titleText != null)
         {
@@ -363,10 +381,16 @@ public class DialogueUI : MonoBehaviour
             isTitleShowing = true; // Block dialogue advancement while title is showing
             StartCoroutine(ShowAndFadeTitle());
         }
+        else
+        {
+            Debug.LogWarning($"DialogueUI: Cannot display title - titleContainer: {titleContainer != null}, titleText: {titleText != null}");
+        }
     }
 
     private void HandleDialogueDisplay(string speaker, string text)
     {
+        Debug.Log($"DialogueUI: HandleDialogueDisplay called - speaker: '{speaker}', text: '{text}'");
+        
         // Show dialog container
         if (dialogContainer != null)
         {
@@ -465,23 +489,54 @@ public class DialogueUI : MonoBehaviour
                 LayoutRebuilder.ForceRebuildLayoutImmediate(dialogScrollRect.content);
             }
 
-            // Smooth scroll animation
-            float startPosition = dialogScrollRect.verticalNormalizedPosition;
-            float targetPosition = 0f; // Bottom
-            float elapsed = 0f;
-
-            while (elapsed < scrollAnimationDuration)
+            // Check if text height exceeds viewport height
+            RectTransform viewport = dialogScrollRect.viewport;
+            RectTransform content = dialogScrollRect.content;
+            
+            if (viewport != null && content != null && dialogText != null)
             {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / scrollAnimationDuration);
-                float easedT = scrollAnimationCurve.Evaluate(t);
+                // Force TextMeshPro to recalculate layout with new text
+                dialogText.ForceMeshUpdate();
                 
-                dialogScrollRect.verticalNormalizedPosition = Mathf.Lerp(startPosition, targetPosition, easedT);
-                yield return null;
-            }
+                float viewportHeight = viewport.rect.height;
+                float contentHeight = content.rect.height; // Total content box height (4000)
+                float textHeight = dialogText.textBounds.size.y; // Actual text height
+                
+                // Only scroll if text exceeds viewport
+                if (textHeight > viewportHeight)
+                {
+                    // Calculate how much text is beyond the viewport
+                    float overflow = textHeight - viewportHeight;
+                    
+                    // Calculate the position needed to show all text with newest at bottom of viewport
+                    // We need to scroll down by the overflow amount
+                    // Since content is top-anchored, we calculate normalized position
+                    float scrollAmount = overflow / (contentHeight - viewportHeight);
+                    
+                    // Target position: 1.0 (top) minus the scroll amount
+                    // This keeps us close to top, scrolling down gradually
+                    float targetPosition = 1f - scrollAmount;
+                    targetPosition = Mathf.Clamp01(targetPosition);
+                    
+                    // Smooth scroll animation to target position
+                    float startPosition = dialogScrollRect.verticalNormalizedPosition;
+                    float elapsed = 0f;
 
-            // Ensure we end exactly at bottom
-            dialogScrollRect.verticalNormalizedPosition = 0f;
+                    while (elapsed < scrollAnimationDuration)
+                    {
+                        elapsed += Time.deltaTime;
+                        float t = Mathf.Clamp01(elapsed / scrollAnimationDuration);
+                        float easedT = scrollAnimationCurve.Evaluate(t);
+                        
+                        dialogScrollRect.verticalNormalizedPosition = Mathf.Lerp(startPosition, targetPosition, easedT);
+                        yield return null;
+                    }
+
+                    // Ensure we end exactly at target
+                    dialogScrollRect.verticalNormalizedPosition = targetPosition;
+                }
+                // Otherwise stay at current position (stays at top when text is small)
+            }
         }
 
         pendingScrollCoroutine = null;
@@ -494,27 +549,10 @@ public class DialogueUI : MonoBehaviour
             return;
         }
 
-        // Ensure content is anchored to top-stretch so it grows downward
-        if (dialogScrollRect.content != null)
-        {
-            RectTransform content = dialogScrollRect.content;
-            content.anchorMin = new Vector2(0f, 0f); // Bottom-left anchor
-            content.anchorMax = new Vector2(1f, 1f); // Top-right anchor (stretch)
-            content.pivot = new Vector2(0.5f, 1f); // Pivot at top center
-            content.anchoredPosition = new Vector2(0f, 0f); // Reset position
-            
-            // Ensure text is also anchored properly
-            if (dialogText != null)
-            {
-                RectTransform textRect = dialogText.rectTransform;
-                textRect.anchorMin = new Vector2(0f, 0f);
-                textRect.anchorMax = new Vector2(1f, 1f);
-                textRect.pivot = new Vector2(0.5f, 1f);
-                textRect.anchoredPosition = Vector2.zero;
-                textRect.sizeDelta = Vector2.zero; // Let it stretch with parent
-            }
-        }
-
+        // Don't modify anchors - content is pre-configured in Unity Editor
+        // Content rect: anchor (0,0) to (1,1), top=0, bottom=-4000 (fixed large size)
+        // Text rect: anchor (0,0) to (1,1), top=0 (fills content, grows from top)
+        
         Canvas.ForceUpdateCanvases();
 
         if (dialogText != null)
@@ -1231,6 +1269,8 @@ public class DialogueUI : MonoBehaviour
     /// </summary>
     private void HandleBackgroundChange(string backgroundPath)
     {
+        Debug.Log($"DialogueUI: HandleBackgroundChange called with path: '{backgroundPath}'");
+        
         if (backgroundImage == null)
         {
             Debug.LogWarning("DialogueUI: Background image component not assigned");
@@ -1239,37 +1279,52 @@ public class DialogueUI : MonoBehaviour
 
         if (string.IsNullOrEmpty(backgroundPath))
         {
+            Debug.Log("DialogueUI: Background path is empty, using default");
             // Use default background
             if (defaultBackgroundSprite != null)
             {
                 backgroundImage.sprite = defaultBackgroundSprite;
+                Debug.Log("DialogueUI: Set to default background sprite");
+            }
+            else
+            {
+                Debug.LogWarning("DialogueUI: No default background sprite assigned");
             }
             return;
         }
 
-        // Load background sprite from Resources
-        Sprite backgroundSprite = Resources.Load<Sprite>(backgroundPath);
+        // Load background sprite from Resources/Images folder
+        // Path should be relative to Resources/Images (e.g., "Backgrounds/forest" loads from Resources/Images/Backgrounds/forest.png)
+        Debug.Log($"DialogueUI: Attempting to load background from Resources/Images/{backgroundPath}");
+        Sprite backgroundSprite = Resources.Load<Sprite>($"Images/{backgroundPath}");
         if (backgroundSprite != null)
         {
             backgroundImage.sprite = backgroundSprite;
-            Debug.Log($"DialogueUI: Background changed to {backgroundPath}");
+            Debug.Log($"DialogueUI: Background successfully changed to Images/{backgroundPath}");
         }
         else
         {
-            Debug.LogWarning($"DialogueUI: Background sprite not found: {backgroundPath}");
+            Debug.LogWarning($"DialogueUI: Background sprite not found at Resources/Images/{backgroundPath}");
             // Fallback to default
             if (defaultBackgroundSprite != null)
             {
                 backgroundImage.sprite = defaultBackgroundSprite;
+                Debug.Log("DialogueUI: Fallback to default background sprite");
+            }
+            else
+            {
+                Debug.LogWarning("DialogueUI: No default background sprite to fallback to");
             }
         }
     }
 
     /// <summary>
-    /// Handle portrait image change
+    /// Handle portrait image changex
     /// </summary>
     private void HandlePortraitChange(string portraitPath)
     {
+        Debug.Log($"DialogueUI: HandlePortraitChange called with path: '{portraitPath}'");
+        
         if (portraitImage == null)
         {
             Debug.LogWarning("DialogueUI: Portrait image component not assigned");
@@ -1278,40 +1333,35 @@ public class DialogueUI : MonoBehaviour
 
         if (string.IsNullOrEmpty(portraitPath))
         {
-            // Hide portrait or use default
-            if (defaultPortraitSprite != null)
-            {
-                portraitImage.sprite = defaultPortraitSprite;
-                portraitImage.enabled = true;
-            }
-            else
-            {
-                portraitImage.enabled = false;
-            }
+            Debug.Log("DialogueUI: Portrait path is empty, hiding portrait");
+            // Hide portrait by setting alpha to 0
+            Color c = portraitImage.color;
+            c.a = 0f;
+            portraitImage.color = c;
             return;
         }
 
-        // Load portrait sprite from Resources
-        Sprite portraitSprite = Resources.Load<Sprite>(portraitPath);
+        // Load portrait sprite from Resources/Images folder
+        // Path should be relative to Resources/Images (e.g., "Jianjun" loads from Resources/Images/Jianjun.png)
+        Debug.Log($"DialogueUI: Attempting to load portrait from Resources/Images/{portraitPath}");
+        Sprite portraitSprite = Resources.Load<Sprite>($"Images/{portraitPath}");
         if (portraitSprite != null)
         {
             portraitImage.sprite = portraitSprite;
-            portraitImage.enabled = true;
-            Debug.Log($"DialogueUI: Portrait changed to {portraitPath}");
+            // Make portrait visible
+            Color c = portraitImage.color;
+            c.a = 1f;
+            portraitImage.color = c;
+            Debug.Log($"DialogueUI: Portrait successfully changed to Images/{portraitPath}");
         }
         else
         {
-            Debug.LogWarning($"DialogueUI: Portrait sprite not found: {portraitPath}");
-            // Fallback to default or hide
-            if (defaultPortraitSprite != null)
-            {
-                portraitImage.sprite = defaultPortraitSprite;
-                portraitImage.enabled = true;
-            }
-            else
-            {
-                portraitImage.enabled = false;
-            }
+            Debug.LogWarning($"DialogueUI: Portrait sprite not found at Resources/Images/{portraitPath}");
+            // Hide portrait by setting alpha to 0
+            Color c = portraitImage.color;
+            c.a = 0f;
+            portraitImage.color = c;
+            Debug.Log("DialogueUI: Portrait hidden (alpha set to 0) due to missing sprite");
         }
     }
 

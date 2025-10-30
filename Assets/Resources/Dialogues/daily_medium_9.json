@@ -9,6 +9,7 @@
 
     "sentences": [
         {
+      "background":"story background6",
             "type": "check",
             "checkCondition": {
                 "difficultyClass": 6,

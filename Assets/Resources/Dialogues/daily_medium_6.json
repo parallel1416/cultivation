@@ -9,6 +9,7 @@
 
     "sentences": [
         {
+      "background":"story background6",
             "type": "check",
 
             "showCheckResult": false, 
@@ -23,6 +24,8 @@
             "successTarget": "jingshi_assigned",
             "failureTarget": "jingshi_not_assigned"
         },{
+            
+            "portrait":"Jingshi",
             "id":"jingshi_assigned",
             "type": "check",
             "checkCondition": {

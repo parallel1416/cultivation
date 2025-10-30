@@ -9,6 +9,7 @@
 
     "sentences": [
         {
+      "background":"story background2",
             "type": "multiCheck",
             "showCheckResult": false, 
 

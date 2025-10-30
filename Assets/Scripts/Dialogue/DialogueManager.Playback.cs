@@ -109,6 +109,17 @@ public partial class DialogueManager : MonoBehaviour
 
     private void PlayDefaultSentence(DialogueSentence sentence)
     {
+        // Apply per-sentence visual changes if specified
+        if (!string.IsNullOrEmpty(sentence.background))
+        {
+            TriggerBackgroundChange(sentence.background);
+        }
+
+        if (!string.IsNullOrEmpty(sentence.portrait))
+        {
+            TriggerPortraitChange(sentence.portrait);
+        }
+
         string output = FormatDialogueOutput(sentence);
         OutputDialogue(output);
         string speaker = sentence?.speaker ?? string.Empty;
@@ -232,7 +243,7 @@ public partial class DialogueManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Apply visual and audio settings from dialogue event
+    /// Apply visual and audio settings from dialogue event (event-level only)
     /// </summary>
     private void ApplyEventSettings(DialogueEvent dialogueEvent)
     {
@@ -241,19 +252,16 @@ public partial class DialogueManager : MonoBehaviour
             return;
         }
 
-        // Trigger background change
+        // Clear portrait at the start of each event (will be set by sentences as needed)
+        TriggerPortraitChange("");
+
+        // Trigger background change (event-level)
         if (!string.IsNullOrEmpty(dialogueEvent.background))
         {
             TriggerBackgroundChange(dialogueEvent.background);
         }
 
-        // Trigger portrait change
-        if (!string.IsNullOrEmpty(dialogueEvent.portrait))
-        {
-            TriggerPortraitChange(dialogueEvent.portrait);
-        }
-
-        // Trigger music change
+        // Trigger music change (event-level)
         if (!string.IsNullOrEmpty(dialogueEvent.music))
         {
             TriggerMusicChange(dialogueEvent.music);

@@ -7,6 +7,7 @@
   "sentence":
   [
     {
+      "background":"story background7",
       "text": "破坏阵法，推倒祭坛，砸碎盛装丹药的瓷瓶与木箱。那些曾由你们亲手搭建的，如今也要由你们亲手拆毁。宗门正变得越来越小，而你却为之稍稍舒了口气。",
       "target": "END"
     }

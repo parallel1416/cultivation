@@ -6,6 +6,7 @@
   "major": false,
   "sentences": [
     {
+      "background":"story background2",
       "text": "被你派出去的门徒回来了。他向你拱手作揖，称此番历练令他修为大有精进。你知道他说的是真的：他的眼睛里不再有瞳孔。取而代之的是一片明亮的星空。",
       "target": "END"
     }

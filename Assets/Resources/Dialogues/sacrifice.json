@@ -9,6 +9,8 @@
 
     "sentences": [
         {
+      "background":"story background3",
+      "portrait":"Jingshi",
             "text": "经师沐浴焚香，着手筹备献祭法阵。他只问你，拿谁的血肉为引。"
         },
         {
@@ -41,6 +43,7 @@
             ]
         },
         {
+            "portrait":"HIDE",
             "id":"withoutmoren",
             "type": "choice",
 
@@ -77,6 +80,7 @@
             "target":"ritual"
         },{
             "id":"ritual",
+            "portrait":"Jingshi",
             "text":"既然人牲已经选定，仪式便可以开始了。在你面前，这位昔日的书生散发跣足，身披麻衣，苍白得如同一片宣纸做的剪影。然而他的手却很稳：当他剖开人牲的胸膛，让血从指尖滴落到法阵上时，你没有看到丝毫颤抖的痕迹。"
         },
         {

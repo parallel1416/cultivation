@@ -9,6 +9,7 @@
 
     "sentences": [
         {
+      "background":"story background1",
             "type": "check",
 
             "showCheckResult": false, 
@@ -24,6 +25,7 @@
         },
         {
             "tagid":"withoutrightanswer",
+            "portrait":"Moren",
             "text": "擎着烛火，裹紧外衣，脚步一路穿过潮湿又寒冷的地下石廊。在这洞窟的最深处，那间无门也无窗的监牢里，一个危险的阶下囚正等候你的处置。在某种意义上，你已对他十分熟悉了，但你还尚有问题等待他开口回答。"
         },
         {

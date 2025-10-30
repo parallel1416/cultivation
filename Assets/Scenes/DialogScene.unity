@@ -155,11 +155,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2081823809}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_SizeDelta: {x: 0, y: -0.7}
+  m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &19980195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -243,7 +243,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -1.1121826, y: 1.1122131, z: 0, w: -1.1119385}
+  m_margin: {x: -1.1121826, y: 1.1122131, z: 0, w: -91.91852}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -612,8 +612,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 928318741}
   m_HandleRect: {fileID: 928318740}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.17763157
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -860,7 +860,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4ce1f07740735654fafdbe7414983fc5, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ec3e7366b1effd94ea08091d30b593c5, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -1120,7 +1120,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: e3584d745793fa740ace5dbf94450cc2, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 22626fd384d070b4c96bb1cfe414a4aa, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2296,7 +2296,7 @@ MonoBehaviour:
   choiceParent: {fileID: 40214656}
   backgroundImage: {fileID: 1099251248}
   portraitImage: {fileID: 878634624}
-  defaultBackgroundSprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  defaultBackgroundSprite: {fileID: 21300000, guid: 22626fd384d070b4c96bb1cfe414a4aa, type: 3}
   defaultPortraitSprite: {fileID: 0}
   dicePanel: {fileID: 1978272650}
   dicePanelBackground: {fileID: 1335304972}
@@ -2981,10 +2981,10 @@ RectTransform:
   - {fileID: 19980194}
   m_Father: {fileID: 1668608845}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00017235079}
-  m_SizeDelta: {x: 0, y: 400}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 4000}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &2081823810
 MonoBehaviour:
@@ -3021,6 +3021,26 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1731135876042519170, guid: 97b9b153f4e784c4681f5a3319d96e7e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536339555550350605, guid: 97b9b153f4e784c4681f5a3319d96e7e, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536339555550350605, guid: 97b9b153f4e784c4681f5a3319d96e7e, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536339555550350605, guid: 97b9b153f4e784c4681f5a3319d96e7e, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536339555550350605, guid: 97b9b153f4e784c4681f5a3319d96e7e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2536339555550350605, guid: 97b9b153f4e784c4681f5a3319d96e7e, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}

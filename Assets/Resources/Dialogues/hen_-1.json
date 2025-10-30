@@ -7,6 +7,7 @@
   "sentence":
   [
     {
+      "background":"story background7",
       "text": "凤雏的身形日益膨胀……你趁着它还没长大到会引起凡人惊异的时候，连夜将它装进笼子抱下山门，悄悄放进了一户农家的鸡圈里。",
       "target": "END"
     }

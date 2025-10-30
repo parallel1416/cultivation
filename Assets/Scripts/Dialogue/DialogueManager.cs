@@ -13,9 +13,9 @@ public partial class DialogueEvent
     public bool triggersImmediately = true; // immediately triggered events will show event UI at once, and not be added to event queue, which plays after player clicks the next turn button.
     public bool major = false; // major event will lock the next turn button and force player to handle this event 
     
-    // Visual and audio settings
-    public string background = ""; // Background image resource path (e.g., "Backgrounds/forest")
-    public string portrait = ""; // Portrait image resource path (e.g., "Portraits/character_name")
+    // Visual and audio settings (event-level)
+    // Note: Images must be in Assets/Resources/Images/ folder to be loaded at runtime
+    public string background = ""; // Background image path relative to Resources/Images (e.g., "Backgrounds/forest" loads Resources/Images/Backgrounds/forest.png)
     public string music = ""; // Background music resource path (e.g., "Music/dialogue_theme")
     
     public List<DialogueSentence> sentences = new List<DialogueSentence>();
@@ -29,6 +29,11 @@ public class DialogueSentence
     public string speaker = "";
     public string text = "";
     public string target = "";
+
+    // Visual settings (sentence-level)
+    // Note: Images must be in Assets/Resources/Images/ folder to be loaded at runtime
+    public string background = ""; // Background image path relative to Resources/Images (e.g., "Backgrounds/forest" loads Resources/Images/Backgrounds/forest.png)
+    public string portrait = ""; // Portrait image path relative to Resources/Images (e.g., "Jianjun" loads Resources/Images/Jianjun.png)
 
     // choice
     public string question = "";

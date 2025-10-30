@@ -9,6 +9,7 @@
 
     "sentences": [
         {
+      "background":"story background6",
             "type": "check",
 
             "showCheckResult": false, 
@@ -23,6 +24,7 @@
             "successTarget": "jianjun_assigned",
             "failureTarget": "jianjun_not_assigned"
         },{
+            "portrait":"Jianjun",
             "id":"jianjun_assigned",
             "type": "check",
             "checkCondition": {

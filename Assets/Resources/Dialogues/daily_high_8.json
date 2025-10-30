@@ -9,6 +9,7 @@
 
     "sentences": [
         {
+      "background":"story background6",
             "type": "check",
 
             "showCheckResult": false, 
@@ -23,6 +24,7 @@
             "successTarget": "yuezheng_assigned",
             "failureTarget": "yuezheng_not_assigned"
         },{
+            "portrait":"Yuezheng",
             "id":"yuezheng_assigned",
             "text":"你把宗门庶务交给了乐正，很快就意识到这是个严重的失策。经师急匆匆地找到你，指控乐正在讲经堂里开办故事大赛，她命令每个人都要接龙上个人讲的故事，无论这个故事的走向多么荒诞不羁。据经师所言，现在故事已经发展到了“经师为什么保留他做落第士子的历史？” 这种令人发指的内容。"
             ,"effects": [{
