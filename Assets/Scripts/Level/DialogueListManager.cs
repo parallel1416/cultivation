@@ -162,7 +162,7 @@ public class DialogueListManager : MonoBehaviour
     {
         get
         {
-            if ()
+            if (HasMajorInList())
             {
                 return true;
             }
@@ -189,13 +189,13 @@ public class DialogueListManager : MonoBehaviour
     /// </summary>
 
     private void ClearTurnDialogues() => currentTurnDialogues.Clear();
-    private void AddDialogue(string dialogue)
+    public void AddDialogue(string dialogue)
     {
         if (NowHasDialogue(dialogue)) return;
         currentTurnDialogues.Add(dialogue);
     }
 
-    private void RemoveDialogue(string dialogue)
+    public void RemoveDialogue(string dialogue)
     {
         if (currentTurnDialogues == null) return;
         if (!NowHasDialogue(dialogue)) return;
