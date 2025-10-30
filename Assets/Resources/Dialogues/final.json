@@ -1,0 +1,498 @@
+{
+    "desc": "群星归位，你知道掌门将于今晚出关。",
+
+    "title": "出关之夜",
+
+    "diceLimit": 3,
+
+    "triggersImmediately": false,
+    
+    "major": true,
+
+    "sentences": [
+        {
+            "music":"final1",
+            "background":"story background2",
+            "text": "日子愈来愈近了。近来，你做梦时也常常听见不知何来的低语声。掌门闭关的洞府像是一个冰冷的黑洞，吸取着附近的生机。你们庭院中的草枯干了。一切生灵仿佛对即将降临的事件，都有了预感。"
+        },{
+            "type": "check",
+            "checkCondition": {
+                "checkWhat": "globalTag",
+                "stringId": "EVIL" 
+            },
+            "successTarget": "evil1",
+            "failureTarget": "notevil1"
+        },{
+            "id":"evil1",
+            "text":"你感受到陌生又熟悉的灵力在宗门中涌动，你听见门徒在经师的指引下齐诵奇异的咒文。在掌门的威压与你们的力量下，普通的门徒已经无法保持住自己的神智……然而他们数目众多，非常适宜做你和经师的兵刃。"
+            ,"target":"notevil1"
+            },{
+            "id":"notevil1",
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 5,
+                "checkWhat": "dismantledTechs"
+            },
+            "successTarget": "notech",
+            "failureTarget": "tech"
+        },{
+            "id":"notech",
+            "text":"你已经遣散了门徒，拆毁了费尽心血修建起的楼阁。如今留下的，只有和你有过约定、交托性命的人。你们度过了最后一个平静的白日。"
+            ,"target":"tech"
+        },
+        {
+            "id":"tech",
+            "type": "choice",
+
+            "choices": [
+                {
+                    "text": "等待夜晚降临",
+                    "target": "wait"
+                }
+            ]
+        },{
+            "id":"wait",
+            "background":"story background3",
+            "music":"final2",
+            "text":"这一夜，群星高悬，月亮却隐而不现。满山寂静得没有一只乌鸦的鸣叫，黏稠又深沉的黑暗逐渐从掌门闭关的山洞蔓延开来。"
+        },{
+            "text":"闭关禁制解开的那一刻，冷漠的夜空没有丝毫动摇，整座山却为之俯首，宣告仙人的出世。"
+        },
+        {
+            "type": "multiCheck",
+
+            "showCheckResult": false, 
+
+                "multiCheckConditions": [
+                {
+                "checkWhat": "globalTag",
+                "stringId": "EVIL"
+                } ,
+                {
+                "difficultyClass": 5,
+                "checkWhat": "dismantledTechs"
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "ne"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [1],
+                    "target": "ge"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [0],
+                    "target": "be"
+                }
+            ]
+        },{
+            "id":"ne",
+            "text":"你知道在更高、更远的虚空之中，有一个位置正在为今日要飞升的人类敞开。浣犵煡閬撳湪鏇撮珮銆佹洿杩滅殑铏氱┖涔嬩腑锛屾湁涓€涓綅缃鍦ㄤ负浠婃棩瑕侀鍗囩殑浜虹被鏁炲紑銆�"
+        },{
+            "text":"你的心里没有仪式也没有盟约，而只是知道掌门即将境界圆满。当宇宙用肿胀的眼睛向下偶而一瞥，当生灵被迫臣服于新生的大能，你的理智也破碎了。"
+        },{
+            "text":"你无法形容从那闭关洞府之中走出的是怎样的存在，你试图从中辨别人形，但这努力是徒劳的。当然，一切都是徒劳的，包括少数几个清醒的门徒无意义的挣扎。掌门吞噬了所有人，除了你之外。"
+        },{
+            "text":"最后，她就像黑色的鸾鸟，载着你穿越南风、拥披云气，一直飞到辰星形成的门扉。……那就是神仙所在的洞天，是不死之乡，有山川之辽远，有海洋之至深。"
+        },{
+            "text":"【结局 列位神仙】",
+            "target":"OVER"
+        },{
+            "id":"ge",
+            "text":"一个庞大的身躯从中飞出，身体在宗门的废墟上投下宽广的阴影。她睁开一只饴糖般的巨眼，急切地寻找着活人的踪影。"
+        },{
+            "text":"你们躲在暗处，听见掌门的声音在山中回响。那声音温柔又快活，就像最开始你们认识之时：“门徒何在，都躲懒去了吗？掌门出关关关关关关，怎也不见人迎接接接接接？”"
+        },{
+            "text":"你为这陌生又熟悉的声音浑身战栗，它击碎了你最后一丝侥幸和幻想。然而你没有作声，只是挥手示意你的同伴们，趁它还没有反应过来，尽快一拥而上。"
+        },{
+            "type": "check",
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "globalTag",
+                "stringID": "buzhe_ally"
+            },
+
+            "successTarget": "buzhe1",
+            "failureTarget": "buzhe2"
+        },{
+            "id":"buzhe1",
+            "text":"卜者的披帛猎猎飘摆。她把铭刻着符咒的龟壳、竹签抛掷出去，好像已经这样做过了一千次。那一刻她仿佛司掌雷霆与暴雨，没有人能不为之动容。"
+        },{
+            "id":"buzhe2",
+            "type": "check",
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "globalTag",
+                "stringID": "moren_ally"
+            },
+
+            "successTarget": "moren1",
+            "failureTarget": "moren2"
+        },{
+            "id":"moren1",
+            "text":"魔人毫不顾惜这副身躯，投入了战斗。他断续而嘶哑的笑声，几乎完全听不见。"
+        },{
+            "id":"moren2",
+            "type": "check",
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "specialDice",
+                "stringID": "Jianjun"
+            },
+
+            "successTarget": "jj1",
+            "failureTarget": "jj2"
+        },{
+            "id":"jj1",
+            "text":"剑光在怪物巨大的形体上闪烁，小得像一颗星辰。这颗星星顽固地钉在那里，无论经受怎样的摇撼与震动，都不肯下来。"
+        },{
+            "id":"jj2",
+            "type": "check",
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "specialDice",
+                "stringID": "Jingshi"
+            },
+
+            "successTarget": "js1",
+            "failureTarget": "js2"
+        },{
+            "id":"js1",
+            "text":"经师也跌跌撞撞地从经阁的废墟里狂奔而来。他看起来已经不似人形，不知是用了怎样的秘法，只因绝望而不愿遭到被吞噬的命运。他破碎的喉咙中吐出一段一段难以理解的咒文，向着掌门而去。"
+        },{
+            "type": "js2",
+
+            "showCheckResult": false, 
+
+                "multiCheckConditions": [
+                { "checkWhat": "specialDice",
+                "stringID": "Yuezheng"},
+                {
+                "checkWhat": "globalTag",
+                "stringId": "goodyz"
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "noyz"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [0],
+                    "target": "badyz1"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [0,1],
+                    "target": "goodyz1"
+                }
+            ]
+        },{
+            "id":"goodyz1",
+            "text":"在混战之中，每个在场之人都听见了微小却坚决的乐音，琵琶孤零零地响着，它摇摇欲坠地牵起了你们理智的弦。那是多么美丽的旋律，几乎令人在这绝望的时分落下泪来。",
+            "target":"noyz"
+        },{
+            "id":"badyz1",
+            "text":"即使力量不如全盛时，掌门仍然让你们知道了何为蚍蜉撼树。古老的恶意灼伤了你们无知的头脑，入侵了你们温暖的肉体，让你们的兵刃对彼此举起。",
+            "target":"noyz"
+        },{
+            "id":"noyz",
+            "text":"即使力量不如全盛时，掌门仍然让你们知道了何为蚍蜉撼树。古老的恶意灼伤了你们无知的头脑，入侵了你们温暖的肉体，让你们的兵刃对彼此举起。"
+        },{
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 12,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_ge",
+            "failureTarget": "dead"
+        },{
+            "id":"success_ge",
+            "text": "作为被大道浸染最浅的人，你在无上的痛苦中仍然保持着清明。你呼喊着每个人，恳求他们清醒过来，希望他们想起你们在面对怎样的敌人。"  
+        },{
+            "text":"终于，你唤回了同伴们，并与他们一同继续迎战。他们的身形如此渺小，却毫不动摇。"
+        },{
+            "text":"不知是剑，符咒，乐音，还是你手持的凡间武器，最后对掌门造成了致命的一击。当那巨大的身形轰然倒塌、山头巨震之时，你们也失去了意识。"
+        },{
+            "text":"结束了？结束了……醒来的你们不敢相信地看着彼此。青山又恢复了原本的宁静，只有满山枯萎的桐叶、倒塌的废墟，提醒你们发生了什么；告诉你们，与此方宗门有关的事，已经是一场大梦醒来，再不可追了。"
+        },{
+            "text":"休养了一小段日子后，卜者最先离去。辞别之时，她问你接下来有何打算。"
+        },{
+            "type": "choice",
+
+            "choices": [
+                {
+                    "text": "我想留在山上",
+                    "target": "stay"
+                },
+                {
+                    "text": "我想四方奔走，阻止更多人修仙",
+                    "target": "investigator"
+                },
+                {
+                    "text": "我想去凡间生活",
+                    "target": "normal_life"
+                }
+            ]
+        },{
+            "id":"stay",
+            "text":"其他同伴一个接一个离去，你当然能够理解他们不愿留在这座山上……而你不一样。"
+        },{
+            "text":"你已经离开凡间太久，这里就是你的家了。你一直在这里住了下去，为掌门立了一座坟冢，照顾半死不活的草木，慢慢地用双手把满山的残骸清理干净。"
+        },{
+            "text":"直到山间植物从枯萎返回新绿，直到你行走在空荡荡的山中，想起这里曾经的盛景时，不再那么惆怅。当年的同伴们偶尔会来看望你，告诉你他们的近况，直到他们人间的寿元也尽了。如今，只有山谷间的回音还在陪伴你。"
+        },{
+            "text":"再下山时，你发现凡间风俗都有些陌生了。山下的居民头一次见到有人从山上下来，连连称呼你为仙人；你只好说自己只是误入山间，从不知道什么仙啊道啊。再回到山上，你就不曾下去过了。"
+        },{
+            "text":"【结局 空谷回音】",
+            "target":"OVER"
+        },{
+            "id":"investigator",
+            "text":"你还有未尽的责任。仙门盛会上有那样多的宗门，当然也还有那样多的人，在遭受大道的戕害……"
+        },{
+            "text":"你收拾行囊，踏上了一条长路。这条路途正如你所设想的那样，几乎没有光亮。你把自己装扮成各种人，用尽一切你能想到的手段，阻止更多的人修仙。"
+        },{
+            "type": "check",
+            "checkCondition": {
+                "checkWhat": "globalTag",
+                "stringId": "jianjun_dead"
+            },
+            "successTarget": "inves_withoutjj",
+            "failureTarget": "inves_withjj"
+        },{
+            "id":"inves_withoutjj",
+            "text":"魔人有时会和你一同行动。你们费尽了口舌，磨断了兵刃。可是有这样多的人前赴后继，想要逃离凡世，去往仙家。你当然不能苛责任何一个人，只能够不断地行动下去。",
+            "target":"continueinves"
+        },{
+            "id":"inves_withjj",
+            "text":"剑君和魔人有时会和你一同行动。你们费尽了口舌，磨断了兵刃。可是有这样多的人前赴后继，想要逃离凡世，去往仙家。你当然不能苛责任何一个人，只能够不断地行动下去。"
+            ,"target":"continueinves"
+        },{
+            "id":"continueinves",
+            "text":"你们使得许多人的信念崩塌、破灭；你会尽可能地做得温柔一些，并帮助他们把碎裂的心多少拼回去一点。这使你在这条无尽的长路上，多少也能体味到一些温暖之处了。"
+        },
+        {
+            "text":"【结局 无尽长路】",
+            "target":"OVER"
+        },{
+            "id":"normal_life",
+            "text":"坍塌、破灭，这样的感觉你已经尝得太多。你想卸下沉重的负担。"
+        },{
+            "text":"离开山门的那天，你决心将这里的一切都埋在心底，像掩盖一道伤疤。你找了一处市镇，捡起了你当凡人时学过的技艺。"
+        },{
+            "text":"刺绣舞乐也好，读书算术也好，你有的是时间，可以慢慢地学。你开起了一间小商铺；在宗门掌事的经验还是颇有助益，你的生意做得越来越大，乃至后来横跨南北。"
+        },{
+            "type": "check",
+            "checkCondition": {
+                "checkWhat": "globalTag",
+                "stringId": "goodyz"
+            },
+            "successTarget": "normallife_withoutyz",
+            "failureTarget": "normallife_withyz"
+        },{
+            "id":"normallife_withoutyz",
+            "text":"有时候的夜里，你会看见一团星云在银河间闪烁，听见隐隐的丝竹声。你不想听到那疯狂的旋律，但它们总让你想起一些纯粹又愉悦的片断。",
+            "target":"continuenl"
+        },{
+            "id":"normallife_withyz",
+            "text":"自那以后，乐正的乐音里多了很多东西。悲怆和恐惧就像一面镜子，映得她原本的生命力熠熠生辉。她成为了当地有名的乐人，只是她总也在一个地方停留不了太久。你开在各地的商铺分号都有她落脚的踪迹。她每年都会回来，再给你弹一首曲子。"
+            ,"target":"continuenl"
+        }
+        ,{
+            "id":"continuenl",
+            "type": "check",
+            "checkCondition": {
+                "checkWhat": "globalTag",
+                "stringId": "jianjun_dead"
+            },
+            "successTarget": "normallife_withoutjj",
+            "failureTarget": "normallife_withjj"
+        },{
+            "id":"normallife_withoutjj",
+            "text":"银河当空之时，你也会抬起头来，看看天上发亮的星星，有没有哪一颗就像剑光，有没有哪一颗不往下坠落，而是往上高飞。你觉得你看到了不止一次。",
+            "target":"continuenl2"
+        },{
+            "id":"normallife_withjj",
+            "text":"那场大战将剑君磨砺得更加沉着和坚实了。她仍然像往常一样愤怒于世间的不公，但她不再把一切都担负在自己的心中；她只是尽力去做一切能做之事。何况，她还找到了新的目标。你总会拨出一笔资费，给剑君买剑。她又使断了很多柄剑，为了劝人不要修仙，这使她成为了知名的古怪剑客……"
+            ,"target":"continuenl2"
+        },{
+            "id":"continuenl2",
+            "text":"自那一役后，经师已经彻底失去了神智。你不知他如今还能不能算是人。虽然免于被掌门吞噬，但是他也失去了获得巨大权力的机会。这使他彻底崩溃地离开了。你没有再关心过他的消息。"
+        },{
+            "text":"【结局 不如归去】",
+            "target":"OVER"
+        },{
+            "id":"be",
+            "text":"一个庞大的身躯从中飞出，身体在宗门的废墟上投下宽广的阴影。她睁开一只饴糖般的巨眼，满意地检视着列阵的门徒。然而同时，门徒们也齐刷刷地抬起了眼睛，望向了昔日的掌门。"
+        },{
+            "text":"他们的眼中没有恐惧也没有欣喜。站在最前方的经师口中疾速念诵起了咒文，你听见那怪物口中发出惊异的呼叫，而你的心里没有一丝怜悯或者犹豫。"
+        },{
+            "type": "check",
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "specialDice",
+                "stringID": "Jianjun"
+            },
+
+            "successTarget": "jj3",
+            "failureTarget": "jj4"
+        },{
+            "id":"jj3",
+            "text":"剑光在怪物巨大的形体上闪烁，小得像一颗星辰。这颗星星顽固地钉在那里，无论经受怎样的摇撼与震动，都不肯下来。"
+        },{
+            "id":"jj4",
+            "type": "check",
+            "showCheckResult": false, 
+
+            "checkCondition": {
+
+                "checkWhat": "specialDice",
+                "stringID": "Jingshi"
+            },
+
+            "successTarget": "js3",
+            "failureTarget": "js4"
+        },{
+            "id":"js3",
+            "text":"经师指尖沾满了鲜血，狂热地念诵着咒文，在空中绘出一道又一道的符咒，贪婪地从掌门身上汲取着灵力。他脸上显现出一种扭曲的狂喜，就好像尝到了醇酒的甘甜。"
+        },{
+            "type": "js4",
+
+            "showCheckResult": false, 
+
+                "multiCheckConditions": [
+                { "checkWhat": "specialDice",
+                "stringID": "Yuezheng"},
+                {
+                "checkWhat": "globalTag",
+                "stringId": "goodyz"
+                }
+            ],
+
+            "multiCheckTargets": [
+                {
+                    "priority": 0,
+                    "targetID": "noyz_be"
+                },
+                {
+                    "priority": 1,
+                    "requiredConditionIndices": [0],
+                    "target": "badyz1_be"
+                },
+                {
+                    "priority": 2,
+                    "requiredConditionIndices": [0,1],
+                    "target": "goodyz1_be"
+                }
+            ]
+        },{
+            "id":"goodyz1_be",
+            "text":"在混战之中，每个在场之人都听见了微小却坚决的乐音，琵琶孤零零地响着，然而几乎没人在听。这是一场大道的信徒彼此之间的屠杀，没人愿意理睬这凡间的乐器。",
+            "target":"noyz_be"
+        },{
+            "id":"badyz1_be",
+            "text":"在混战之中，唯有一种声音传达到了每个在场之人的心底。那是乐正率领的乐人们，这群狂女不知疲倦地奏起了宇宙的旋律，在星河之间引发了一阵迷醉的暴雨。她们且行且歌，不知天上哪位混沌的神仙正为此欢悦。",
+            "target":"noyz_be"
+        },{
+            "id":"noyz_be",
+            "text":"即使力量不如全盛时，掌门仍然让你们知道了何为蚍蜉撼树。古老的恶意灼伤了你们无知的头脑，入侵了你们温暖的肉体，让你们的兵刃对彼此举起。"
+        },{
+            "type": "check",
+            "checkCondition": {
+                "difficultyClass": 12,
+                "checkWhat": "diceRoll"
+            },
+            "successTarget": "success_be",
+            "failureTarget": "dead"
+        },{
+            "id":"success_be",
+            "text": "是时机了。你呼唤经师，这是你们约定好的信号，经师猛然从迷狂中清醒过来，催动了你们以人血绘就的阵法。"  
+        },{
+            "text":"冰冷而厚重的力量一时间从掌门身上流出，如有实质，每个在场之人的动作都凝滞了。随后你们借着这股力量，汹涌地反扑而上……"
+        },{
+            "text":"法阵像一张贪婪的巨口，不断吸食着来自掌门的养分。她最后一次哺养了这个宗门，随后门徒分食了这甘美又疯狂的力量。"
+        },{
+            "text":"战斗结束了。你收拾残部，继续统领宗门门徒有些损耗，但这不要紧。经师成为了你座下辅佐之人，权力就像甘泉，你们浸泡在其中，只有心旷神怡。你始终保持着清醒，这也让你能够更方便地掌控他，在必要的时候也可以除掉他。"
+        },{
+            "type": "check",
+            "checkCondition": {
+                "checkWhat": "globalTag",
+                "stringId": "jianjun_dead"
+            },
+            "successTarget": "be_withoutjj",
+            "failureTarget": "be_withjj"
+        },{
+            "id":"be_withjj",
+            "text":"在那之前，你先送剑君离开了。她很快就意识到了不对，于是星夜回来，想质问你，或者刺杀你。那不重要了，因为你的门徒护卫法术高明，剑客不是对手。",
+            "target":"be_withoutjj"
+        },{
+            "id":"be_withoutjj",
+            "type": "check",
+            "checkCondition": {
+                "checkWhat": "globalTag",
+                "stringId": "goodyz"
+            },
+            "successTarget": "be_withgoodyz",
+            "failureTarget": "be_withbadyz"
+        },{
+            "id":"be_withgoodyz",
+            "text":"乐正试图唤醒你，劝阻你，不要继续向虚无和丑陋之物投去。而你觉得她死去之前不可置信的样子，确实是美丽而有趣……",
+            "target":"continuebe"
+        },{
+            "id":"be_withbadyz",
+            "text":"你还有一部最好的乐人，她们的乐声将与大道同朽。"
+            ,"target":"continuebe"
+        }
+        ,{
+            "id":"continuebe",
+            "type": "check",
+            "checkCondition": {
+                "checkWhat": "globalTag",
+                "stringId": "first"
+            },
+            "successTarget": "murder",
+            "failureTarget": "collapse"
+        },{
+            "id":"murder",
+            "text":"你又活了很多年。你不记得座下忠心耿耿的门人的脸庞，也不记得最初是什么让你走上了这条道路。有很多人从各方来投奔你，因为你们曾在仙会夺魁，因此在修仙宗门之中也算是名声最盛。也正因为这庞大的规模，宗门开始内部倾轧，分崩离析，你的守卫也不再每日在你门前守护了。"
+            },{
+            "text":"某个夜里，你被入侵者杀死在房中。你没有看清楚那究竟是你的门人，仇家，抑或是你旧日的同伴呢？"
+        },{
+            "text":"【结局 尾大而掉】",
+            "target":"OVER"
+        },
+        {
+            "id":"collapse",
+            "text":"你没有活得更久。仙门盛会只办过那一次，而后各个宗门就开始露出了袍子之下藏着的巨眼、黏液和触手，开始彼此争斗和倾轧。"
+        },{
+            "text":"你们在仙会之中未能扬名，因此来投靠你们的门徒也并不算多。经历了很多次暗杀、陷害、围剿，你虽然一一还了回去，但身边的人却越来越少，直到最后彻底覆灭。"
+        },{
+            "text":"【结局 天途半路】",
+            "target":"OVER"
+        },{
+            "id":"dead",
+            "text":"你们回归了大道，犹如雏鸟被巨大的巢穴吞没了。掌门以一种惊人的耐性和温柔，将你们一口一口品尝殆尽。你当然是她最喜欢的甜食，你最后听到的，是环绕在你身边的叹声。"
+        },{
+            "text":"至少你们所有人，都在这片黏稠而深重的黑暗里团聚了。你们将一起去往星空之上，也将永永远远在一起了。"
+        },{
+            "text":"【结局 回归大道】"
+        }
+    ]
+}

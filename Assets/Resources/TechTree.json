@@ -9,11 +9,18 @@
             "isUnlocked": true
         },{
             "id": "story_2",
-            "name": "摘星台",
-            "description": "修建摘星台。",
+            "name": "仙会筹备",
+            "description": "为仙会筹备所需物资。",
             "cost":25,
             "prerequisites": ["story_1"],
-            "isUnlocked": false
+            "unlockState": 0
+        },{
+            "id": "story_3",
+            "name": "祭阵",
+            "description": "举办祭阵，扶乩降鸾。",
+            "cost":30,
+            "prerequisites": ["story_2"],
+            "unlockState": 0
         },
         {
             "id": "recruit",
@@ -21,7 +28,7 @@
             "description": "宗门百废待兴，你和掌门需要为宗门延揽奇人异士。",
             "cost": 1,
             "prerequisites": [],
-            "isUnlocked": false
+            "unlockState": 0
         },
         {
             "id": "recruit_normal_1",
@@ -39,7 +46,9 @@
             "description": "延揽更多的弟子。",
             "cost": 3,
             "prerequisites": ["recruit_normal_1"],
-            "isUnlocked": false
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 5
         },
         {
             "id": "recruit_normal_3",
@@ -47,7 +56,9 @@
             "description": "延揽更多的弟子。",
             "cost": 3,
             "prerequisites": ["recruit_normal_2"],
-            "isUnlocked": false
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 5
         },
         {
             "id": "recruit_special_1",
@@ -55,22 +66,15 @@
             "description": "一位仗剑之人前来拜访。",
             "cost": 5,
             "prerequisites": ["recruit"],
-            "isUnlocked": false
+            "unlockState": 0
         },
         {
-            "id": "recruit_special_2",
-            "name": "瑶草琪花",
-            "description": "门徒向你汇报了一则关于灵草的争端。",
-            "cost": 10,
-            "prerequisites": ["recruit_special_1"],
-            "isUnlocked": false
-        },{
             "id": "recruit_special_3",
             "name": "珠盘玉落",
             "description": "门徒向你推举了一位怀抱琵琶的修士。",
-            "cost": 15,
+            "cost": 10,
             "prerequisites": ["recruit_special_2"],
-            "isUnlocked": false
+            "unlockState": 0
         },
         {
             "id": "farm_1",
@@ -78,38 +82,29 @@
             "description": "晨兴理荒秽，带月荷锄归。",
             "cost": 1,
             "prerequisites": [],
-            "isUnlocked": false
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 3
         },
         {
             "id": "farm_2",
-            "name": "扩建田园",
-            "description": "进一步扩建灵草园。",
+            "name": "扩建宗门",
+            "description": "进一步扩建宗门规模，提升宗门庶务效果。",
             "cost": 3,
             "prerequisites": ["farm_1"],
-            "isUnlocked": false
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 5
         },
         {
             "id": "farm_3",
-            "name": "扩建田园",
-            "description": "进一步扩建灵草园。",
+            "name": "扩建宗门",
+            "description": "进一步扩建宗门规模，提升宗门庶务效果。",
             "cost": 10,
             "prerequisites": ["farm_2"],
-            "isUnlocked": false
-        },
-        {
-            "id": "alchemy_1",
-            "name": "玉照香炉",
-            "description": "修建炼丹炉。",
-            "cost": 10,
-            "prerequisites": ["farm_2"],
-            "isUnlocked": false
-        },{
-            "id": "alchemy_2",
-            "name": "炉生紫烟",
-            "description": "进一步扩建炼丹炉。",
-            "cost":20,
-            "prerequisites": ["alchemy_1"],
-            "isUnlocked": false
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 12
         },
         {
             "id": "pet_1",
@@ -117,7 +112,9 @@
             "description": "良鼠择木而栖。",
             "cost": 1,
             "prerequisites": [],
-            "isUnlocked": false
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 3
         },
         {
             "id": "pet_2",
@@ -125,7 +122,9 @@
             "description": "凤凰于飞，翙翙其羽。",
             "cost": 4,
             "prerequisites": ["pet_1"],
-            "isUnlocked": false
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 5
         },
         {
             "id": "pet_3",
@@ -133,7 +132,9 @@
             "description": "四凶有獬豸，一臂无螳螂。",
             "cost": 8,
             "prerequisites": ["pet_2"],
-            "isUnlocked": false
+            "unlockState": 0,
+            "canDismantle": true,
+            "dismantleCost": 10
         }
         
     ]

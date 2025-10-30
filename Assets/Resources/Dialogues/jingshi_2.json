@@ -9,7 +9,15 @@
 
     "sentences": [
         {
-            "text": "这日晨课结束时分，你忽见经师风风火火地赶来，对你说他想校勘典籍，为经文作注疏。"
+            "text": "这日晨课结束时分，你忽见经师风风火火地赶来，对你说他想校勘典籍，为经文作注疏。",
+            "effects": [
+                {
+                    "showOutput":false,
+                    "type": "globalTag",
+                    "stringValue": "jingshi_event_2_triggered", 
+                    "operation": "+"
+                }
+            ]
         },
         {
             "text": "宗门藏经阁内有书千卷，皆系前代大能修行札记与心得。然而心志不坚、修为未至者若强行参悟，轻则神思恍惚，重则灵台受损，状若疯癫。"

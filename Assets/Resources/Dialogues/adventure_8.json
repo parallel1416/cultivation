@@ -1,0 +1,41 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": [
+    {
+      "text": "在山下一小县的县令反复请托之下，你委派门徒下山去，为他降服一只整日在县衙中作乱的怨魂。据说这怨鬼生前曾是地方一霸，为祸乡里，县令好不容易得了个机会将他定罪处斩，却不想此人死后也不得安宁，于衙门中频频制造诸般异象，闹得县里人心惶惶。"
+    },
+    {
+      "type": "check",
+      "showCheckResult": true,
+      "checkCondition": 
+      {
+        "difficultyClass": 3,
+        "checkWhat": "diceRoll"
+      },
+      "successTarget": "successfully_sealed",
+      "failureTarget": "failed_to_seal"
+    },
+    {
+      "id": "successfully_sealed",
+      "text": "纵使那鬼魂有百般能耐，也终归不是仙门中人的对手。门徒用符箓将它镇压在仪门之下，县令大喜过望，从府库里掏了一大笔银子出来作为报酬。",
+      "effects":[
+        {
+          "showOutput": true,
+          "type": "money",
+          "intValue": 3,
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    },
+    {
+      "id": "failed_to_seal",
+      "text": "门徒的符箓拿那鬼魂无可奈何，反被它戏弄一番，险些被吊在衙门前的照壁上。县令大失所望，随便找了个由头便把门徒打发走了。",
+      "target": "END"
+    }
+  ]
+}

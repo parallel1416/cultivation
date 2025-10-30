@@ -1,0 +1,85 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": [
+    {
+      "text": "前些日子，门徒们在你的指示下整理库房中尘封多年的旧物，将一批灵草药丹在宗门中分发了下去，供各人修炼使用。"
+    },
+    {
+      "text": "然而昨天，下山游历归来的门徒却向你报称：有草市游商打着我们宗门的旗号兜售灵药，号称服下仙丹便可延年益寿。看那药瓶上的标记，倒还真像是从宗门库房里流出去的。"
+    },
+    {
+      "type": "choice",
+      "choices":
+      [
+        {
+          "text": "灵药珍贵，岂能随意倒卖？",
+          "target": "investigate"
+        },
+        {
+          "text": "我也来分一杯羹",
+          "target": "business"
+        }
+      ]
+    },
+    {
+      "id": "investigate",
+      "text": "你命人彻查丹药的来源，很快就发现，果真是那负责分发丹药的门徒自己截留了一批，转手高价卖给了私市商人。"
+    },
+    {
+      "text": "你将这人狠狠批评了一番，没收了他倒卖丹药获得的灵石，而后将他发配到灵兽栏做洒扫的杂活去了。",
+      "effects":
+      [
+        {
+          "showOutput": true,
+          "type": "money",
+          "intValue": 2,
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    },
+    {
+      "id": "business",
+      "text": "既然这药在凡间如此受欢迎，那何不干脆让门徒多炼些丹药，开设药铺对外售卖？说办就办，你命门徒们打制药柜牌匾，又从灵草园的产出里划出一批作为药材备货，药铺便风风火火地开张了。"
+    },
+    {
+      "type": "check",
+      "showCheckResult": true,
+      "checkCondition": 
+      {
+        "difficultyClass": 4,
+        "checkWhat": "diceRoll"
+      },
+      "successTarget": "earn_money",
+      "failureTarget": "no_money"
+    },
+    {
+      "id": "earn_money",
+      "text": "门徒下山游历期间，不忘四处为你宣传宗门的草药生意。一番运作之下，你们的药铺果真生意兴隆，有显贵一掷千金，但求长生不老的药方一副。"
+    },
+    {
+      "text": "你从中赚了一笔，趁着官府没想起收税之前便关了铺子，清点银角子去了。",
+      "effects":[
+        {
+          "showOutput": true,
+          "type": "money",
+          "intValue": 4,
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    },
+    {
+      "id": "no_money",
+      "text": "买卖上的事情可没有你想象里那般简单。你各处效法那凡间的商人行事，却不知为何门庭冷落，无人问津。到头来，只有官府的人找上门来，叫你为药铺缴纳税钱。"
+    },
+    {
+      "text": "眼见生意入不敷出，你只好关停了药铺，令门徒专心修道去了。",
+      "target": "END"
+    }
+  ]
+}

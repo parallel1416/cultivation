@@ -1,0 +1,66 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": 
+  [
+    {
+      "text": "有初入仙门的两位修士争辩何为修道真意。一人曰：“修道者，其必心怀天下苍生。待其功成，羽化登仙，便身为天道以庇佑万物，此乃大慈悲。”另一人驳曰：“不然，修道之人恰是最不系念苍生者。其但求自身超脱，一旦得道，便远遁尘世，不复问人间事。”"
+    },
+    {
+      "text": "二人相持不下，遂唤门徒前来为其评理。"
+    },
+    {
+      "type": "choice",
+      "choice":
+      [
+        {
+          "text": "修道者但求济世",
+          "target": "enter_the_world"
+        },
+        {
+          "text": "修道者但求出世",
+          "target": "leave_the_world"
+        }
+      ]
+    },
+    {
+      "id": "enter_the_world",
+      "text": "诚心祈愿，仙人便有感应，岂不正说明连天人亦时刻俯察人间之事，不曾独善其身？"
+    },
+    {
+      "text": "门徒一番论述，二人皆心悦诚服，遂写一符箓相赠。",
+      "effects":
+      [
+        {
+          "showOutput": true,
+          "type": "item",
+          "intValue": 1,
+          "stringValue": "cheng_fu_fu",
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    },
+    {
+      "id": "leave_the_world",
+      "text": "世人但知追名逐利，怎识得天地真常？我辈修道之人，为求世间至理，自当超然物外，远遁凡尘。"
+    },
+    {
+      "text": "门徒一番论述，二人皆心悦诚服，遂写一符箓相赠。",
+      "effects":
+      [
+        {
+          "showOutput": true,
+          "type": "item",
+          "intValue": 1,
+          "stringValue": "cheng_fu_fu",
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    }
+  ]
+}

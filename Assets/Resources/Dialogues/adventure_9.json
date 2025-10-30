@@ -1,0 +1,48 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": [
+    {
+      "text": "门徒四处寻幽访胜，误入深山无人之境。缘石径一路上行，鸟鸣声渐止，草木亦愈发稀疏。"
+    },
+    {
+      "text": "及至山巅，周遭万籁俱寂，但见一汪清潭沉碧，不知其深。潭水之中，一轮明月皎然，仿佛触手可及。门徒见此景，不觉探手欲拾。"
+    },
+    {
+      "type": "check",
+      "showCheckResult": true,
+      "checkCondition": 
+      {
+        "difficultyClass": 4,
+        "checkWhat": "diceRoll"
+      },
+      "successTarget": "retrieved",
+      "failureTarget": "unretrieved"
+    },
+    {
+      "id": "retrieved",
+      "text": "门徒俯身掬起一捧水，却见那杳杳明月果真被捧在了掌心中，化作一面玉盘。盘面之上倒映月面仙宫之象，仙人、宝树、玉兔，皆影影绰绰，栩栩如生。"
+    },
+    {
+      "text": "门徒知此物为异宝，便将其呈给了你，以供宗门之用。",
+      "effects":[
+        {
+          "showOutput": true,
+          "type": "item",
+          "intValue": 1,
+          "stringValue": "wu_que_jing",
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    },
+    {
+      "id": "unretrieved",
+      "text": "门徒探身去捞，却见那水中明月化作碎银点点，随波荡开，自指缝间流走了。",
+      "target": "END"
+    }
+  ]
+}

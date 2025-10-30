@@ -21,6 +21,8 @@ public class GlobalTagManager : MonoBehaviour
     private static GlobalTagManager _instance;
     public static GlobalTagManager Instance => _instance;
 
+    [SerializeField] private string globalTagFileName = "GlobalTags";
+
     private Dictionary<string, GlobalTag> tagMap = new Dictionary<string, GlobalTag>();
     public Dictionary<string, GlobalTag> TagMap => tagMap;
 
@@ -34,30 +36,30 @@ public class GlobalTagManager : MonoBehaviour
 
         _instance = this;
         DontDestroyOnLoad(gameObject);
-
-        LoadGlobalTags();
     }
 
     /// <summary>
     /// Load tags from json file
+
     /// </summary>
-    private void LoadGlobalTags()
+    public void LoadGlobalTags()
     {
-        TextAsset jsonFile = Resources.Load<TextAsset>("GlobalTags");
+        TextAsset jsonFile = Resources.Load<TextAsset>(globalTagFileName);
         if (jsonFile != null)
         {
             GlobalTagData tagData = JsonUtility.FromJson<GlobalTagData>(jsonFile.text);
             InitializeTagDictionary(tagData);
-            LogController.Log($"{tagMap.Count} global tags loaded!");
+            LogController.Log($"GlobalTagManager: {tagMap.Count} global tags loaded!");
         }
         else
         {
-            LogController.LogError("Global tag JSON file not found! It should be here: Resources/GlobalTags.json");
+            LogController.LogError($"GlobalTagManager: Global tag JSON file not found! It should be here: Resources/{globalTagFileName}.json");
         }
     }
 
     /// <summary>
     /// Initialize tag map
+    /// Only called by LoadGlobalTags() at new game starts
     /// </summary>
     private void InitializeTagDictionary(GlobalTagData tagData)
     {
@@ -69,13 +71,14 @@ public class GlobalTagManager : MonoBehaviour
             {
                 if (tagMap.ContainsKey(tag.tagID))
                 {
-                    LogController.LogWarning($"Conflict tag! ID: {tag.tagID}");
+                    LogController.LogWarning($"GlobalTagManager: Conflict tag! ID: {tag.tagID}");
                 }
                 else
                 {
                     tagMap[tag.tagID] = tag;
                 }
             }
+            else LogController.LogError("GlobalTagManager: Tag without ID found!");
         }
     }
 

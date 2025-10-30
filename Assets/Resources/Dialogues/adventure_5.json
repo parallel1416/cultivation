@@ -1,0 +1,25 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": [
+    {
+      "text": "门徒下山游历归来，向你呈上一小盒冰冷刺骨的坚冰，声称这是极北之地带回的特产。北地之民传言，此物是冰雪精华所凝，可以点水为冰，驭使寒流，于修道之人大有裨益。"
+    },
+    {
+      "text": "你从盒中拾起一块，握在手心里把玩。不出意外地，那凌冽的寒气顺着你同样冰凉的手指缠绕上来，很快便因无法被身体吸纳而消散了。",
+      "effects":
+      [
+        {
+          "showOutput": true,
+          "type": "money",
+          "intValue": 2,
+          "operation": "+"
+        }
+        ],
+      "target": "END"
+    }
+  ]
+}

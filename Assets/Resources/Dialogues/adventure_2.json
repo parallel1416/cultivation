@@ -1,0 +1,83 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": [
+    {
+      "text": "门徒向你回报：此番下山游历时途径一处悬崖峭壁，其上剑痕纵横，错落有致，形状玄妙如天书。凡有长久注视剑痕者，无不为威压所摧折，以至于头晕目眩，双眼充血，口中喃喃不休。"
+    },
+    {
+      "text": "门徒沿山崖一路搜寻，不见留印之人踪迹，只见一座山洞深入崖底，尽头不知有几许深。洞中灵气扑面，石壁莹润，似有宝光。"
+    },
+    {
+      "text": "见此情景，门徒疑心此地为上古大能洞府，不敢轻举妄动，故将此事报与你来定夺。"
+    },
+    {
+      "type": "choice",
+      "choices":[
+        {
+          "text": "深入洞中，寻觅灵气源头",
+          "target": "mining"
+        },
+        {
+          "text": "封存洞府，参悟崖上剑意",
+          "target": "researching"
+        }
+        ]
+    },
+    {
+      "id": "mining",
+      "text": "你认为此地钟灵毓秀，必有天材地宝，遂命门徒深入洞穴探查。"
+    },
+    {
+      "text": "不多时，门徒向你回禀：洞中藏有一条灵矿矿脉，矿中灵石虽多数已被前人开凿，但还尚有些许边角残余。你令人将这些残料收罗起来充入库房，所获颇丰。",
+      "effects": 
+      [
+        {
+          "showOutput": true,
+          "type": "money",
+          "intValue": 4,
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    },
+    {
+      "id": "researching",
+      "text": "你认为那山上残痕气势凌厉，必为先人得道飞升前留下的机缘，遂命门徒专心钻研之。"
+    },
+    {
+      "type": "check",
+      "showCheckResult": true,
+      "checkCondition": 
+      {
+        "difficultyClass": 3,
+        "checkWhat": "diceRoll"
+      },
+      "successTarget": "understand",
+      "failureTarget": "unable_to_understand"
+    },
+    {
+      "id": "understand",
+      "text": "门徒花费数月静观描摹，终于领悟其中奥妙，将剑痕走势学得七八成相似。于是，你令他将心得编纂整理为半篇功法，是为《剑谱残章》。",
+      "effects":
+      [
+        {
+          "showOutput": true,
+          "type": "item",
+          "intValue": 1,
+          "stringValue": "jian_pu_can_zhang",
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    },
+    {
+      "id": "unable_to_understand",
+      "text": "门徒穷尽心思面壁求道，数月过去，依然一无所得，你只得将他召回门中。不久后，有人再途经那处崖壁，却发现山峰已因地动改变形貌，落石将洞窟与剑痕尽数掩埋，再无踪迹了。",
+      "target": "END"
+    }
+  ]
+}

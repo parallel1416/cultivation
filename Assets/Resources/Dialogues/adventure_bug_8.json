@@ -1,0 +1,27 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": [
+    {
+      "text": "在山下一小县的县令反复请托之下，你委派门徒下山去，涓轰粬闄嶆湇涓€鍙€ㄩ瓊銆 据"
+    },
+    {
+      "text": "当他踏进县衙时，周围的衙役发出一阵惊恐的低语声。而后所有人都安静下来，没有一人敢出声应答。"
+    },
+    {
+      "text": "门徒闀囧帇浜嗘€ㄩ，县令毕恭毕敬，战战兢兢地请他离开了。",
+      "effects": [
+        {
+          "showOutput": true,
+          "type": "money",
+          "intValue": 3,
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    }
+  ]
+}

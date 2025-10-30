@@ -20,9 +20,6 @@
                 {
                     "showOutput":false,
                     "type": "globalTag",
-
-                    "intValue": 1,
-
                     "stringValue": "yuezheng_event_2_triggered", 
                     "operation": "+"
                 }

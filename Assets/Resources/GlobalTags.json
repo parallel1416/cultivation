@@ -1,40 +1,118 @@
 {
     "tags": [
         {
-            "tagID": "let_master_notice_mouse",
-            "isTrue": false,
-            "descriptionTrue": "你提醒掌门注意鼠鼠。",
-            "descriptionFalse": "你打算自己抓住鼠鼠。"
+            "tagID": "moren_captured",
+            "isTrue": false
         },
         {
-            "tagID": "if_catch_mouse",
-            "isTrue": false,
-            "descriptionTrue": "你身手矫健，抓住了鼠鼠。",
-            "descriptionFalse": "你笨手笨脚，鼠鼠逃走了。"
+            "tagID": "momyz",
+            "isTrue": false
         },
         {
-            "tagID": "test_tag_1",
-            "isTrue": false,
-            "descriptionTrue": "tt1_true",
-            "descriptionFalse": "tt1_false"
+            "tagID": "goodyz",
+            "isTrue": false
         },
         {
-            "tagID": "test_tag_2",
-            "isTrue": false,
-            "descriptionTrue": "tt2_true",
-            "descriptionFalse": "tt2_false"
+            "tagID": "jianjun_event_1_triggered",
+            "isTrue": false
         },
         {
-            "tagID": "test_tag_3",
-            "isTrue": false,
-            "descriptionTrue": "tt3_true",
-            "descriptionFalse": "tt3_false"
+            "tagID": "jianjun_event_2_triggered",
+            "isTrue": false
         },
         {
-            "tagID": "test_tag_4",
-            "isTrue": false,
-            "descriptionTrue": "tt4_true",
-            "descriptionFalse": "tt4_false"
+            "tagID": "jianjun_event_3_triggered",
+            "isTrue": false
+        },
+        {
+            "tagID": "jianjun_event_4_triggered",
+            "isTrue": false
+        },
+        {
+            "tagID": "yuezheng_event_1_triggered",
+            "isTrue": false
+        },
+        {
+            "tagID": "yuezheng_event_2_triggered",
+            "isTrue": false
+        },
+        {
+            "tagID": "yuezheng_event_3_triggered",
+            "isTrue": false
+        },
+                {
+            "tagID": "yuezheng_event_4_triggered",
+            "isTrue": false
+        },
+        {
+            "tagID": "jingshi_event_1_triggered",
+            "isTrue": false
+        },
+        {
+            "tagID": "jingshi_event_2_triggered",
+            "isTrue": false
+        },
+        {
+            "tagID": "jingshi_event_3_triggered",
+            "isTrue": false
+        },
+        {
+            "tagID": "jianjun_enable",
+            "isTrue": true
+        },
+        {
+            "tagID": "jianjun_dead",
+            "isTrue": false
+        },
+        {
+            "tagID": "bug",
+            "isTrue": false
+        },
+        {
+            "tagID": "truth",
+            "isTrue": false
+        },
+        {
+            "tagID": "tech_disable",
+            "isTrue": false
+        },
+        {
+            "tagID": "moren_sacrificeable",
+            "isTrue": false
+        },
+        {
+            "tagID": "moren_ally",
+            "isTrue": false
+        },
+        {
+            "tagID": "win_1",
+            "isTrue": false
+        },
+        {
+            "tagID": "win_2",
+            "isTrue": false
+        },
+        {
+            "tagID": "win_3",
+            "isTrue": false
+        },
+        {
+            "tagID": "win_4",
+            "isTrue": false
+        },
+        {
+            "tagID": "first",
+            "isTrue": false
+        },
+        {
+            "tagID": "sacrifice_visible",
+            "isTrue": false
+        },{
+            "tagID": "EVIL",
+            "isTrue": false
+        },{
+            "tagID": "buzhe_ally",
+            "isTrue": false
         }
     ]
 }

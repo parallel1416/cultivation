@@ -1,0 +1,48 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": [
+    {
+      "text": "门徒在某座村庄中落脚时，被一个五六岁的女孩拦住了去路：她的同伴争强好胜，为了比赛捉蝉，爬上了村口的槐树，却被困在树顶上下不来了。她不敢告诉大人，只好来请这位一看就身手不凡的仙长想想办法。"
+    },
+    {
+      "type": "check",
+      "showCheckResult": true,
+      "checkCondition": 
+      {
+        "difficultyClass": 2,
+        "checkWhat": "diceRoll"
+      },
+      "successTarget": "rise",
+      "failureTarget": "fall"
+    },
+    {
+      "id": "rise",
+      "text": "修道之人冯虚御风，如履平地，小小一棵槐树更是不在话下。门徒纵身一跃，脚尖便轻盈地点在了树梢上，连那树上垂挂的槐花也不曾晃动一分。"
+    },
+    {
+      "text": "那孩子被他救下来时非但不显惊慌，反而咯咯地笑着，兴高采烈地将手里的蝉蜕壳塞进了门徒手中。",
+      "effects":[
+        {
+          "showOutput": true,
+          "type": "item",
+          "intValue": 1,
+          "stringValue": "yu_chan_tui",
+          "operation": "+"
+        }
+      ],
+      "target": "END"
+    },
+    {
+      "id": "fall",
+      "text": "修道之人冯虚御风……可毕竟从未修炼过上房爬树的功夫。门徒纵身一跃，脚尖却踏了个空，一头扎进了茂密的槐叶里。"
+    },
+    {
+      "text": "再回头看时，那被困住的孩子却早已轻车熟路地跳下了树，和几个玩伴围聚在树荫下，叽叽喳喳地看起仙长的笑话来了。",
+      "target": "END"
+    }
+  ]
+}

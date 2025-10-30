@@ -1,0 +1,14 @@
+{
+  "desc": "眼看他起朱楼，眼看他宴宾客。",
+  "title": "拆毁宗门",
+  "diceLimit": 0,
+  "triggersImmediately": true,
+  "major": false,
+  "sentence":
+  [
+    {
+      "text": "破坏阵法，推倒祭坛，砸碎盛装丹药的瓷瓶与木箱。那些曾由你们亲手搭建的，如今也要由你们亲手拆毁。宗门正变得越来越小，而你却为之稍稍舒了口气。",
+      "target": "END"
+    }
+  ]
+}

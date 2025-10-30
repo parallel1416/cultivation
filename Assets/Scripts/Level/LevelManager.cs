@@ -16,14 +16,19 @@ public class LevelManager : MonoBehaviour
 
     // Core resources
     // SerializeField only for debugging in inspector
-    [SerializeField] private int money = 200;
-    [SerializeField] private int disciples = 10;
+    [SerializeField] private int money = 0;
+    [SerializeField] private int disciples = 0;
     //[SerializeField] private int moneyPerTurn = 0;
     //[SerializeField] private int disciplesPerTurn = 0;
 
     // status
     // normal disciples
     [SerializeField] private int activeDisciples = 0;
+
+    // status
+    // -1 for locked, killed or dismissed;
+    // 0 for unlocked but occupied;
+    // 1 for unlocked and idle.
 
     // spirit animals
     [SerializeField] private int statusMouse = -1;
@@ -36,10 +41,10 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private int statusYuezheng = -1;
 
     // dice control
-    [SerializeField] private int normalDiscipleDiceSize = 4;
-    [SerializeField] private int jingshiDiceSize = 8;
-    [SerializeField] private int jianjunDiceSize = 8;
-    [SerializeField] private int yuezhengDiceSize = 8;
+    [SerializeField] private readonly int normalDiscipleDiceSize = 4;
+    [SerializeField] private readonly int jingshiDiceSize = 8;
+    [SerializeField] private readonly int jianjunDiceSize = 8;
+    [SerializeField] private readonly int yuezhengDiceSize = 8;
 
     public int Money => money;
     // public int MoneyPerTurn => moneyPerTurn;
@@ -100,9 +105,29 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    public void StartNewGame()
+    /// <summary>
+    /// Set all gamestate data to default value for new starts
+    /// Only called at new game starts
+    /// When load game from a save, use ApplySaveData() instead
+    /// </summary>
+    public void InitializeLevelData()
     {
+        if (_instance == null) // should never happen
+        {
+            LogController.LogError("LevelManager: Instance is null during initialization!");
+            return;
+        }
 
+        money = 300;
+        disciples = 3;
+
+        statusChicken = -1;
+        statusMouse = -1;
+        statusSheep = -1;
+
+        statusJingshi = -1;
+        statusJianjun = -1;
+        statusYuezheng = -1;
     }
 
 
@@ -170,30 +195,31 @@ public class LevelManager : MonoBehaviour
 
     /// <summary>
     /// This will reduce the upper limit of available disciples per turn!
-    /// Will force kill to zero if an overkill happens.
+    /// Will force kill/dismiss to zero if an overkill happens.
     /// </summary>
-    public bool KillDisciples(int amount)
+    public bool DismissDisciples(int amount)
     {
         if (amount < 0)
         {
-            LogController.LogError("LevelManager: Cannot kill negative disciple amount.");
+            LogController.LogError("LevelManager: Cannot dismiss negative disciple amount.");
             return false;
         }
         if (disciples >= amount) // success
         {
             disciples -= amount;
-            LogController.Log($"LevelManager: {amount} disciples killed!");
+            activeDisciples -= amount;
+            LogController.Log($"LevelManager: {amount} disciples dismissed!");
             return true;
         }
         disciples = 0;
-        LogController.LogError("LevelManager: Not enough disciples to kill, set to 0.");
+        LogController.LogError("LevelManager: Not enough disciples to dismiss, set to 0.");
         return false;
     }
 
     /// <summary>
     /// Only to reduce active disciple number! for example, assign to an event
     /// Need accompanying UI refresh after this method
-    ///// </summary>
+    /// </summary>
     public bool SpendActiveDisciples(int amount)
     {
         if (amount < 0)
@@ -211,9 +237,59 @@ public class LevelManager : MonoBehaviour
         return false;
     }
 
-    public void ResetActiveDisciples()
+    /// <summary>
+    /// Only to reduce active disciple number! for example, assign to an event
+    /// Need accompanying UI refresh after this method
+    /// Will force set to 0 if not enough
+    /// </summary>
+    public void ForceSpendActiveDisciples(int amount)
+    {
+        if (amount < 0)
+        {
+            LogController.LogError("LevelManager: Cannot spend negative disciple amount.");
+            return;
+        }
+        if (activeDisciples >= amount) // success
+        {
+            activeDisciples -= amount;
+            LogController.Log($"LevelManager: {amount} disciples set to inactive!");
+            return;
+        }
+        activeDisciples = 0;
+        LogController.LogError("LevelManager: Not enough disciples to spend, set to 0.");
+        return;
+    }
+
+    public void ResetActiveResources()
+    {
+        ResetActiveDisciples();
+        ResetSpecialDisciples();
+        ResetAnimals();
+    }
+
+    private void ResetActiveDisciples()
     {
         activeDisciples = disciples;
+    }
+
+    private void ResetSpecialDisciples()
+    {
+        if (statusJianjun >= 0)
+            statusJianjun = 1;
+        if (statusJingshi >= 0)
+            statusJingshi = 1;
+        if (statusYuezheng >= 0)
+            statusYuezheng = 1;
+    }
+
+    private void ResetAnimals()
+    {
+        if (statusChicken >= 0)
+            statusChicken = 1;
+        if (statusMouse >= 0)
+            statusMouse = 1;
+        if (statusSheep >= 0)
+            statusSheep = 1;
     }
 
     public Dictionary<string, int> GetAllStatus()

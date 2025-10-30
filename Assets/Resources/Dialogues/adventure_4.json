@@ -1,0 +1,26 @@
+{
+  "desc": "你指派了一名门徒下山游历，不知会遇到何种机缘。",
+  "title": "下山游历",
+  "diceLimit": 2,
+  "triggersImmediately": false,
+  "major": false,
+  "sentences": [
+    {
+      "text": "门徒回禀你，此番下山游历时偶遇一奇人，高鼻深目，肤色深如乌木，似是昆仑来客。二人谈经论道，相谈甚欢，彼此惺惺相惜。"
+    },
+    {
+      "text": "临别时，此人催动异法，召来鹏鸟，载着门徒乘风而起，不过半天就回到了宗门。直至此时，门徒才想起来，自己竟还不知道这人的姓名。",
+      "effects":
+      [
+        {
+          "showOutput": true,
+          "type": "item",
+          "intValue": 1,
+          "stringValue": "zhi_kui_lei", 
+          "operation": "+"
+        }
+        ],
+      "target": "END"
+    }
+  ]
+}

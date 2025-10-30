@@ -34,6 +34,8 @@ public partial class TechManager : MonoBehaviour
     private static TechManager _instance;
     public static TechManager Instance => _instance;
 
+    [SerializeField] private string techTreeFileName = "TechTree";
+
     // Dictionary to store all technology nodes, with their IDs as keys for quick access.
     private Dictionary<string, TechNode> techNodes = new Dictionary<string, TechNode>();
     public Dictionary<string, TechNode> TechNodes => techNodes;
@@ -48,13 +50,16 @@ public partial class TechManager : MonoBehaviour
 
         _instance = this;
         DontDestroyOnLoad(gameObject);
-        LoadTechTreeFromJson("TechTree");
     }
 
-    // Loads the tech tree data from a JSON file located in the Resources folder. 
-    private void LoadTechTreeFromJson(string fileName)
+    /// <summary>
+    /// Loads the tech tree data from a JSON file located in the Resources folder. 
+    /// Only called at new game starts
+    /// When load game from a save, use ApplySaveData() instead
+    /// </summary>
+    public void LoadTechTree()
     {
-        TextAsset jsonFile = Resources.Load<TextAsset>(fileName);
+        TextAsset jsonFile = Resources.Load<TextAsset>(techTreeFileName);
         if (jsonFile != null)
         {
             TechTreeData treeData = JsonUtility.FromJson<TechTreeData>(jsonFile.text);
@@ -62,20 +67,39 @@ public partial class TechManager : MonoBehaviour
         }
         else
         {
-            LogController.LogError($"Techtree Json not found: {fileName}");
+            LogController.LogError($"TechManager: Techtree JSON not found! It should be here: Resources/{techTreeFileName}.json");
         }
     }
 
+    /// <summary>
+    /// Initialize tech tree and nodes
+    /// Only called by LoadTechTree() at new game starts
+    /// </summary>
     private void InitializeTechTree(TechTreeData treeData)
     {
-        foreach (var node in treeData.nodes)
+        techNodes.Clear();
+
+        foreach (TechNode node in treeData.nodes)
         {
-            techNodes[node.id] = node;
+            if (!string.IsNullOrEmpty(node.id))
+            {
+                if (techNodes.ContainsKey(node.id))
+                {
+                    LogController.LogWarning($"TechManager: Conflict tag! ID: {node.id}");
+                }
+                else
+                {
+                    techNodes[node.id] = node;
+                }
+            }
+            else LogController.LogError("TechManager: Tech node without ID found!");
         }
     }
 
 
-    // tech operations
+    /// <summary>
+    /// tech operations
+    /// </summary>
 
     public bool UnlockTech(string techId)
     {

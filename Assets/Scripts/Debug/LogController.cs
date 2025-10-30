@@ -9,26 +9,11 @@ using UnityEngine;
 
 public class LogController : MonoBehaviour
 {
-    [SerializeField] private bool enableDebugLog = false;
-
-    private static LogController _instance;
-
-    private void Awake()
-    {
-        if (_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
+    [SerializeField] private static bool enableDebugLog = true;
 
     public static void Log(string message)
     {
-        if (_instance != null && _instance.enableDebugLog)
+        if (enableDebugLog)
         {
             Debug.Log(message);
         }
@@ -36,7 +21,7 @@ public class LogController : MonoBehaviour
 
     public static void LogWarning(string message)
     {
-        if (_instance != null && _instance.enableDebugLog)
+        if (enableDebugLog)
         {
             Debug.LogWarning(message);
         }
@@ -44,7 +29,7 @@ public class LogController : MonoBehaviour
 
     public static void LogError(string message)
     {
-        if (_instance != null && _instance.enableDebugLog)
+        if (enableDebugLog)
         {
             Debug.LogError(message);
         }
