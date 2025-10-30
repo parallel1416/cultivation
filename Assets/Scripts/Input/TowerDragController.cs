@@ -285,7 +285,7 @@ public class TowerDragController : MonoBehaviour
             }
         }
 
-        overscrollPadding = LevelManager.Instance.IsBuggy ? 0f : 2250f;
+        overscrollPadding = (LevelManager.Instance != null && LevelManager.Instance.IsBuggy) ? 0f : 2250f;
 
         if (highest <= float.MinValue)
         {
