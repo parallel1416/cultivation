@@ -243,4 +243,13 @@ public partial class DialogueManager : MonoBehaviour
     {
         return currentEvent;
     }
+
+    public bool IsMajor(string eventId)
+    {
+        DialogueEvent dialogueEvent = LoadDialogueEvent(eventId);
+
+        if (dialogueEvent == null) return false;
+        if (dialogueEvent.major) return true;
+        return false;
+    }
 }
