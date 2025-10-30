@@ -41,6 +41,6 @@ public class ExitButton : MonoBehaviour
         Application.Quit();
 
         // Note: Application.Quit() does not work in the editor. To test in the editor, uncomment the following line:
-        UnityEditor.EditorApplication.isPlaying = false;
+        //UnityEditor.EditorApplication.isPlaying = false;
     }
 }

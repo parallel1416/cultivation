@@ -130,8 +130,8 @@ public class LevelManager : MonoBehaviour
             return;
         }
 
-        money = 300;
-        disciples = 3;
+        money = 3;
+        disciples = 0;
         activeDisciples = disciples;
 
         statusChicken = -1;

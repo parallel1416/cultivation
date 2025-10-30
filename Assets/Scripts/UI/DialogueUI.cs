@@ -47,6 +47,7 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private Button diceContinueButton; // Button to roll dice and continue
     [SerializeField] private GameObject dicePrefab; // Prefab for individual dice (with image + text)
     [SerializeField] private TextMeshProUGUI diceResultText; // Text to show final result
+    [SerializeField] private CanvasGroup diceResultCanvasGroup; // Canvas group for result fade-in
 
     [Header("Dice Sprites")]
     [SerializeField] private Sprite d4Sprite;
@@ -877,6 +878,12 @@ public class DialogueUI : MonoBehaviour
             dicePanelBackground.sprite = dicePanelNeutralSprite;
         }
 
+        // Hide result canvas group initially (alpha 0)
+        if (diceResultCanvasGroup != null)
+        {
+            diceResultCanvasGroup.alpha = 0f;
+        }
+
         // Display difficulty
         if (difficultyText != null)
         {
@@ -1059,6 +1066,15 @@ public class DialogueUI : MonoBehaviour
         bool isSuccess = diceResult.result >= difficulty;
         UpdateDicePanelBackground(isSuccess);
 
+        // Wait 1 second before showing result
+        yield return new WaitForSeconds(1f);
+
+        // Show result text by fading in canvas group
+        if (diceResultCanvasGroup != null)
+        {
+            diceResultCanvasGroup.alpha = 1f;
+        }
+
         // Animation complete - enable continue button
         EnableContinueButton();
     }
@@ -1072,6 +1088,9 @@ public class DialogueUI : MonoBehaviour
         {
             return;
         }
+
+        // Clear background sprite first
+        dicePanelBackground.sprite = null;
 
         if (isSuccess)
         {

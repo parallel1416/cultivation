@@ -358,9 +358,7 @@ public class TeamSelectionPanel : MonoBehaviour
         if (itemPreviewRoot != null)
             itemPreviewRoot.SetActive(false);
 
-        // Hide people preview
-        if (pplPreviewRoot != null)
-            pplPreviewRoot.SetActive(false);
+        // Keep people preview visible (don't hide pplPreviewRoot)
 
         // Update toggles based on ownership
         UpdatePetToggles();
@@ -378,9 +376,7 @@ public class TeamSelectionPanel : MonoBehaviour
         if (petPreviewRoot != null)
             petPreviewRoot.SetActive(false);
 
-        // Hide people preview
-        if (pplPreviewRoot != null)
-            pplPreviewRoot.SetActive(false);
+        // Keep people preview visible (don't hide pplPreviewRoot)
 
         // Update toggles based on ownership
         UpdateItemToggles();
