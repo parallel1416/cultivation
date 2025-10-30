@@ -162,7 +162,7 @@ public class DialogueListManager : MonoBehaviour
     {
         get
         {
-            if ()
+            if (HasMajorInList())
             {
                 return true;
             }

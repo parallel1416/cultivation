@@ -218,20 +218,26 @@ public class TechToggleBinder : MonoBehaviour
 
     private void OnToggleValueChanged(Toggle toggle, bool isOn)
     {
+        Debug.Log($"TechToggleBinder: OnToggleValueChanged called - Toggle: {toggle.name}, isOn: {isOn}, isSyncingState: {isSyncingState}");
+        
         if (isSyncingState)
         {
+            Debug.Log($"TechToggleBinder: Ignoring toggle change for {toggle.name} - currently syncing state");
             return;
         }
 
         if (!bindings.TryGetValue(toggle, out ToggleBinding binding))
         {
-            Debug.LogWarning("TechToggleBinder: Toggle not registered in runtime map.");
+            Debug.LogWarning($"TechToggleBinder: Toggle {toggle.name} not registered in runtime map.");
             return;
         }
+
+        Debug.Log($"TechToggleBinder: Processing toggle {toggle.name} for tech {binding.TechId}");
 
         if (!isOn)
         {
             // Disallow turning off via UI.
+            Debug.Log($"TechToggleBinder: Toggle {toggle.name} turned off - re-syncing to prevent deselection");
             SyncToggleStatesFromTechTree();
             return;
         }
@@ -244,19 +250,26 @@ public class TechToggleBinder : MonoBehaviour
         }
 
         bool canUnlock = TechManager.Instance.CanUnlockTech(binding.TechId);
+        Debug.Log($"TechToggleBinder: CanUnlock check for {binding.TechId}: {canUnlock}");
+        
         if (!canUnlock)
         {
+            Debug.LogWarning($"TechToggleBinder: Cannot unlock tech {binding.TechId} - prerequisites not met or insufficient resources");
             SyncToggleStatesFromTechTree();
             return;
         }
 
+        Debug.Log($"TechToggleBinder: Attempting to unlock tech {binding.TechId}");
         bool unlocked = TechManager.Instance.UnlockTech(binding.TechId);
+        
         if (!unlocked)
         {
+            Debug.LogWarning($"TechToggleBinder: Failed to unlock tech {binding.TechId}");
             SyncToggleStatesFromTechTree();
             return;
         }
 
+        Debug.Log($"TechToggleBinder: Successfully unlocked tech {binding.TechId}");
         ResourceBar.Instance?.UpdateDisplay();
         onTechUnlocked?.Invoke();
 
@@ -272,11 +285,19 @@ public class TechToggleBinder : MonoBehaviour
         {
             binding.Toggle.interactable = false;
             ApplyActiveVisual(binding);
+            Debug.Log($"TechToggleBinder: Applied ACTIVE state to {binding.Toggle.name} (tech: {binding.TechId})");
         }
         else
         {
             binding.Toggle.interactable = true;
             ApplyLockedVisual(binding, isAvailable);
+            Debug.Log($"TechToggleBinder: Applied LOCKED state to {binding.Toggle.name} (tech: {binding.TechId}), isAvailable: {isAvailable}, interactable: {binding.Toggle.interactable}");
+            
+            // Additional raycast check
+            if (binding.Toggle.interactable)
+            {
+                DebugRaycastTarget(binding.Toggle);
+            }
         }
     }
 
@@ -657,6 +678,47 @@ public class TechToggleBinder : MonoBehaviour
             if (descPanelSpriteBelow != null)
             {
                 descPanelBackgroundImage.sprite = descPanelSpriteBelow;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Debug raycast target settings for a toggle
+    /// </summary>
+    private void DebugRaycastTarget(Toggle toggle)
+    {
+        if (toggle == null) return;
+
+        Image targetImage = toggle.targetGraphic as Image;
+        if (targetImage != null)
+        {
+            Debug.Log($"TechToggleBinder: Raycast debug for {toggle.name}:\n" +
+                      $"  - Image.raycastTarget: {targetImage.raycastTarget}\n" +
+                      $"  - Image.enabled: {targetImage.enabled}\n" +
+                      $"  - GameObject.activeInHierarchy: {targetImage.gameObject.activeInHierarchy}\n" +
+                      $"  - Image.color.a: {targetImage.color.a}\n" +
+                      $"  - Toggle.interactable: {toggle.interactable}\n" +
+                      $"  - Toggle.enabled: {toggle.enabled}");
+        }
+        else
+        {
+            Debug.LogWarning($"TechToggleBinder: No Image target graphic found for {toggle.name}");
+        }
+
+        // Check for blocking UI elements
+        Canvas parentCanvas = toggle.GetComponentInParent<Canvas>();
+        if (parentCanvas != null)
+        {
+            Debug.Log($"TechToggleBinder: Toggle {toggle.name} is under Canvas: {parentCanvas.name}, sortingOrder: {parentCanvas.sortingOrder}");
+        }
+
+        // Check for CanvasGroup blocking
+        CanvasGroup[] canvasGroups = toggle.GetComponentsInParent<CanvasGroup>();
+        foreach (var cg in canvasGroups)
+        {
+            if (!cg.interactable || cg.blocksRaycasts == false)
+            {
+                Debug.LogWarning($"TechToggleBinder: CanvasGroup '{cg.name}' is blocking interaction - interactable: {cg.interactable}, blocksRaycasts: {cg.blocksRaycasts}");
             }
         }
     }

@@ -7779,8 +7779,7 @@ MonoBehaviour:
   pplPreviewRoot: {fileID: 800570512}
   pplArea: {fileID: 800570513}
   pplContainer: {fileID: 496866694}
-  normalPplButtons:
-  - {fileID: 494636152}
+  normalPplButton: {fileID: 494636152}
   jingshiButton: {fileID: 1777746185}
   jianjunButton: {fileID: 1633786484}
   yuezhengButton: {fileID: 1982026152}
@@ -7796,6 +7795,7 @@ MonoBehaviour:
   - {fileID: 1195598503}
   - {fileID: 484898391}
   - {fileID: 1907965970}
+  spriteSpacing: 10
   emptyPetSlotSprite: {fileID: 21300000, guid: c23f299e37ac64248a284c258f759618, type: 3}
   emptyItemSlotSprite: {fileID: 21300000, guid: 108836b2fc49dd443a9c65ebfbb5b128, type: 3}
 --- !u!1 &1864731337

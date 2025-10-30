@@ -867,7 +867,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 4841.69}
+  m_SizeDelta: {x: 0, y: 6478.08}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &170202375
 MonoBehaviour:
@@ -5585,7 +5585,7 @@ GameObject:
   - component: {fileID: 1958378814}
   - component: {fileID: 1958378816}
   - component: {fileID: 1958378815}
-  m_Layer: 5
+  m_Layer: 2
   m_Name: overlay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6158,7 +6158,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5650140089815999021, guid: 97b9b153f4e784c4681f5a3319d96e7e, type: 3}
       propertyPath: m_SizeDelta.x
-      value: -1001.4
+      value: -1890.0834
       objectReference: {fileID: 0}
     - target: {fileID: 5650140089815999021, guid: 97b9b153f4e784c4681f5a3319d96e7e, type: 3}
       propertyPath: m_SizeDelta.y

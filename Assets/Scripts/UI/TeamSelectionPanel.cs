@@ -27,7 +27,7 @@ public class TeamSelectionPanel : MonoBehaviour
     [SerializeField] private GameObject pplPreviewRoot;
     [SerializeField] private Transform pplArea; // Container for people buttons
     [SerializeField] private Transform pplContainer; // Container for assigned people sprites
-    [SerializeField] private Button[] normalPplButtons; // Dynamically sized based on normal disciple count
+    [SerializeField] private Button normalPplButton; // Single button for all normal disciples
     [SerializeField] private Button jingshiButton;
     [SerializeField] private Button jianjunButton;
     [SerializeField] private Button yuezhengButton;
@@ -49,16 +49,20 @@ public class TeamSelectionPanel : MonoBehaviour
     private Sprite[] itemSprites = new Sprite[5]; // Auto-retrieved from toggles
     
     // People system
-    private List<Image> normalPplImages = new List<Image>();
-    private List<Sprite> normalPplSprites = new List<Sprite>();
+    private Image normalPplButtonImage;
+    private Sprite normalPplButtonSprite;
     private Image jingshiImage;
     private Image jianjunImage;
     private Image yuezhengImage;
     private Sprite jingshiSprite;
     private Sprite jianjunSprite;
     private Sprite yuezhengSprite;
-    private List<string> assignedPeople = new List<string>(); // "normal_0", "jingshi", etc.
+    private List<string> assignedPeople = new List<string>(); // "normal_0", "normal_1", "jingshi", etc.
+    private int normalDiscipleCount = 0; // Track how many normal disciples are assigned
     private Color grayedOutColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+    
+    [Header("People Sprite Settings")]
+    [SerializeField] private float spriteSpacing = 10f; // Horizontal spacing between sprites
 
     [Header("Default Sprites")]
     [SerializeField] private Sprite emptyPetSlotSprite;
@@ -116,20 +120,11 @@ public class TeamSelectionPanel : MonoBehaviour
         }
 
         // Auto-retrieve people button images and sprites
-        if (normalPplButtons != null)
+        if (normalPplButton != null)
         {
-            for (int i = 0; i < normalPplButtons.Length; i++)
-            {
-                if (normalPplButtons[i] != null)
-                {
-                    Image img = normalPplButtons[i].GetComponent<Image>();
-                    normalPplImages.Add(img);
-                    normalPplSprites.Add(img != null ? img.sprite : null);
-                    
-                    int index = i;
-                    normalPplButtons[i].onClick.AddListener(() => OnNormalPersonClicked(index));
-                }
-            }
+            normalPplButtonImage = normalPplButton.GetComponent<Image>();
+            normalPplButtonSprite = normalPplButtonImage != null ? normalPplButtonImage.sprite : null;
+            normalPplButton.onClick.AddListener(OnNormalPersonClicked);
         }
         
         if (jingshiButton != null)
@@ -248,6 +243,7 @@ public class TeamSelectionPanel : MonoBehaviour
 
         // Clear assigned people
         assignedPeople.Clear();
+        normalDiscipleCount = 0;
         ClearPplContainer();
 
         // Update people area visibility
@@ -276,6 +272,7 @@ public class TeamSelectionPanel : MonoBehaviour
 
         // Clear assigned people
         assignedPeople.Clear();
+        normalDiscipleCount = 0;
         ClearPplContainer();
 
         Debug.Log("TeamSelectionPanel: Selection abandoned");
@@ -297,13 +294,40 @@ public class TeamSelectionPanel : MonoBehaviour
         // Save dice assignment
         savedDiceAssignment = GetAssignedDices();
 
+        // Update backend: Reduce ActiveDisciples count by the number of normal disciples assigned
+        if (LevelManager.Instance != null && normalDiscipleCount > 0)
+        {
+            LevelManager.Instance.ActiveDisciples -= normalDiscipleCount;
+            Debug.Log($"TeamSelectionPanel: Reduced ActiveDisciples by {normalDiscipleCount}, new count: {LevelManager.Instance.ActiveDisciples}");
+        }
+
+        // Update backend: Mark special disciples as occupied (0)
+        if (LevelManager.Instance != null)
+        {
+            if (assignedPeople.Contains("jingshi"))
+            {
+                LevelManager.Instance.StatusJingshi = 0; // Occupied
+                Debug.Log("TeamSelectionPanel: Set Jingshi to occupied");
+            }
+            if (assignedPeople.Contains("jianjun"))
+            {
+                LevelManager.Instance.StatusJianjun = 0; // Occupied
+                Debug.Log("TeamSelectionPanel: Set Jianjun to occupied");
+            }
+            if (assignedPeople.Contains("yuezheng"))
+            {
+                LevelManager.Instance.StatusYuezheng = 0; // Occupied
+                Debug.Log("TeamSelectionPanel: Set Yuezheng to occupied");
+            }
+        }
+
         // Update assign button to show "In Action" and disable it
         if (currentAssignButton != null)
         {
             TextMeshProUGUI buttonText = currentAssignButton.GetComponentInChildren<TextMeshProUGUI>();
             if (buttonText != null)
             {
-                buttonText.text = "In Action";
+                buttonText.text = "行动中";
             }
             currentAssignButton.interactable = false;
         }
@@ -368,46 +392,41 @@ public class TeamSelectionPanel : MonoBehaviour
 
     #region People Callbacks
 
-    private void OnNormalPersonClicked(int index)
+    private void OnNormalPersonClicked()
     {
-        string personId = $"normal_{index}";
+        // Check if we can add more people
+        if (assignedPeople.Count >= currentDiceLimit)
+        {
+            Debug.LogWarning($"TeamSelectionPanel: Cannot add more people - limit is {currentDiceLimit}");
+            return;
+        }
         
-        // Check if already assigned
-        if (assignedPeople.Contains(personId))
+        // Check if we have available normal disciples
+        int availableNormal = LevelManager.Instance != null ? LevelManager.Instance.Disciples : 0;
+        if (normalDiscipleCount >= availableNormal)
         {
-            // Remove from assignment
-            assignedPeople.Remove(personId);
-            RemoveFromPplContainer(personId);
-            
-            // Restore button color
-            if (index < normalPplImages.Count && normalPplImages[index] != null)
-            {
-                normalPplImages[index].color = Color.white;
-            }
-            
-            Debug.Log($"TeamSelectionPanel: Removed normal person {index}");
+            Debug.LogWarning($"TeamSelectionPanel: No more normal disciples available");
+            return;
         }
-        else
+        
+        // Add a normal disciple
+        string personId = $"normal_{normalDiscipleCount}";
+        normalDiscipleCount++;
+        assignedPeople.Add(personId);
+        
+        // Get button size to match in container
+        Vector2 buttonSize = normalPplButton != null ? 
+            normalPplButton.GetComponent<RectTransform>().sizeDelta : 
+            new Vector2(50f, 50f);
+        AddToPplContainer(personId, normalPplButtonSprite, buttonSize);
+        
+        // Gray out button if all normal disciples are used
+        if (normalPplButtonImage != null && normalDiscipleCount >= availableNormal)
         {
-            // Check if we can add more people
-            if (assignedPeople.Count >= currentDiceLimit)
-            {
-                Debug.LogWarning($"TeamSelectionPanel: Cannot add more people - limit is {currentDiceLimit}");
-                return;
-            }
-            
-            // Add to assignment
-            assignedPeople.Add(personId);
-            AddToPplContainer(personId, index < normalPplSprites.Count ? normalPplSprites[index] : null);
-            
-            // Gray out button
-            if (index < normalPplImages.Count && normalPplImages[index] != null)
-            {
-                normalPplImages[index].color = grayedOutColor;
-            }
-            
-            Debug.Log($"TeamSelectionPanel: Added normal person {index}");
+            normalPplButtonImage.color = grayedOutColor;
         }
+        
+        Debug.Log($"TeamSelectionPanel: Added normal disciple {normalDiscipleCount - 1}, total: {normalDiscipleCount}");
     }
 
     private void OnSpecialPersonClicked(string personType)
@@ -439,7 +458,13 @@ public class TeamSelectionPanel : MonoBehaviour
             
             // Add to assignment
             assignedPeople.Add(personType);
-            AddToPplContainer(personType, GetSpecialPersonSprite(personType));
+            
+            // Get button size to match in container
+            Button sourceButton = GetSpecialPersonButton(personType);
+            Vector2 buttonSize = sourceButton != null ? 
+                sourceButton.GetComponent<RectTransform>().sizeDelta : 
+                new Vector2(50f, 50f);
+            AddToPplContainer(personType, GetSpecialPersonSprite(personType), buttonSize);
             
             // Gray out button
             Image img = GetSpecialPersonImage(personType);
@@ -502,19 +527,16 @@ public class TeamSelectionPanel : MonoBehaviour
             return;
         }
 
-        // Update normal people buttons visibility
-        int normalCount = LevelManager.Instance.ActiveDisciples;
-        for (int i = 0; i < normalPplButtons.Length; i++)
+        // Update normal people button visibility and color
+        int availableNormal = LevelManager.Instance.Disciples;
+        if (normalPplButton != null)
         {
-            if (normalPplButtons[i] != null)
+            normalPplButton.gameObject.SetActive(availableNormal > 0);
+            
+            // Reset color and counter
+            if (normalPplButtonImage != null)
             {
-                normalPplButtons[i].gameObject.SetActive(i < normalCount);
-                
-                // Reset color
-                if (i < normalPplImages.Count && normalPplImages[i] != null)
-                {
-                    normalPplImages[i].color = Color.white;
-                }
+                normalPplButtonImage.color = Color.white;
             }
         }
 
@@ -550,10 +572,10 @@ public class TeamSelectionPanel : MonoBehaviour
             if (yuezhengImage != null) yuezhengImage.color = Color.white;
         }
 
-        Debug.Log($"TeamSelectionPanel: Updated people area - Normal: {normalCount}, Jingshi: {LevelManager.Instance.StatusJingshi}, Jianjun: {LevelManager.Instance.StatusJianjun}, Yuezheng: {LevelManager.Instance.StatusYuezheng}");
+        Debug.Log($"TeamSelectionPanel: Updated people area - Normal: {availableNormal}, Jingshi: {LevelManager.Instance.StatusJingshi}, Jianjun: {LevelManager.Instance.StatusJianjun}, Yuezheng: {LevelManager.Instance.StatusYuezheng}");
     }
 
-    private void AddToPplContainer(string personId, Sprite sprite)
+    private void AddToPplContainer(string personId, Sprite sprite, Vector2 size)
     {
         if (pplContainer == null || sprite == null) return;
 
@@ -562,9 +584,17 @@ public class TeamSelectionPanel : MonoBehaviour
         
         Image img = spriteObj.AddComponent<Image>();
         img.sprite = sprite;
-        img.SetNativeSize();
+        
+        // Match the size of the source button
+        RectTransform rect = spriteObj.GetComponent<RectTransform>();
+        rect.sizeDelta = size;
+        
+        // Position sprites horizontally with spacing
+        int childIndex = pplContainer.childCount - 1;
+        float xPos = childIndex * (size.x + spriteSpacing);
+        rect.anchoredPosition = new Vector2(xPos, 0f);
 
-        Debug.Log($"TeamSelectionPanel: Added {personId} to container");
+        Debug.Log($"TeamSelectionPanel: Added {personId} to container at position {xPos} with size {size}");
     }
 
     private void RemoveFromPplContainer(string personId)
@@ -609,6 +639,17 @@ public class TeamSelectionPanel : MonoBehaviour
             case "jingshi": return jingshiSprite;
             case "jianjun": return jianjunSprite;
             case "yuezheng": return yuezhengSprite;
+            default: return null;
+        }
+    }
+    
+    private Button GetSpecialPersonButton(string personType)
+    {
+        switch (personType.ToLower())
+        {
+            case "jingshi": return jingshiButton;
+            case "jianjun": return jianjunButton;
+            case "yuezheng": return yuezhengButton;
             default: return null;
         }
     }
