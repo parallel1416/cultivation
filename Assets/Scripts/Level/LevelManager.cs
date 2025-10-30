@@ -113,6 +113,7 @@ public class LevelManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            TryDebugInitializeLevelData();
         }
     }
 
@@ -131,6 +132,7 @@ public class LevelManager : MonoBehaviour
 
         money = 300;
         disciples = 3;
+        activeDisciples = disciples;
 
         statusChicken = -1;
         statusMouse = -1;
@@ -139,6 +141,14 @@ public class LevelManager : MonoBehaviour
         statusJingshi = -1;
         statusJianjun = -1;
         statusYuezheng = -1;
+    }
+
+    private void TryDebugInitializeLevelData()
+    {
+        if (money > 0) return;
+        if (disciples > 0) return;
+        if (activeDisciples > 0) return;
+        InitializeLevelData();
     }
 
 

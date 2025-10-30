@@ -53,6 +53,7 @@ public partial class TechManager : MonoBehaviour
 
         _instance = this;
         DontDestroyOnLoad(gameObject);
+        TryDebugLoadTechTree();
     }
 
     /// <summary>
@@ -72,6 +73,12 @@ public partial class TechManager : MonoBehaviour
         {
             LogController.LogError($"TechManager: Techtree JSON not found! It should be here: Resources/{techTreeFileName}.json");
         }
+    }
+
+    private void TryDebugLoadTechTree()
+    {
+        if (techNodes.Count > 0) return;
+        LoadTechTree();
     }
 
     /// <summary>

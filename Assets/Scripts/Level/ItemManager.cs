@@ -35,6 +35,7 @@ public class ItemManager : MonoBehaviour
         {
             _instance = this;
             DontDestroyOnLoad(this.gameObject);
+            TryDebugLoadItems();
         }
     }
 
@@ -59,6 +60,12 @@ public class ItemManager : MonoBehaviour
             // no conflict prevention, make sure itemRegisterList has no duplicate IDs
             RegisterItem(id);
         }
+    }
+
+    private void TryDebugLoadItems()
+    {
+        if (items.Count > 0) return;
+        RegisterAllItems();
     }
 
     public void AddItem(string itemId, int quantity)

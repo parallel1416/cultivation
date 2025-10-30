@@ -36,6 +36,7 @@ public class GlobalTagManager : MonoBehaviour
 
         _instance = this;
         DontDestroyOnLoad(gameObject);
+        TryDebugLoadGlobalTags();
     }
 
     /// <summary>
@@ -55,6 +56,12 @@ public class GlobalTagManager : MonoBehaviour
         {
             LogController.LogError($"GlobalTagManager: Global tag JSON file not found! It should be here: Resources/{globalTagFileName}.json");
         }
+    }
+
+    private void TryDebugLoadGlobalTags()
+    {
+        if (tagMap.Count > 0) return;
+        LoadGlobalTags();
     }
 
     /// <summary>
