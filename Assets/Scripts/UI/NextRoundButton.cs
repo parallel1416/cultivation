@@ -39,6 +39,5 @@ public class NextRoundButton : MonoBehaviour
     {
         // Load TurnScene instead of advancing turn
         Debug.Log("Next round button clicked - loading TurnScene");
-        UnityEngine.SceneManagement.SceneManager.LoadScene("TurnScene");
     }
 }

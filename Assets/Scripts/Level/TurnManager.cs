@@ -14,7 +14,7 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private int currentTurn = 1;
     //[SerializeField] private int actionPointPerTurn = 4;
 
-    private int actionPoint = 0;
+    // private int actionPoint = 0;
 
     public bool CanNextTurn
     {
@@ -38,7 +38,7 @@ public class TurnManager : MonoBehaviour
     }
 
     public int CurrentTurn => currentTurn;
-    public int ActionPoint => actionPoint;
+    // public int ActionPoint => actionPoint;
 
     public static event System.Action OnTurnChanged;
 
@@ -61,7 +61,8 @@ public class TurnManager : MonoBehaviour
 
         if (!CanNextTurn)
         {
-            LogController.Log("Something blocks turn advancing, maybe a major event or technode.");
+            LogController.Log("TurnManager: Something blocks turn advancing, maybe a major event or technode.");
+            return;
         }
         
         // Clear event tracker for new turn
@@ -91,6 +92,9 @@ public class TurnManager : MonoBehaviour
         {
             LogController.LogError("DialogueManager.Instance is null!");
         }
+
+        // turn settlement
+        UnityEngine.SceneManagement.SceneManager.LoadScene("TurnScene");
 
         // Advance turn
         AdvanceTurn();
