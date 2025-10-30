@@ -587,6 +587,7 @@ public class EventPanelManager : MonoBehaviour
                         EventTracker.Instance.ConfirmEvent(currentEventData.eventId, new List<string>());
                     }
                 }
+                DialogueListManager.Instance.RemoveDialogue(currentEventData.eventId);
             }
         }
     }

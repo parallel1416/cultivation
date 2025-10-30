@@ -37,6 +37,7 @@ public partial class TechManager : MonoBehaviour
     [SerializeField] private string techTreeFileName = "TechTree";
 
     // Dictionary to store all technology nodes, with their IDs as keys for quick access.
+    [SerializeField]
     private Dictionary<string, TechNode> techNodes = new Dictionary<string, TechNode>();
     public Dictionary<string, TechNode> TechNodes => techNodes;
 
@@ -165,25 +166,25 @@ public partial class TechManager : MonoBehaviour
 
         if (IsTechUnlocked(tech))
         {
-            LogController.LogError($"TechManager: Tech is already unlocked: {tech.name} ({techId})");
+            LogController.Log($"TechManager: Tech is already unlocked: {tech.name} ({techId})");
             return false;
         }
 
         if (IsTechDismantled(tech))
         {
-            LogController.LogError($"TechManager: Tech is regrettably dismantled, cannot unlock: {tech.name} ({techId})");
+            LogController.Log($"TechManager: Tech is regrettably dismantled, cannot unlock: {tech.name} ({techId})");
             return false;
         }
 
         if (!ArePrerequisitesUnlocked(tech))
         {
-            LogController.LogError($"TechManager: Prerequisites not met for tech: {tech.name} ({techId})");
+            LogController.Log($"TechManager: Prerequisites not met for tech: {tech.name} ({techId})");
             return false;
         }
 
         if (LevelManager.Instance.Money < tech.cost)
         {
-            LogController.LogError($"TechManager: Not enough money to unlock tech: {tech.name} ({techId})");
+            LogController.Log($"TechManager: Not enough money to unlock tech: {tech.name} ({techId})");
             return false;
         }
 
@@ -200,25 +201,25 @@ public partial class TechManager : MonoBehaviour
 
         if (!tech.canDismantle)
         {
-            LogController.LogError($"TechManager: Tech is not a dismantle-able one: {tech.name} ({techId})");
+            LogController.Log($"TechManager: Tech is not a dismantle-able one: {tech.name} ({techId})");
             return false;
         }
 
         if (IsTechDismantled(tech))
         {
-            LogController.LogError($"TechManager: Tech is already dismantled: {tech.name} ({techId})");
+            LogController.Log($"TechManager: Tech is already dismantled: {tech.name} ({techId})");
             return false;
         }
 
         if (!IsTechUnlocked(tech))
         {
-            LogController.LogError($"TechManager: Tech is not even unlocked, cannot dismantle: {tech.name} ({techId})");
+            LogController.Log($"TechManager: Tech is not even unlocked, cannot dismantle: {tech.name} ({techId})");
             return false;
         }
 
         if (LevelManager.Instance.Money < tech.dismantleCost)
         {
-            LogController.LogError($"TechManager: Not enough money to dismantle tech: {tech.name} ({techId})");
+            LogController.Log($"TechManager: Not enough money to dismantle tech: {tech.name} ({techId})");
             return false;
         }
 
