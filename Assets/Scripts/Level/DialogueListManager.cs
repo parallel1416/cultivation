@@ -158,6 +158,19 @@ public class DialogueListManager : MonoBehaviour
 
     private int morenHelpStartTurn;
 
+    public bool HasMajorEventsNotConfirmed
+    {
+        get
+        {
+            if ()
+            {
+                return true;
+            }
+            return false;
+        }
+        set { }
+    }
+
     private void Awake()
     {
         if (_instance == null)
@@ -499,6 +512,18 @@ public class DialogueListManager : MonoBehaviour
         {
             DialogueManager.PlayDialogueEvent(dialogue); // Directly play in dialogue scene
         }
+    }
+
+    private bool HasMajorInList()
+    {
+        if (currentTurnDialogues == null || currentTurnDialogues.Count == 0) return false;
+        
+        foreach(var dialogue in currentTurnDialogues)
+        {
+            if (DialogueManager.Instance.IsMajor(dialogue))
+                return true;
+        }
+        return false;
     }
 
     private bool IsNoRoutineTurn(int turn) => noRoutineTurnNumbers.Contains(turn);

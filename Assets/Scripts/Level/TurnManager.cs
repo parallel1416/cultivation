@@ -20,6 +20,7 @@ public class TurnManager : MonoBehaviour
     {
         get
         {
+            // turn 1 force tech unlock
             if (
                 currentTurn == 1 &&
                 (
@@ -32,6 +33,10 @@ public class TurnManager : MonoBehaviour
                 LogController.Log("TurnManager: Cannot advance turn: Required techs for turn 1 not unlocked.");
                 return false;               
             }
+
+            // major event exist
+            if (DialogueListManager.Instance.HasMajorEventsNotConfirmed) return false;
+
             return true;
         }
         set { }
