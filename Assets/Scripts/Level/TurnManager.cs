@@ -70,10 +70,34 @@ public class TurnManager : MonoBehaviour
             return;
         }
         
+        // Advance turn first
+        AdvanceTurn();
+        //resetActionPoints();
+        LevelManager.Instance.ResetActiveResources(); // reset active status of resources like disciples and animals/pets at turn start
+
+        LogController.Log($"Turn incremented to: {currentTurn}");
+
+        // Create a save at new turn starts
+        SaveManager.Instance.CreateSave();
+        
         // Clear event tracker for new turn
         if (EventTracker.Instance != null)
         {
             EventTracker.Instance.OnTurnAdvance();
+        }
+        
+        if (DialogueListManager.Instance != null)
+        {
+            // Immediately play all turn-start dialogues
+            DialogueListManager.Instance.PushToPlayMainlineDialogues();
+
+            // Setup new turn's dialogue events
+            DialogueListManager.Instance.SetUpTurnDialogues();
+            LogController.Log($"Setup dialogues for turn {currentTurn}. Available events: {DialogueListManager.Instance.CurrentTurnDialogues.Count}");
+        }
+        else
+        {
+            LogController.LogError("DialogueListManager.Instance is null!");
         }
 
         // Play queued dialogues from previous turn
@@ -91,38 +115,15 @@ public class TurnManager : MonoBehaviour
             else
             {
                 LogController.Log("No dialogues queued for playback");
+                // No dialogues to play, go directly to TurnScene
+                UnityEngine.SceneManagement.SceneManager.LoadScene("TurnScene");
             }
         }
         else
         {
             LogController.LogError("DialogueManager.Instance is null!");
-        }
-
-        // turn settlement
-        UnityEngine.SceneManagement.SceneManager.LoadScene("TurnScene");
-
-        // Advance turn
-        AdvanceTurn();
-        //resetActionPoints();
-        LevelManager.Instance.ResetActiveResources(); // reset active status of resources like disciples and animals/pets at turn start
-
-        LogController.Log($"Turn incremented to: {currentTurn}");
-
-        // Create a save at new turn starts
-        SaveManager.Instance.CreateSave();
-        
-        if (DialogueListManager.Instance != null)
-        {
-            // Immediately play all turn-start dialogues
-            DialogueListManager.Instance.PushToPlayMainlineDialogues();
-
-            // Setup new turn's dialogue events
-            DialogueListManager.Instance.SetUpTurnDialogues();
-            LogController.Log($"Setup dialogues for turn {currentTurn}. Available events: {DialogueListManager.Instance.CurrentTurnDialogues.Count}");
-        }
-        else
-        {
-            LogController.LogError("DialogueListManager.Instance is null!");
+            // Fallback: load TurnScene anyway
+            UnityEngine.SceneManagement.SceneManager.LoadScene("TurnScene");
         }
         
         // LevelManager.Instance.GenerateResourcesPerTurn();

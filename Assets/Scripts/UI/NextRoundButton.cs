@@ -37,7 +37,15 @@ public class NextRoundButton : MonoBehaviour
 
     private void OnNextRoundClicked()
     {
-        // Load TurnScene instead of advancing turn
-        Debug.Log("Next round button clicked - loading TurnScene");
+        Debug.Log("NextRoundButton: Next round button clicked - advancing turn");
+        
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.NextTurn();
+        }
+        else
+        {
+            Debug.LogError("NextRoundButton: TurnManager not found!");
+        }
     }
 }

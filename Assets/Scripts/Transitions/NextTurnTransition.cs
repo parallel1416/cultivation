@@ -4,8 +4,9 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Handles the transition when clicking the next turn button:
-/// Container spins 90 degrees, turn number increments, fade to black, then load map scene.
+/// Handles the visual transition in TurnScene when clicking the continue button:
+/// Container spins 90 degrees, fade to black, then load map scene.
+/// Does NOT advance the turn - turn advancement happens in MapScene via NextRoundButton.
 /// </summary>
 public class NextTurnTransition : MonoBehaviour
 {
@@ -90,19 +91,7 @@ public class NextTurnTransition : MonoBehaviour
             );
         }
 
-        // Step 2: Advance to next turn (turn+1)
-        if (TurnManager.Instance != null)
-        {
-            int previousTurn = TurnManager.Instance.CurrentTurn;
-            TurnManager.Instance.NextTurn();
-            Debug.Log($"NextTurnTransition: Turn advanced from {previousTurn} to {TurnManager.Instance.CurrentTurn}");
-        }
-        else
-        {
-            Debug.LogWarning("NextTurnTransition: TurnManager not found, skipping turn advancement");
-        }
-
-        // Step 3: Fade to black
+        // Step 2: Fade to black
         if (fadeCanvasGroup != null)
         {
             Debug.Log("NextTurnTransition: Fading to black");
@@ -122,7 +111,7 @@ public class NextTurnTransition : MonoBehaviour
             yield return new WaitForSeconds(fadeDuration);
         }
 
-        // Step 4: Load map scene
+        // Step 3: Load map scene
         Debug.Log($"NextTurnTransition: Loading scene '{targetSceneName}'");
         SceneManager.LoadScene(targetSceneName);
     }

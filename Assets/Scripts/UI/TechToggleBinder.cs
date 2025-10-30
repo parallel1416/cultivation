@@ -218,11 +218,8 @@ public class TechToggleBinder : MonoBehaviour
 
     private void OnToggleValueChanged(Toggle toggle, bool isOn)
     {
-        Debug.Log($"TechToggleBinder: OnToggleValueChanged called - Toggle: {toggle.name}, isOn: {isOn}, isSyncingState: {isSyncingState}");
-        
         if (isSyncingState)
         {
-            Debug.Log($"TechToggleBinder: Ignoring toggle change for {toggle.name} - currently syncing state");
             return;
         }
 
@@ -232,12 +229,9 @@ public class TechToggleBinder : MonoBehaviour
             return;
         }
 
-        Debug.Log($"TechToggleBinder: Processing toggle {toggle.name} for tech {binding.TechId}");
-
         if (!isOn)
         {
             // Disallow turning off via UI.
-            Debug.Log($"TechToggleBinder: Toggle {toggle.name} turned off - re-syncing to prevent deselection");
             SyncToggleStatesFromTechTree();
             return;
         }
@@ -250,26 +244,21 @@ public class TechToggleBinder : MonoBehaviour
         }
 
         bool canUnlock = TechManager.Instance.CanUnlockTech(binding.TechId);
-        Debug.Log($"TechToggleBinder: CanUnlock check for {binding.TechId}: {canUnlock}");
         
         if (!canUnlock)
         {
-            Debug.LogWarning($"TechToggleBinder: Cannot unlock tech {binding.TechId} - prerequisites not met or insufficient resources");
             SyncToggleStatesFromTechTree();
             return;
         }
 
-        Debug.Log($"TechToggleBinder: Attempting to unlock tech {binding.TechId}");
         bool unlocked = TechManager.Instance.UnlockTech(binding.TechId);
         
         if (!unlocked)
         {
-            Debug.LogWarning($"TechToggleBinder: Failed to unlock tech {binding.TechId}");
             SyncToggleStatesFromTechTree();
             return;
         }
 
-        Debug.Log($"TechToggleBinder: Successfully unlocked tech {binding.TechId}");
         ResourceBar.Instance?.UpdateDisplay();
         onTechUnlocked?.Invoke();
 
@@ -285,19 +274,11 @@ public class TechToggleBinder : MonoBehaviour
         {
             binding.Toggle.interactable = false;
             ApplyActiveVisual(binding);
-            Debug.Log($"TechToggleBinder: Applied ACTIVE state to {binding.Toggle.name} (tech: {binding.TechId})");
         }
         else
         {
             binding.Toggle.interactable = true;
             ApplyLockedVisual(binding, isAvailable);
-            Debug.Log($"TechToggleBinder: Applied LOCKED state to {binding.Toggle.name} (tech: {binding.TechId}), isAvailable: {isAvailable}, interactable: {binding.Toggle.interactable}");
-            
-            // Additional raycast check
-            if (binding.Toggle.interactable)
-            {
-                DebugRaycastTarget(binding.Toggle);
-            }
         }
     }
 
