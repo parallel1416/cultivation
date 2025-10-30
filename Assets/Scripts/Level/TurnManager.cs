@@ -16,6 +16,27 @@ public class TurnManager : MonoBehaviour
 
     private int actionPoint = 0;
 
+    public bool CanNextTurn
+    {
+        get
+        {
+            if (
+                currentTurn == 1 &&
+                (
+                    !TechManager.Instance.IsTechUnlocked("story_1") ||
+                    !TechManager.Instance.IsTechUnlocked("farm_1") ||
+                    !TechManager.Instance.IsTechUnlocked("pet_1")
+                )
+                )
+            {
+                LogController.Log("TurnManager: Cannot advance turn: Required techs for turn 1 not unlocked.");
+                return false;               
+            }
+            return true;
+        }
+        set { }
+    }
+
     public int CurrentTurn => currentTurn;
     public int ActionPoint => actionPoint;
 
@@ -37,6 +58,11 @@ public class TurnManager : MonoBehaviour
     public void NextTurn()
     {
         LogController.Log($"=== NextTurn() called. Current turn before increment: {currentTurn} ===");
+
+        if (!CanNextTurn)
+        {
+            LogController.Log("Something blocks turn advancing, maybe a major event or technode.");
+        }
         
         // Clear event tracker for new turn
         if (EventTracker.Instance != null)
