@@ -12,7 +12,18 @@ public class LevelManager : MonoBehaviour
     private static LevelManager _instance;
     public static LevelManager Instance => _instance;
 
-    public bool IsBuggy => GlobalTagManager.Instance.GetTagValue("truth");
+    public bool IsBuggy
+    {
+        get
+        {
+            // Return false if GlobalTagManager isn't initialized or tag doesn't exist
+            if (GlobalTagManager.Instance == null || !GlobalTagManager.Instance.HasTag("truth"))
+            {
+                return false;
+            }
+            return GlobalTagManager.Instance.GetTagValue("truth");
+        }
+    }
 
     // Core resources
     // SerializeField only for debugging in inspector

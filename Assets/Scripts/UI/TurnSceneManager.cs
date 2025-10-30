@@ -83,23 +83,22 @@ public class TurnSceneManager : MonoBehaviour
         // Display turn number
         int currentTurn = TurnManager.Instance.CurrentTurn;
         sb.AppendLine($"<size=48><b>第 {currentTurn} 回合</b></size>");
-        sb.AppendLine($"<size=36><b>Turn {currentTurn}</b></size>");
         sb.AppendLine();
 
         // If no previous save data (first turn), just display current state
         if (previousSaveData == null)
         {
-            sb.AppendLine("<color=#FFD700>初始状态 (Initial State)</color>");
+            sb.AppendLine("<color=#FFD700>初始状态</color>");
             sb.AppendLine();
-            sb.AppendLine($"<b>灵石 (Spirit Stones):</b> {LevelManager.Instance.Money}");
-            sb.AppendLine($"<b>弟子 (Disciples):</b> {LevelManager.Instance.Disciples}");
-            sb.AppendLine($"<b>可用弟子 (Active Disciples):</b> {LevelManager.Instance.ActiveDisciples}");
+            sb.AppendLine($"<b>灵石:</b> {LevelManager.Instance.Money}");
+            sb.AppendLine($"<b>弟子:</b> {LevelManager.Instance.Disciples}");
+            sb.AppendLine($"<b>可用弟子:</b> {LevelManager.Instance.ActiveDisciples}");
 
             // Display items
             if (ItemManager.Instance != null && ItemManager.Instance.Items.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine("<b>物品 (Items):</b>");
+                sb.AppendLine("<b>本回合获得物品:</b>");
                 foreach (var item in ItemManager.Instance.Items)
                 {
                     if (item.Value > 0)
@@ -120,7 +119,7 @@ public class TurnSceneManager : MonoBehaviour
             if (moneyChange != 0)
             {
                 hasChanges = true;
-                string changeText = FormatResourceChange("灵石 (Spirit Stones)", previousSaveData.money, LevelManager.Instance.Money, moneyChange);
+                string changeText = FormatResourceChange("灵石", previousSaveData.money, LevelManager.Instance.Money, moneyChange);
                 sb.AppendLine(changeText);
             }
 
@@ -129,7 +128,7 @@ public class TurnSceneManager : MonoBehaviour
             if (discipleChange != 0)
             {
                 hasChanges = true;
-                string changeText = FormatResourceChange("弟子 (Disciples)", previousSaveData.disciples, LevelManager.Instance.Disciples, discipleChange);
+                string changeText = FormatResourceChange("弟子", previousSaveData.disciples, LevelManager.Instance.Disciples, discipleChange);
                 sb.AppendLine(changeText);
             }
 
@@ -146,7 +145,7 @@ public class TurnSceneManager : MonoBehaviour
 
             if (!hasChanges)
             {
-                sb.AppendLine("<color=#888888><i>无资源变动 (No resource changes)</i></color>");
+                sb.AppendLine("<color=#888888><i>本回合四平八稳，无资源变动。</i></color>");
             }
         }
 
@@ -164,21 +163,21 @@ public class TurnSceneManager : MonoBehaviour
         if (LevelManager.Instance.StatusJingshi != previousSaveData.statusJingshi)
         {
             hasChanges = true;
-            sb.AppendLine(FormatStatusChange("静师 (Jingshi)", previousSaveData.statusJingshi, LevelManager.Instance.StatusJingshi));
+            sb.AppendLine(FormatStatusChange("经师", previousSaveData.statusJingshi, LevelManager.Instance.StatusJingshi));
         }
 
         // Jianjun
         if (LevelManager.Instance.StatusJianjun != previousSaveData.statusJianjun)
         {
             hasChanges = true;
-            sb.AppendLine(FormatStatusChange("剑君 (Jianjun)", previousSaveData.statusJianjun, LevelManager.Instance.StatusJianjun));
+            sb.AppendLine(FormatStatusChange("剑君", previousSaveData.statusJianjun, LevelManager.Instance.StatusJianjun));
         }
 
         // Yuezheng
         if (LevelManager.Instance.StatusYuezheng != previousSaveData.statusYuezheng)
         {
             hasChanges = true;
-            sb.AppendLine(FormatStatusChange("乐正 (Yuezheng)", previousSaveData.statusYuezheng, LevelManager.Instance.StatusYuezheng));
+            sb.AppendLine(FormatStatusChange("乐正", previousSaveData.statusYuezheng, LevelManager.Instance.StatusYuezheng));
         }
     }
 
@@ -193,21 +192,21 @@ public class TurnSceneManager : MonoBehaviour
         if (LevelManager.Instance.StatusMouse != previousSaveData.statusMouse)
         {
             hasChanges = true;
-            sb.AppendLine(FormatStatusChange("鼠 (Mouse)", previousSaveData.statusMouse, LevelManager.Instance.StatusMouse));
+            sb.AppendLine(FormatStatusChange("灵鼠", previousSaveData.statusMouse, LevelManager.Instance.StatusMouse));
         }
 
         // Chicken
         if (LevelManager.Instance.StatusChicken != previousSaveData.statusChicken)
         {
             hasChanges = true;
-            sb.AppendLine(FormatStatusChange("鸡 (Chicken)", previousSaveData.statusChicken, LevelManager.Instance.StatusChicken));
+            sb.AppendLine(FormatStatusChange("凤雏", previousSaveData.statusChicken, LevelManager.Instance.StatusChicken));
         }
 
         // Sheep
         if (LevelManager.Instance.StatusSheep != previousSaveData.statusSheep)
         {
             hasChanges = true;
-            sb.AppendLine(FormatStatusChange("羊 (Sheep)", previousSaveData.statusSheep, LevelManager.Instance.StatusSheep));
+            sb.AppendLine(FormatStatusChange("獬豸", previousSaveData.statusSheep, LevelManager.Instance.StatusSheep));
         }
     }
 
@@ -269,12 +268,12 @@ public class TurnSceneManager : MonoBehaviour
         if (oldStatus < 0 && newStatus >= 0)
         {
             // Newly acquired
-            return $"<b>{entityName}:</b> <color=#00FF00>获得 (Acquired) - {newStatusText}</color>";
+            return $"<b>{entityName}:</b> <color=#00FF00>获得：{newStatusText}</color>";
         }
         else if (oldStatus >= 0 && newStatus < 0)
         {
             // Lost
-            return $"<b>{entityName}:</b> <color=#FF0000>失去 (Lost)</color>";
+            return $"<b>{entityName}:</b> <color=#FF0000>失去</color>";
         }
         else
         {
@@ -291,13 +290,13 @@ public class TurnSceneManager : MonoBehaviour
         switch (status)
         {
             case -1:
-                return "未拥有 (Not Owned)";
+                return "未拥有";
             case 0:
-                return "行动中 (In Action)";
+                return "行动中";
             case 1:
-                return "可用 (Available)";
+                return "可用";
             default:
-                return "未知 (Unknown)";
+                return "未知";
         }
     }
 
@@ -309,15 +308,15 @@ public class TurnSceneManager : MonoBehaviour
         switch (itemId)
         {
             case "zhi_kui_lei":
-                return "纸傀儡 (Paper Puppet)";
+                return "纸傀儡";
             case "yu_chan_tui":
-                return "玉蝉蜕 (Jade Cicada Shell)";
+                return "玉蝉蜕";
             case "dian_fan_tie":
-                return "颠凡铁 (Dianfan Iron)";
+                return "颠凡铁";
             case "wu_que_jing":
-                return "无缺镜 (Perfect Mirror)";
+                return "无缺镜";
             case "cheng_fu_fu":
-                return "承负符 (Burden Talisman)";
+                return "承负符";
             default:
                 return itemId;
         }

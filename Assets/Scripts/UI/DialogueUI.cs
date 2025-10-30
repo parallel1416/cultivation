@@ -81,6 +81,8 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private string narratorName = "Narrator"; // Name for narration lines
     [SerializeField] private bool autoScrollToBottom = true; // Auto-scroll to newest dialogue
     [SerializeField] private float scrollDelay = 0.1f; // Delay before scrolling (to let layout update)
+    [SerializeField] private float scrollAnimationDuration = 0.3f; // Duration of smooth scroll animation
+    [SerializeField] private AnimationCurve scrollAnimationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f); // Curve for smooth scrolling
 
     [Header("Scene Transition Settings")]
     [SerializeField] private bool fadeOutOnDialogueEnd = false; // Fade to black when dialogue ends
@@ -191,10 +193,10 @@ public class DialogueUI : MonoBehaviour
             dicePanel.SetActive(false);
         }
 
-        // Disable the placeholder choice prefab
+        // Disable the placeholder choice prefab - it should only be used as a template
         if (choicePrefab != null)
         {
-            //choicePrefab.SetActive(false);
+            choicePrefab.SetActive(false);
         }
 
         // Initialize title container - start visible at full opacity
@@ -228,7 +230,8 @@ public class DialogueUI : MonoBehaviour
         dialogScrollRect.vertical = true;
         dialogScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
         dialogScrollRect.movementType = ScrollRect.MovementType.Clamped;
-        dialogScrollRect.verticalNormalizedPosition = 0f;
+        dialogScrollRect.scrollSensitivity = 20f; // Enable mouse wheel scrolling
+        dialogScrollRect.verticalNormalizedPosition = 0f; // Start at bottom
         RefreshContentLayout();
     }
 
@@ -462,6 +465,22 @@ public class DialogueUI : MonoBehaviour
                 LayoutRebuilder.ForceRebuildLayoutImmediate(dialogScrollRect.content);
             }
 
+            // Smooth scroll animation
+            float startPosition = dialogScrollRect.verticalNormalizedPosition;
+            float targetPosition = 0f; // Bottom
+            float elapsed = 0f;
+
+            while (elapsed < scrollAnimationDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / scrollAnimationDuration);
+                float easedT = scrollAnimationCurve.Evaluate(t);
+                
+                dialogScrollRect.verticalNormalizedPosition = Mathf.Lerp(startPosition, targetPosition, easedT);
+                yield return null;
+            }
+
+            // Ensure we end exactly at bottom
             dialogScrollRect.verticalNormalizedPosition = 0f;
         }
 
@@ -479,18 +498,20 @@ public class DialogueUI : MonoBehaviour
         if (dialogScrollRect.content != null)
         {
             RectTransform content = dialogScrollRect.content;
-            content.anchorMin = new Vector2(0f, 1f);
-            content.anchorMax = new Vector2(1f, 1f);
-            content.pivot = new Vector2(0.5f, 1f);
+            content.anchorMin = new Vector2(0f, 0f); // Bottom-left anchor
+            content.anchorMax = new Vector2(1f, 1f); // Top-right anchor (stretch)
+            content.pivot = new Vector2(0.5f, 1f); // Pivot at top center
+            content.anchoredPosition = new Vector2(0f, 0f); // Reset position
             
-            // Ensure text is also anchored to top
+            // Ensure text is also anchored properly
             if (dialogText != null)
             {
                 RectTransform textRect = dialogText.rectTransform;
-                textRect.anchorMin = new Vector2(0f, 1f);
+                textRect.anchorMin = new Vector2(0f, 0f);
                 textRect.anchorMax = new Vector2(1f, 1f);
                 textRect.pivot = new Vector2(0.5f, 1f);
                 textRect.anchoredPosition = Vector2.zero;
+                textRect.sizeDelta = Vector2.zero; // Let it stretch with parent
             }
         }
 
@@ -556,6 +577,10 @@ public class DialogueUI : MonoBehaviour
         // Create choice buttons
         if (choicePrefab != null && choiceParent != null && choices != null)
         {
+            // Temporarily disable the prefab to prevent it from showing
+            bool prefabWasActive = choicePrefab.activeSelf;
+            choicePrefab.SetActive(false);
+
             for (int i = 0; i < choices.Length; i++)
             {
                 int choiceIndex = i; // Capture for lambda
@@ -564,6 +589,7 @@ public class DialogueUI : MonoBehaviour
                 currentChoiceTexts.Add(choice.text);
 
                 GameObject choiceObj = Instantiate(choicePrefab, choiceParent);
+                choiceObj.SetActive(true); // Ensure the instantiated clone is active
                 currentChoiceButtons.Add(choiceObj);
 
                 // Setup button
@@ -590,6 +616,9 @@ public class DialogueUI : MonoBehaviour
                 }
             }
 
+            // Keep prefab disabled (it should stay hidden as a template)
+            // Don't restore its original state since it should never be visible
+            
             // Force layout rebuild
             if (choiceParent is RectTransform rectTransform)
             {

@@ -959,7 +959,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\n\n\u7B2C\u4E00\u56DE\u5408\n\n\u7075\u77F3\uFF1A1-\u300B2\n\u5F1F\u5B50\uFF1A2-\u300B3\n\n\u672C\u56DE\u5408\u83B7\u5F97\uFF1A\u85CF\u54C1\n\u672C\u56DE\u5408\u62DB\u52DF\uFF1A\u5251\u541B"
+  m_text: "\u7B2C\u4E00\u56DE\u5408\n\n\u7075\u77F3\uFF1A1-\u300B2\n\u5F1F\u5B50\uFF1A2-\u300B3\n\n\u672C\u56DE\u5408\u83B7\u5F97\uFF1A\u85CF\u54C1\n\u672C\u56DE\u5408\u62DB\u52DF\uFF1A\u5251\u541B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 67db2915af4b4c64299f56d2049a958b, type: 2}
   m_sharedMaterial: {fileID: -623355064441112415, guid: 67db2915af4b4c64299f56d2049a958b, type: 2}
@@ -994,7 +994,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -1052,8 +1052,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 360, y: 360}
+  m_AnchoredPosition: {x: 0, y: -8.8384}
+  m_SizeDelta: {x: 360, y: 342.3233}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1594495890
 GameObject:

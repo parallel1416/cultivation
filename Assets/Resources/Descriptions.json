@@ -1,0 +1,98 @@
+{
+  "characters": [
+    {
+      "id": "sect_leader",
+      "name": "掌门",
+      "description": "宗门掌门，当今世上少数的大能。救下了早夭的你，与你一起重建宗门。"
+    },
+    {
+      "id": "jingshi",
+      "name": "经师",
+      "description": "落榜书生，在宗门找到了属于他的位置，致力于解读典籍与讲学。"
+    },
+    {
+      "id": "jianjun",
+      "name": "剑君",
+      "description": "人间的侠客，已经练尽了人间的剑，想来学仙人的剑。"
+    },
+    {
+      "id": "yuezheng",
+      "name": "乐正",
+      "description": "贪玩的乐师，对任何美丽新奇之物都有兴趣，弹琴十分激情飞扬。"
+    },
+    {
+      "id": "demon",
+      "name": "魔人",
+      "description": "神出鬼没的邪道人士，以破坏修仙宗门、妨碍修仙者修行为志业。"
+    },
+    {
+      "id": "diviner",
+      "name": "卜者",
+      "description": "行踪神秘的占卜家，似乎对宗门颇为好奇。"
+    }
+  ],
+  "spirits": [
+    {
+      "id": "mouse",
+      "name": "灵鼠",
+      "description": "八足的小鼠，很喜欢趴在你的书桌上打盯，顺便偷吃一些茶点。",
+      "effect": "所有骰子的检定结果+1。"
+    },
+    {
+      "id": "chicken",
+      "name": "凤雏",
+      "description": "羽毛蓬厚的五色雏鸟。看起来很像母鸡，总有一天会长成凤凰。",
+      "effect": "所有骰子的结果被倒转（例如：如果该枚骰子的最大结果为6，检定结果为4，则最终结果为2）。"
+    },
+    {
+      "id": "sheep",
+      "name": "獬豸",
+      "description": "矫健的神羊，毛茸茸的，很受门徒欢迎。",
+      "effect": "所有结果为1的检定自动+2。"
+    }
+  ],
+  "treasures": [
+    {
+      "id": "zhi_kui_lei",
+      "name": "纸傀儡",
+      "description": "剪纸呼魂，神鬼来座中。",
+      "effect": "令本次判定额外投掷一个d4骰子。"
+    },
+    {
+      "id": "yu_chan_tui",
+      "name": "玉蝉蜕",
+      "description": "蜩甲也，蛇蜕也，似之而非也。",
+      "effect": "令本次判定可以掷骰两次，取其中出目高者作为结果。"
+    },
+    {
+      "id": "dian_fan_tie",
+      "name": "点凡铁",
+      "description": "指水为油，点石成金，却如转身之易。",
+      "effect": "令本次判定使用的随机一个骰子直接取最大值。"
+    },
+    {
+      "id": "wu_que_jing",
+      "name": "无缺镜",
+      "description": "洞慧澄明，如既望月。",
+      "effect": "令本次判定使用的所有骰子出目不会为1。"
+    },
+    {
+      "id": "cheng_fu_fu",
+      "name": "承负符",
+      "description": "天道有章，万般因果皆自偿。",
+      "effect": "令本次判定可以掷骰三次，取其中出目高者作为结果，并令DC-2。"
+    },
+    {
+      "id": "jian_pu_can_zhang",
+      "name": "剑谱残章",
+      "description": "不偏不倚，合乎中正，乃配天钧。",
+      "effect": "令本次判定的结果直接取每个骰子的平均数（向上取整）之和。"
+    },
+    {
+      "id": "fei_guang_jian_fu",
+      "name": "飞光剑符",
+      "description": "飞光飞光，劝尔一杯酒。",
+      "effect": "令本次判定的结果+10。"
+    }
+  ]
+}

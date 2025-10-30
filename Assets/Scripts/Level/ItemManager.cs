@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ItemManager : MonoBehaviour
@@ -137,7 +138,12 @@ public class ItemManager : MonoBehaviour
         }
         else
         {
-            LogController.LogError($"No such item: {itemId}");
+            // Don't log error for uninitialized items - they're just not owned yet
+            // Only log if the itemId is not even in the register list
+            if (!itemRegisterList.Contains(itemId))
+            {
+                LogController.LogError($"No such item: {itemId}");
+            }
             return 0;
         }
     }

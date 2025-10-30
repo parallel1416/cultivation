@@ -24,15 +24,15 @@ public class ResourceBar : MonoBehaviour
     [SerializeField] private Toggle itemToggle;
     [SerializeField] private Toggle optionToggle;
     [SerializeField] private Transform contentContainer; // Horizontal layout container
-    [SerializeField] private GameObject descriptionItemPrefab; // Prefab for list items (deprecated, now using images)
+    [SerializeField] private GameObject entryPrefab; // Prefab with icon and description text
 
     [Header("Entity Icons")]
-    [Tooltip("People icons in order: zm, js, jj, yz, mr")]
-    [SerializeField] private Sprite[] peopleIcons = new Sprite[5]; // zm, js, jj, yz, mr
-    [Tooltip("Pet icons in order: mouse, hen, sheep")]
-    [SerializeField] private Sprite[] petIcons = new Sprite[3]; // mouse, hen, sheep
-    [Tooltip("Item icons (6 items)")]
-    [SerializeField] private Sprite[] itemIcons = new Sprite[6];
+    [Tooltip("People icons in order: sect_leader, jingshi, jianjun, yuezheng, demon")]
+    [SerializeField] private Sprite[] peopleIcons = new Sprite[5];
+    [Tooltip("Pet icons in order: mouse, chicken, sheep")]
+    [SerializeField] private Sprite[] petIcons = new Sprite[3];
+    [Tooltip("Item icons in order: zhi_kui_lei, yu_chan_tui, dian_fan_tie, wu_que_jing, cheng_fu_fu, jian_pu_can_zhang, fei_guang_jian_fu")]
+    [SerializeField] private Sprite[] itemIcons = new Sprite[7];
     [SerializeField] private Color blackedOutColor = new Color(0.2f, 0.2f, 0.2f, 1f); // Color for unowned entities
 
     [Header("Animation Settings")]
@@ -69,15 +69,53 @@ public class ResourceBar : MonoBehaviour
 
     private void Awake()
     {
+        // If there's already an instance and it's not this one
         if (_instance != null && _instance != this)
         {
+            // Before destroying, check if this instance has references that the persistent one doesn't
+            if (_instance.entryPrefab == null && entryPrefab != null)
+            {
+                _instance.entryPrefab = entryPrefab;
+            }
+            if (_instance.dropdownMenu == null && dropdownMenu != null)
+            {
+                _instance.dropdownMenu = dropdownMenu;
+                _instance.pplToggle = pplToggle;
+                _instance.petToggle = petToggle;
+                _instance.itemToggle = itemToggle;
+                _instance.optionToggle = optionToggle;
+                _instance.contentContainer = contentContainer;
+                
+                // Re-setup the persistent instance's rect transforms and listeners
+                _instance.SetupUIReferences();
+            }
+            if (_instance.moneyText == null && moneyText != null)
+            {
+                _instance.moneyText = moneyText;
+                _instance.discipleText = discipleText;
+            }
+            if (_instance.peopleIcons == null || _instance.peopleIcons.Length == 0)
+            {
+                if (peopleIcons != null && peopleIcons.Length > 0)
+                {
+                    _instance.peopleIcons = peopleIcons;
+                    _instance.petIcons = petIcons;
+                    _instance.itemIcons = itemIcons;
+                }
+            }
+            
             Destroy(gameObject);
             return;
         }
 
         _instance = this;
         DontDestroyOnLoad(gameObject);
-
+        
+        SetupUIReferences();
+    }
+    
+    private void SetupUIReferences()
+    {
         // Setup dropdown menu and toggle rects
         if (dropdownMenu != null)
         {
@@ -190,10 +228,6 @@ public class ResourceBar : MonoBehaviour
                 else // Sliding in (hide)
                 {
                     menuPos.x = Mathf.Lerp(menuVisibleX, menuHiddenX, curveValue);
-                    if (progress < 0.1f) // Log at start of animation
-                    {
-                        Debug.Log($"[ResourceBar Update] Sliding IN - progress: {progress:F3}, lerping from {menuVisibleX} to {menuHiddenX}, current X: {menuPos.x:F2}");
-                    }
                 }
                 dropdownRect.anchoredPosition = menuPos;
             }
@@ -313,12 +347,10 @@ public class ResourceBar : MonoBehaviour
                 (optionToggle != null && (result.gameObject == optionToggle.gameObject || IsChildOf(result.gameObject.transform, optionToggle.transform))) ||
                 IsChildOf(result.gameObject.transform, dropdownMenu.transform))
             {
-                Debug.Log($"[ResourceBar] Click detected on UI element: {result.gameObject.name}");
                 return true;
             }
         }
 
-        Debug.Log("[ResourceBar] Click detected OUTSIDE menu/toggles - will close menu");
         return false;
     }
 
@@ -346,7 +378,6 @@ public class ResourceBar : MonoBehaviour
     {
         if (currentActiveToggle != null)
         {
-            Debug.Log("ResourceBar: Closing menu due to outside click.");
             // Manually trigger slide-in without going through toggle
             targetState = false;
             isAnimating = true;
@@ -356,18 +387,14 @@ public class ResourceBar : MonoBehaviour
             if (dropdownRect != null)
             {
                 dropdownRect.anchoredPosition = new Vector2(menuVisibleX, dropdownRect.anchoredPosition.y);
-                Debug.Log($"[ResourceBar] Menu position set to visible: {menuVisibleX}");
             }
             
             RectTransform toggleRect = currentActiveToggle.GetComponent<RectTransform>();
             if (toggleRect != null)
             {
                 toggleRect.anchoredPosition = new Vector2(toggleVisibleX, toggleRect.anchoredPosition.y);
-                Debug.Log($"[ResourceBar] Toggle position set to visible: {toggleVisibleX}");
             }
-            
-            Debug.Log($"[ResourceBar] Animation will lerp from visible ({menuVisibleX}) to hidden ({menuHiddenX})");
-            
+
             // Turn off toggle AFTER starting animation to avoid event
             currentActiveToggle.isOn = false;
         }
@@ -496,18 +523,20 @@ public class ResourceBar : MonoBehaviour
             return;
         }
 
-        // Order: zm (normal disciples), js (jingshi), jj (jianjun), yz (yuezheng), mr (disciples again/placeholder)
-        // Check status: zm = ActiveDisciples > 0, js = StatusJingshi >= 0, jj = StatusJianjun >= 0, yz = StatusYuezheng >= 0
+        // Character IDs matching the order of peopleIcons
+        string[] characterIds = new string[] { "sect_leader", "jingshi", "jianjun", "yuezheng", "demon" };
+        
+        // Check status for each character
         bool[] owned = new bool[5];
-        owned[0] = LevelManager.Instance.ActiveDisciples > 0; // zm (normal disciples)
-        owned[1] = LevelManager.Instance.StatusJingshi >= 0; // js (jingshi)
-        owned[2] = LevelManager.Instance.StatusJianjun >= 0; // jj (jianjun)
-        owned[3] = LevelManager.Instance.StatusYuezheng >= 0; // yz (yuezheng)
-        owned[4] = LevelManager.Instance.ActiveDisciples > 0; // mr (use disciples as placeholder)
+        owned[0] = LevelManager.Instance.Disciples > 0; // sect_leader (requires disciples)
+        owned[1] = LevelManager.Instance.StatusJingshi >= 0; // jingshi
+        owned[2] = LevelManager.Instance.StatusJianjun >= 0; // jianjun
+        owned[3] = LevelManager.Instance.StatusYuezheng >= 0; // yuezheng
+        owned[4] = false; // demon (always unavailable for now)
 
-        for (int i = 0; i < peopleIcons.Length; i++)
+        for (int i = 0; i < peopleIcons.Length && i < characterIds.Length; i++)
         {
-            CreateIconImage(peopleIcons[i], owned[i]);
+            CreateEntry(peopleIcons[i], characterIds[i], "character", owned[i]);
         }
     }
 
@@ -522,29 +551,32 @@ public class ResourceBar : MonoBehaviour
             return;
         }
 
+        // Spirit IDs matching the order of petIcons
+        string[] spiritIds = new string[] { "mouse", "chicken", "sheep" };
+
         bool[] owned = new bool[3];
         owned[0] = LevelManager.Instance.StatusMouse >= 0; // mouse
-        owned[1] = LevelManager.Instance.StatusChicken >= 0; // hen/chicken
+        owned[1] = LevelManager.Instance.StatusChicken >= 0; // chicken
         owned[2] = LevelManager.Instance.StatusSheep >= 0; // sheep
 
-        for (int i = 0; i < petIcons.Length; i++)
+        for (int i = 0; i < petIcons.Length && i < spiritIds.Length; i++)
         {
-            CreateIconImage(petIcons[i], owned[i]);
+            CreateEntry(petIcons[i], spiritIds[i], "spirit", owned[i]);
         }
     }
 
     /// <summary>
-    /// Create item icons (6 items)
+    /// Create item icons
     /// </summary>
     private void CreateItemIcons()
     {
-        if (ItemManager.Instance == null || itemIcons.Length < 6)
+        if (ItemManager.Instance == null || itemIcons.Length < 7)
         {
             Debug.LogError("ResourceBar: ItemManager not found or item icons not assigned!");
             return;
         }
 
-        // Item order should match itemIcons array order
+        // Item IDs matching ItemManager.itemRegisterList
         string[] itemIds = new string[] 
         { 
             "zhi_kui_lei", 
@@ -552,44 +584,119 @@ public class ResourceBar : MonoBehaviour
             "dian_fan_tie", 
             "wu_que_jing", 
             "cheng_fu_fu",
-            "" // 6th item placeholder if needed
+            "jian_pu_can_zhang",
+            "fei_guang_jian_fu"
         };
 
-        for (int i = 0; i < itemIcons.Length; i++)
+        for (int i = 0; i < itemIcons.Length && i < itemIds.Length; i++)
         {
-            bool owned = false;
-            if (i < itemIds.Length && !string.IsNullOrEmpty(itemIds[i]))
-            {
-                owned = ItemManager.Instance.GetItemQuantity(itemIds[i]) > 0;
-            }
-            CreateIconImage(itemIcons[i], owned);
+            bool owned = ItemManager.Instance.GetItemQuantity(itemIds[i]) > 0;
+            CreateEntry(itemIcons[i], itemIds[i], "treasure", owned);
         }
     }
 
     /// <summary>
-    /// Create an icon image in the content container
+    /// Create an entry with icon and description text
     /// </summary>
-    private void CreateIconImage(Sprite icon, bool isOwned)
+    private void CreateEntry(Sprite icon, string entityId, string entityType, bool isOwned)
     {
-        if (icon == null)
+        if (entryPrefab == null)
         {
-            Debug.LogWarning("ResourceBar: Icon sprite is null!");
+            Debug.LogError($"ResourceBar: Entry prefab not assigned! Please assign it in the Inspector on GameObject: {gameObject.name}");
             return;
         }
 
-        GameObject iconObj = new GameObject("Icon");
-        iconObj.transform.SetParent(contentContainer, false);
+        if (icon == null)
+        {
+            Debug.LogWarning($"ResourceBar: Icon sprite is null for {entityId}!");
+            return;
+        }
 
-        Image img = iconObj.AddComponent<Image>();
-        img.sprite = icon;
-        img.preserveAspect = true;
+        // Instantiate entry prefab
+        GameObject entryObj = Instantiate(entryPrefab, contentContainer, false);
+        entryObj.SetActive(true); // Ensure entry is active
 
-        // Set color based on ownership
-        img.color = isOwned ? Color.white : blackedOutColor;
+        // Find icon image component (should be named "icon" in the prefab)
+        Image iconImage = entryObj.transform.Find("icon")?.GetComponent<Image>();
+        
+        if (iconImage != null)
+        {
+            iconImage.gameObject.SetActive(true); // Ensure icon is active
+            iconImage.enabled = true; // Ensure Image component is enabled
+            iconImage.sprite = icon;
+            iconImage.preserveAspect = true;
+            iconImage.color = isOwned ? Color.white : blackedOutColor;
+        }
+        else
+        {
+            Debug.LogWarning($"ResourceBar: Could not find icon component in entry prefab for {entityId}");
+        }
 
-        // Set size (adjust as needed)
-        RectTransform rt = iconObj.GetComponent<RectTransform>();
-        rt.sizeDelta = new Vector2(100, 100); // Adjust icon size as needed
+        // Find description text component (should be named "desc" in the prefab)
+        TextMeshProUGUI descText = entryObj.transform.Find("desc")?.GetComponent<TextMeshProUGUI>();
+        
+        if (descText != null && DescriptionManager.Instance != null)
+        {
+            descText.gameObject.SetActive(true); // Ensure text is active
+            descText.enabled = true; // Ensure TextMeshProUGUI component is enabled
+            
+            // Get description based on entity type
+            DescriptionManager.EntityDescription entityDesc = null;
+            
+            switch (entityType)
+            {
+                case "character":
+                    entityDesc = DescriptionManager.Instance.GetCharacterDescription(entityId);
+                    break;
+                case "spirit":
+                    entityDesc = DescriptionManager.Instance.GetSpiritDescription(entityId);
+                    break;
+                case "treasure":
+                    entityDesc = DescriptionManager.Instance.GetTreasureDescription(entityId);
+                    break;
+            }
+
+            if (entityDesc != null)
+            {
+                if (isOwned)
+                {
+                    descText.text = DescriptionManager.Instance.FormatDescription(entityDesc);
+                }
+                else
+                {
+                    // Show ??? for description and effect if not owned
+                    descText.text = $"<b>{entityDesc.name}</b>\n？？？\n<color=#FFD700>效果：？？？</color>";
+                }
+            }
+            else
+            {
+                descText.text = $"<b>{entityId}</b>\nDescription not found";
+            }
+
+            // Gray out text if not owned
+            if (!isOwned)
+            {
+                descText.color = blackedOutColor;
+            }
+        }
+        else
+        {
+            if (descText == null)
+            {
+                Debug.LogWarning($"ResourceBar: Could not find desc component in entry prefab for {entityId}");
+            }
+            if (DescriptionManager.Instance == null)
+            {
+                Debug.LogError("ResourceBar: DescriptionManager instance not found!");
+            }
+        }
+        
+        // Ensure entry Image component is enabled if it exists
+        Image entryImage = entryObj.GetComponent<Image>();
+        if (entryImage != null)
+        {
+            entryImage.enabled = true;
+        }
     }
 
     /// <summary>
@@ -599,55 +706,29 @@ public class ResourceBar : MonoBehaviour
     {
         if (LevelManager.Instance == null)
         {
-            CreateDescriptionItem("LevelManager not found");
             return;
         }
 
-        CreateDescriptionItem("Options coming soon");
-        CreateDescriptionItem($"Current Turn: {TurnManager.Instance?.CurrentTurn ?? 0}");
-        CreateDescriptionItem($"Money: {LevelManager.Instance.Money}");
-        CreateDescriptionItem($"Disciples: {LevelManager.Instance.Disciples}");
+        // For options, create simple text entries without using the entry prefab
+        CreateSimpleTextItem("Options coming soon");
+        CreateSimpleTextItem($"Current Turn: {TurnManager.Instance?.CurrentTurn ?? 0}");
+        CreateSimpleTextItem($"Money: {LevelManager.Instance.Money}");
+        CreateSimpleTextItem($"Disciples: {LevelManager.Instance.Disciples}");
     }
 
     /// <summary>
-    /// Create a description item in the content container (for text-based items like Options)
+    /// Create a simple text item (for options category)
     /// </summary>
-    private void CreateDescriptionItem(string description)
+    private void CreateSimpleTextItem(string text)
     {
-        GameObject item;
-
-        if (descriptionItemPrefab != null)
-        {
-            // Use prefab if provided
-            item = Instantiate(descriptionItemPrefab, contentContainer);
-        }
-        else
-        {
-            // Create simple text item if no prefab
-            item = new GameObject("DescriptionItem");
-            item.transform.SetParent(contentContainer, false);
-            
-            TextMeshProUGUI text = item.AddComponent<TextMeshProUGUI>();
-            text.fontSize = 14;
-            text.color = Color.white;
-            text.alignment = TextAlignmentOptions.Left;
-        }
-
-        // Set text content
-        TextMeshProUGUI textComponent = item.GetComponent<TextMeshProUGUI>();
-        if (textComponent != null)
-        {
-            textComponent.text = description;
-        }
-        else
-        {
-            // Try to find text in children
-            textComponent = item.GetComponentInChildren<TextMeshProUGUI>();
-            if (textComponent != null)
-            {
-                textComponent.text = description;
-            }
-        }
+        GameObject item = new GameObject("TextItem");
+        item.transform.SetParent(contentContainer, false);
+        
+        TextMeshProUGUI textComponent = item.AddComponent<TextMeshProUGUI>();
+        textComponent.text = text;
+        textComponent.fontSize = 16;
+        textComponent.color = Color.white;
+        textComponent.alignment = TextAlignmentOptions.Left;
     }
 
     /// <summary>
