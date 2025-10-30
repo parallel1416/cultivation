@@ -27,7 +27,7 @@
             "name": "奇人异士",
             "description": "宗门百废待兴，你和掌门需要为宗门延揽奇人异士。",
             "cost": 1,
-            "prerequisites": [],
+            "prerequisites": ["story_1"],
             "unlockState": 0
         },
         {
@@ -81,7 +81,7 @@
             "name": "开垦荒园",
             "description": "晨兴理荒秽，带月荷锄归。",
             "cost": 1,
-            "prerequisites": [],
+            "prerequisites": ["story_1"],
             "unlockState": 0,
             "canDismantle": true,
             "dismantleCost": 3
