@@ -20,7 +20,7 @@ public class DialogueListManager : MonoBehaviour
     [SerializeField]
     private IReadOnlyList<int> noRoutineTurnNumbers = new List<int>()
     {
-        1, 13, 16
+        13, 16
     };
 
     // Tech needs
@@ -178,7 +178,7 @@ public class DialogueListManager : MonoBehaviour
     private void ClearTurnDialogues() => currentTurnDialogues.Clear();
     private void AddDialogue(string dialogue)
     {
-        if (!NowHasDialogue(dialogue)) return;
+        if (NowHasDialogue(dialogue)) return;
         currentTurnDialogues.Add(dialogue);
     }
 
@@ -261,6 +261,7 @@ public class DialogueListManager : MonoBehaviour
         SetUpCultivationDialogues(turnNumber);
         SetUpAdventureDialogues(turnNumber);
         SetUpSpecialDiscipleDialogues(turnNumber);
+        SetUpOtherDialogues(turnNumber);
         
         LogController.Log($"SetUpTurnDialogues complete. Total dialogues: {currentTurnDialogues.Count}");
     }

@@ -52,6 +52,7 @@ public class ItemManager : MonoBehaviour
     /// </summary>
     public void RegisterAllItems()
     {
+        items.Clear();
         foreach (string id in itemRegisterList)
         {
             // no conflict prevention, make sure itemRegisterList has no duplicate IDs
